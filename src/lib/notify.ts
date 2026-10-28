@@ -18,31 +18,52 @@ export async function askPermission(): Promise<boolean> {
 }
 
 const TITLE = 'حبيبنا ﷺ';
-const CHANNEL = 'cards';
+// أهمية القناة لا تتغيّر بعد إنشائها، فرفعها يتطلب قناة باسم جديد
+const CHANNEL = 'cards_v2';
 const TEST_ID = 9999;
 const short = (t: string) => (t.length > 160 ? t.slice(0, 157) + '…' : t);
 
 async function ensureChannel() {
   if (Capacitor.getPlatform() !== 'android') return;
-  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'بطاقة في الأوقات التي تختارها', importance: 3, visibility: 1 });
+  await LocalNotifications.deleteChannel({ id: 'cards' }).catch(() => {});
+  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'بطاقة في الأوقات التي تختارها', importance: 4, visibility: 1 });
 }
 
-const nativeNote = (id: number, card: CardData, at: Date) => ({
+/**
+ * هل يسمح النظام بالمواعيد الدقيقة؟ (أندرويد 14+ يمنعها افتراضيًّا).
+ * لا نطلبها عند الجدولة، لأن الإضافة حينها تفتح شاشة الإعدادات فجأة؛ يطلبها المستخدم من زرّ في الإعدادات.
+ */
+export async function exactAllowed(): Promise<boolean> {
+  if (Capacitor.getPlatform() !== 'android') return true;
+  return (await LocalNotifications.checkExactNotificationSetting()).exact_alarm === 'granted';
+}
+export async function askExact(): Promise<boolean> {
+  return (await LocalNotifications.changeExactNotificationSetting()).exact_alarm === 'granted';
+}
+
+const nativeNote = (id: number, card: CardData, at: Date | null, exact: boolean) => ({
   id, title: TITLE, body: short(card.text), largeBody: card.text, channelId: CHANNEL,
-  extra: { cardId: card.id }, schedule: { at, allowWhileIdle: true },
+  extra: { cardId: card.id }, isExactNotification: exact,
+  ...(at ? { schedule: { at, allowWhileIdle: true } } : {}),
 });
 
-export async function showCard(card: CardData) {
+/** يُرجع رسالة خطأ مفهومة، أو null إن نجح */
+export async function showCard(card: CardData): Promise<string | null> {
   if (isNative) {
-    // على الهاتف: إشعار تجريبي بعد ثوانٍ، فيمكن رؤيته والتطبيق في الخلفية
-    await ensureChannel();
-    await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, new Date(Date.now() + 5000))] });
-    return;
+    // على الهاتف: إشعار تجريبي فوري
+    try {
+      await ensureChannel();
+      await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] });
+      return null;
+    } catch {
+      return 'الإشعارات معطّلة لهذا التطبيق من إعدادات الهاتف';
+    }
   }
-  if (!notifySupported() || Notification.permission !== 'granted') return;
+  if (!notifySupported() || Notification.permission !== 'granted') return 'فعّل الإشعارات من المتصفح أولًا';
   const opts: NotificationOptions = { body: short(card.text), icon: 'icon.svg', tag: 'qarib', lang: 'ar', dir: 'rtl' };
   const reg = await navigator.serviceWorker?.getRegistration();
   if (reg) await reg.showNotification(TITLE, opts); else new Notification(TITLE, opts);
+  return null;
 }
 
 const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
@@ -83,6 +104,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
   if (!s.notifyOn || pool.length === 0) return 0;
   if ((await LocalNotifications.checkPermissions()).display !== 'granted') return 0;
   await ensureChannel();
+  const exact = await exactAllowed().catch(() => false);
 
   const times = slots(s);
   const soon = Date.now() + 60_000, end = Date.now() + WEEK * 86_400_000;
@@ -94,7 +116,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
       at.setHours(Math.floor(m / 60), m % 60, 0, 0);
       if (at.getTime() < soon || at.getTime() > end) return;
       const day = Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
-      list.push(nativeNote(d * 10 + k + 1, pool[(day * times.length + k) % pool.length], at));
+      list.push(nativeNote(d * 10 + k + 1, pool[(day * times.length + k) % pool.length], at, exact));
     });
   }
   if (list.length) await LocalNotifications.schedule({ notifications: list });

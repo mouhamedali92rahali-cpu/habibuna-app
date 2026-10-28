@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askPermission, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
@@ -63,6 +63,8 @@ export default function App() {
   const [count, setCount] = useState(PAGE);
   const [open, setOpen] = useState<CardData | null>(null);
   const [toast, setToast] = useState('');
+  const [planned, setPlanned] = useState<number | null>(null);
+  const [exact, setExact] = useState<boolean | null>(null);
   const toastT = useRef<number | undefined>(undefined);
   const sentinel = useRef<HTMLDivElement | null>(null);
 
@@ -109,7 +111,10 @@ export default function App() {
   const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && !hidden.includes(c.chapter)), [deck?.order, byId, hidden]);
   useEffect(() => {
     if (!isNative || pool.length === 0) return;
-    const run = () => { void scheduleWeek(settings, pool).catch(() => {}); };
+    const run = () => {
+      scheduleWeek(settings, pool).then(setPlanned).catch(() => setPlanned(0));
+      exactAllowed().then(setExact).catch(() => {});
+    };
     run();
     const onVis = () => { if (document.visibilityState === 'visible') run(); };
     document.addEventListener('visibilitychange', onVis);
@@ -192,9 +197,18 @@ export default function App() {
               <label className="row"><span><b>من الساعة</b></span><input type="time" value={settings.from} onChange={(e) => setSettings({ ...settings, from: e.target.value })} /></label>
               <label className="row"><span><b>إلى الساعة</b><small>خارج هذه الفترة لا تصلك إشعارات</small></span><input type="time" value={settings.to} onChange={(e) => setSettings({ ...settings, to: e.target.value })} /></label>
               <p className="muted small">الأوقات المتوقعة: {slots(settings).map(fmt).join(' · ')}</p>
-              <button className="ghost" onClick={async () => { if (await askPermission()) { await showCard(feed[0]?.c ?? cards[0]); say(isNative ? 'سيصلك إشعار تجريبي بعد ٥ ثوانٍ' : 'أُرسل إشعار تجريبي'); } else say(isNative ? 'فعّل الإشعارات من إعدادات الهاتف أولًا' : 'فعّل الإشعارات من المتصفح أولًا'); }}>إشعار تجريبي</button>
+              <button className="ghost" onClick={async () => {
+                if (!(await askPermission())) { say(isNative ? 'فعّل الإشعارات من إعدادات الهاتف أولًا' : 'فعّل الإشعارات من المتصفح أولًا'); return; }
+                say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
+              }}>إشعار تجريبي</button>
+              {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {isNative && exact === false && (
+                <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل الإشعارات في وقتها بالضبط' : 'بقيت المواعيد تقريبية'); }}>
+                  مواعيد دقيقة: اسمح بـ«المنبّهات والتذكيرات»
+                </button>
+              )}
               <p className="note">{isNative
-                ? 'تُجدول إشعارات الأيام السبعة القادمة، وتتجدّد كلما فتحت التطبيق. قد يتأخر الإشعار دقائق قليلة عن وقته، وفي بعض الهواتف يلزم استثناء التطبيق من توفير البطارية.'
+                ? 'تُجدول إشعارات الأيام السبعة القادمة، وتتجدّد كلما فتحت التطبيق. في هواتف شاومي وهواوي وأوبو: اجعل «توفير البطارية» لهذا التطبيق على «بلا قيود» وفعّل «التشغيل التلقائي»، وإلا قد تتأخر الإشعارات أو لا تصل.'
                 : 'على الويب تصل الإشعارات المجدولة والتطبيق مفتوح. الإشعارات في الخلفية وعند إغلاق التطبيق تأتي مع نسخة الهاتف.'}</p>
             </div>
             <div className="panel">
