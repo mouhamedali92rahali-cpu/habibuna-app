@@ -61,12 +61,21 @@ export async function diagnose(card: CardData): Promise<string[]> {
   await step('إنشاء القناة', async () => { await ensureChannel(); return 'تم'; });
   await step('القنوات', async () => (await LocalNotifications.listChannels()).channels.map((c) => `${c.id}(${c.importance})`).join('، ') || 'لا شيء');
   await step('إشعار فوري', async () => { await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] }); return 'أُرسل'; });
-  await step('إشعار بعد دقيقة', async () => {
-    const r = await LocalNotifications.schedule({ notifications: [{ ...nativeNote(TEST_ID - 1, card, new Date(Date.now() + 60_000), false), title: 'حبيبنا ﷺ — تجربة بعد دقيقة' }] });
-    return `جُدول${(r as { warning?: unknown }).warning ? ' (تقريبي)' : ''}`;
-  });
+  await step('إشعار بعد دقيقة', async () => (await testLater(card)) ?? 'جُدول (دقيق)');
   await step('المجدولة', async () => String((await LocalNotifications.getPending()).notifications.length));
   return out;
+}
+
+/** تجربة إشعار مجدول بعد دقيقة، بالمواعيد الدقيقة إن سمح بها النظام؛ يُرجع رسالة خطأ أو null */
+export async function testLater(card: CardData): Promise<string | null> {
+  try {
+    await ensureChannel();
+    const exact = await exactAllowed().catch(() => false);
+    await LocalNotifications.schedule({ notifications: [{ ...nativeNote(TEST_ID - 1, card, new Date(Date.now() + 60_000), exact), title: 'حبيبنا ﷺ — تجربة بعد دقيقة' }] });
+    return exact ? null : 'جُدول، لكن الموعد تقريبي (المواعيد الدقيقة غير مسموحة) فقد يتأخر';
+  } catch (e) {
+    return `لم يُجدول: ${errText(e)}`;
+  }
 }
 
 /** يُرجع رسالة خطأ مفهومة، أو null إن نجح */

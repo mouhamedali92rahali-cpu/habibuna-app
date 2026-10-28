@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
@@ -89,7 +89,7 @@ export default function App() {
   useEffect(() => { save('settings', settings); }, [settings]);
   useEffect(() => { save('hiddenChapters', hidden); setCount(PAGE); }, [hidden]);
 
-  const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), 2200); }, []);
+  const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
 
   useEffect(() => {
     if (!cards) return;
@@ -203,6 +203,12 @@ export default function App() {
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
               }}>إشعار تجريبي</button>
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {isNative && (
+                <button className="ghost" onClick={async () => {
+                  if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات من إعدادات الهاتف أولًا'); return; }
+                  say((await testLater(feed[1]?.c ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. اخرج من التطبيق بزر الرجوع للرئيسية ولا تغلقه من قائمة التطبيقات');
+                }}>تجربة إشعار بعد دقيقة</button>
+              )}
               {isNative && (
                 <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); setDiag(await diagnose(feed[0]?.c ?? cards[0])); }}>فحص الإشعارات</button>
               )}
