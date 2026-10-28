@@ -3,6 +3,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
+import { PhoneSettings, phoneMaker, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
 
@@ -66,6 +67,9 @@ export default function App() {
   const [planned, setPlanned] = useState<number | null>(null);
   const [exact, setExact] = useState<boolean | null>(null);
   const [diag, setDiag] = useState<string[] | null>(null);
+  const [maker, setMaker] = useState<Maker>('normal');
+  const [guide, setGuide] = useState(false);
+  useEffect(() => { void phoneMaker().then(setMaker); }, []);
   const toastT = useRef<number | undefined>(undefined);
   const sentinel = useRef<HTMLDivElement | null>(null);
 
@@ -187,6 +191,8 @@ export default function App() {
                   const on = e.target.checked;
                   if (on && !(await askPermission())) { say(isNative ? 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف' : notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return; }
                   setSettings({ ...settings, notifyOn: on });
+                  // هواتف شاومي وأمثالها: إرشاد مرة واحدة لتصل الإشعارات والتطبيق مغلق
+                  if (on && maker !== 'normal' && !load('guideSeen', false)) { setGuide(true); save('guideSeen', true); }
                 }} />
               </label>
               <label className="row">
@@ -203,6 +209,7 @@ export default function App() {
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
               }}>إشعار تجريبي</button>
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {maker !== 'normal' && <button className="linkbtn" onClick={() => setGuide(true)}>لا تصل الإشعارات والتطبيق مغلق؟ اضغط هنا</button>}
               {isNative && (
                 <button className="ghost" onClick={async () => {
                   if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات من إعدادات الهاتف أولًا'); return; }
@@ -243,6 +250,22 @@ export default function App() {
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <CardBlock c={open} n={byId.get(open.id)?.n ?? 0} fav={favs.includes(open.id)} onFav={() => toggleFav(open.id)} onShare={() => doShare(open)} />
             <button className="ghost" onClick={() => setOpen(null)}>إغلاق</button>
+          </div>
+        </div>
+      )}
+      {guide && (
+        <div className="modal" onClick={() => setGuide(false)}>
+          <div className="sheet guide" onClick={(e) => e.stopPropagation()}>
+            <h2>لكي تصلك البطاقات والتطبيق مغلق</h2>
+            <p className="muted small">هاتفك {maker === 'xiaomi' ? 'من شاومي' : 'من الهواتف التي'} يُوقف التطبيقات المغلقة ويمسح إشعاراتها. خطوتان مرة واحدة فقط:</p>
+            <ol>
+              <li><b>{maker === 'xiaomi' ? 'التشغيل التلقائي' : 'التشغيل التلقائي / التشغيل في الخلفية'}:</b> فعّله لتطبيق «حبيبنا».</li>
+              <li><b>توفير البطارية:</b> اجعله «بلا قيود» لتطبيق «حبيبنا».</li>
+            </ol>
+            {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح «التشغيل التلقائي»</button>}
+            <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات التطبيق (البطارية)</button>
+            <p className="muted small">في صفحة إعدادات التطبيق: «توفير البطارية» ← «بلا قيود». بعدها جرّب «تجربة إشعار بعد دقيقة» ثم أغلق التطبيق.</p>
+            <button className="ghost" onClick={() => setGuide(false)}>تم</button>
           </div>
         </div>
       )}

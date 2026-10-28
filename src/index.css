@@ -152,3 +152,10 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .hadith.sharh>b{color:var(--emerald)}
 
 .diag{direction:rtl;text-align:right;white-space:pre-wrap;font:12px/1.7 Tajawal,sans-serif;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0}
+.linkbtn{background:none;border:0;color:var(--emerald);text-decoration:underline;font:inherit;font-size:.88rem;padding:4px 0;cursor:pointer}
+.sheet.guide{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:18px 18px 14px;max-width:420px;width:100%;align-items:stretch;text-align:right}
+.modal .sheet.guide .ghost{border-color:var(--emerald);color:var(--emerald)}
+@media (prefers-color-scheme: dark){ .modal .sheet.guide .ghost{border-color:var(--gold);color:var(--gold)} }
+.sheet.guide h2{margin:0;font-size:1.15rem}
+.sheet.guide ol{margin:0;padding-inline-start:20px;line-height:1.9}
+@media (prefers-color-scheme: dark){ .linkbtn{color:var(--gold)} }
