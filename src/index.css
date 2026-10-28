@@ -150,3 +150,5 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .under{flex-wrap:wrap}
 .hadith.sharh{border-color:var(--gold)}
 .hadith.sharh>b{color:var(--emerald)}
+
+.diag{direction:rtl;text-align:right;white-space:pre-wrap;font:12px/1.7 Tajawal,sans-serif;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0}

@@ -47,6 +47,28 @@ const nativeNote = (id: number, card: CardData, at: Date | null, exact: boolean)
   ...(at ? { schedule: { at, allowWhileIdle: true } } : {}),
 });
 
+const errText = (e: unknown) => (e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message) : String(e));
+
+/** فحص حالة الإشعارات على الهاتف سطرًا سطرًا، لتصوير الشاشة عند المشكلة */
+export async function diagnose(card: CardData): Promise<string[]> {
+  const out: string[] = [];
+  const step = async (label: string, f: () => Promise<string>) => {
+    try { out.push(`${label}: ${await f()}`); } catch (e) { out.push(`${label}: ✗ ${errText(e)}`); }
+  };
+  await step('المنصّة', async () => `${Capacitor.getPlatform()} · ${navigator.userAgent.match(/Android [\d.]+/)?.[0] ?? '?'}`);
+  await step('إذن الإشعارات', async () => (await LocalNotifications.checkPermissions()).display);
+  await step('المواعيد الدقيقة', async () => (await LocalNotifications.checkExactNotificationSetting()).exact_alarm);
+  await step('إنشاء القناة', async () => { await ensureChannel(); return 'تم'; });
+  await step('القنوات', async () => (await LocalNotifications.listChannels()).channels.map((c) => `${c.id}(${c.importance})`).join('، ') || 'لا شيء');
+  await step('إشعار فوري', async () => { await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] }); return 'أُرسل'; });
+  await step('إشعار بعد دقيقة', async () => {
+    const r = await LocalNotifications.schedule({ notifications: [{ ...nativeNote(TEST_ID - 1, card, new Date(Date.now() + 60_000), false), title: 'حبيبنا ﷺ — تجربة بعد دقيقة' }] });
+    return `جُدول${(r as { warning?: unknown }).warning ? ' (تقريبي)' : ''}`;
+  });
+  await step('المجدولة', async () => String((await LocalNotifications.getPending()).notifications.length));
+  return out;
+}
+
 /** يُرجع رسالة خطأ مفهومة، أو null إن نجح */
 export async function showCard(card: CardData): Promise<string | null> {
   if (isNative) {
@@ -55,8 +77,8 @@ export async function showCard(card: CardData): Promise<string | null> {
       await ensureChannel();
       await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] });
       return null;
-    } catch {
-      return 'الإشعارات معطّلة لهذا التطبيق من إعدادات الهاتف';
+    } catch (e) {
+      return `لم يُرسل الإشعار: ${errText(e)}`;
     }
   }
   if (!notifySupported() || Notification.permission !== 'granted') return 'فعّل الإشعارات من المتصفح أولًا';
@@ -99,7 +121,7 @@ export const WEEK = 7;
 export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<number> {
   if (!isNative) return 0;
   const pending = await LocalNotifications.getPending();
-  const old = pending.notifications.filter((n) => n.id !== TEST_ID);
+  const old = pending.notifications.filter((n) => n.id !== TEST_ID && n.id !== TEST_ID - 1);
   if (old.length) await LocalNotifications.cancel({ notifications: old.map((n) => ({ id: n.id })) });
   if (!s.notifyOn || pool.length === 0) return 0;
   if ((await LocalNotifications.checkPermissions()).display !== 'granted') return 0;

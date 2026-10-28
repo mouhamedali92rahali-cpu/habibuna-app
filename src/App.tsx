@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
@@ -65,6 +65,7 @@ export default function App() {
   const [toast, setToast] = useState('');
   const [planned, setPlanned] = useState<number | null>(null);
   const [exact, setExact] = useState<boolean | null>(null);
+  const [diag, setDiag] = useState<string[] | null>(null);
   const toastT = useRef<number | undefined>(undefined);
   const sentinel = useRef<HTMLDivElement | null>(null);
 
@@ -202,6 +203,10 @@ export default function App() {
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
               }}>إشعار تجريبي</button>
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {isNative && (
+                <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); setDiag(await diagnose(feed[0]?.c ?? cards[0])); }}>فحص الإشعارات</button>
+              )}
+              {diag && <pre className="diag">{diag.join('\n')}</pre>}
               {isNative && exact === false && (
                 <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل الإشعارات في وقتها بالضبط' : 'بقيت المواعيد تقريبية'); }}>
                   مواعيد دقيقة: اسمح بـ«المنبّهات والتذكيرات»
