@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- أيقونة شريط الإشعارات: محراب أبيض أحادي اللون (أندرويد يلوّنه بلون iconColor) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="120"
+    android:viewportHeight="150">
+    <path
+        android:pathData="M60,8c6,14 38,26 38,62v74H22V70C22,34 54,22 60,8z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="12"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M60,40c4,8 20,16 20,34v52H40V74c0,-18 16,-26 20,-34z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

@@ -23,6 +23,8 @@ export function syncDeck(deck: Deck | null, ids: string[]): Deck {
   const fresh = ids.filter((i) => !known.has(i));
   const order = deck.order.filter((i) => ids.includes(i));
   const pos = Math.min(deck.pos, order.length);
+  // لا يُعاد خلط الباقي إلا عند وصول بطاقات جديدة، ليبقى الترتيب (وجدول الإشعارات) ثابتًا
+  if (fresh.length === 0) return { ...deck, order, pos };
   return { ...deck, order: [...order.slice(0, pos), ...shuffle([...order.slice(pos), ...fresh])], pos };
 }
 export function advance(deck: Deck, ids: string[]): Deck {

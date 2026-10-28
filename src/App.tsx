@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askPermission, fmt, notifySupported, schedule, showCard, slots } from './lib/notify';
+import { askPermission, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { loadCards } from './lib/cards';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
 
@@ -66,7 +67,7 @@ export default function App() {
   const sentinel = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetch('cards.json').then((r) => r.json()).then((d: { cards: CardData[] }) => setCards(d.cards)).catch(() => setErr(true));
+    loadCards().then(setCards).catch(() => setErr(true));
   }, []);
 
   const ids = useMemo(() => (cards ?? []).map((c) => c.id), [cards]);
@@ -103,6 +104,22 @@ export default function App() {
     }
     return out;
   }, [deck, byId, hidden]);
+
+  // الهاتف: جدولة إشعارات أسبوع قادم من الترتيب المحفوظ (بلا الأنواع المخفيّة)، وإعادتها عند كل فتح أو عودة للتطبيق
+  const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && !hidden.includes(c.chapter)), [deck?.order, byId, hidden]);
+  useEffect(() => {
+    if (!isNative || pool.length === 0) return;
+    const run = () => { void scheduleWeek(settings, pool).catch(() => {}); };
+    run();
+    const onVis = () => { if (document.visibilityState === 'visible') run(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [pool, settings]);
+
+  useEffect(() => {
+    if (!cards) return;
+    return listenTaps((id) => { const e = byId.get(id); if (e) setOpen(e.c); });
+  }, [cards, byId]);
 
   const shown = feed.slice(0, count);
   useEffect(() => {
@@ -162,7 +179,7 @@ export default function App() {
                 <span><b>إشعارات البطاقات</b><small>بطاقة تصلك في أوقات تحددها</small></span>
                 <input type="checkbox" checked={settings.notifyOn} onChange={async (e) => {
                   const on = e.target.checked;
-                  if (on && !(await askPermission())) { say(notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return; }
+                  if (on && !(await askPermission())) { say(isNative ? 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف' : notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return; }
                   setSettings({ ...settings, notifyOn: on });
                 }} />
               </label>
@@ -175,8 +192,10 @@ export default function App() {
               <label className="row"><span><b>من الساعة</b></span><input type="time" value={settings.from} onChange={(e) => setSettings({ ...settings, from: e.target.value })} /></label>
               <label className="row"><span><b>إلى الساعة</b><small>خارج هذه الفترة لا تصلك إشعارات</small></span><input type="time" value={settings.to} onChange={(e) => setSettings({ ...settings, to: e.target.value })} /></label>
               <p className="muted small">الأوقات المتوقعة: {slots(settings).map(fmt).join(' · ')}</p>
-              <button className="ghost" onClick={async () => { if (await askPermission()) { await showCard(cards[0]); say('أُرسل إشعار تجريبي'); } else say('فعّل الإشعارات من المتصفح أولًا'); }}>إشعار تجريبي</button>
-              <p className="note">على الويب تصل الإشعارات المجدولة والتطبيق مفتوح. الإشعارات في الخلفية وعند إغلاق التطبيق تأتي مع نسخة الهاتف (أندرويد وآيفون).</p>
+              <button className="ghost" onClick={async () => { if (await askPermission()) { await showCard(feed[0]?.c ?? cards[0]); say(isNative ? 'سيصلك إشعار تجريبي بعد ٥ ثوانٍ' : 'أُرسل إشعار تجريبي'); } else say(isNative ? 'فعّل الإشعارات من إعدادات الهاتف أولًا' : 'فعّل الإشعارات من المتصفح أولًا'); }}>إشعار تجريبي</button>
+              <p className="note">{isNative
+                ? 'تُجدول إشعارات الأيام السبعة القادمة، وتتجدّد كلما فتحت التطبيق. قد يتأخر الإشعار دقائق قليلة عن وقته، وفي بعض الهواتف يلزم استثناء التطبيق من توفير البطارية.'
+                : 'على الويب تصل الإشعارات المجدولة والتطبيق مفتوح. الإشعارات في الخلفية وعند إغلاق التطبيق تأتي مع نسخة الهاتف.'}</p>
             </div>
             <div className="panel">
               <b>عن التطبيق</b>
