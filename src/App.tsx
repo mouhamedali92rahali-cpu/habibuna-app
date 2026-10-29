@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, cardFor, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, cardFor, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
-import { PhoneSettings, phoneMaker, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
 
@@ -71,8 +71,13 @@ export default function App() {
   const [maker, setMaker] = useState<Maker>('normal');
   const [guide, setGuide] = useState(false);
   // صفحة الترحيب: تظهر أول مرة يُفتح فيها التطبيق، وتشرح البطاقات والإشعارات وإعدادات الهاتف
-  const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (load('welcomeSeen', false) ? 0 : 1));
-  const closeWelcome = () => { if (welcome === 2) save('guideSeen', true); setWelcome(0); save('welcomeSeen', true); };
+  // ومن رأى الترحيب قبل نافذة البطاقة (النسخة 2.3) يرى خطوة الأذونات مرة واحدة ليعرف الميزة
+  const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (!load('welcomeSeen', false) ? 1 : isNative && !load('popupIntro', false) ? 2 : 0));
+  const closeWelcome = () => { if (welcome === 2) save('guideSeen', true); setWelcome(0); save('welcomeSeen', true); save('popupIntro', true); };
+  // نافذة البطاقة على الشاشة: إذن «الظهور فوق التطبيقات»، ومعاينتها على الويب في إطار
+  const [overlay, setOverlay] = useState<boolean | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const previewSrc = useMemo(() => (preview ? `popup.html?t=${Date.now()}#${encodeURIComponent(preview)}` : null), [preview]);
   useEffect(() => { void phoneMaker().then(setMaker); }, []);
   const toastT = useRef<number | undefined>(undefined);
 
@@ -135,12 +140,29 @@ export default function App() {
     const run = () => {
       scheduleWeek(settings, pool).then(setPlanned).catch(() => setPlanned(0));
       exactAllowed().then(setExact).catch(() => {});
+      PhoneSettings.canOverlay().then(({ allowed }) => {
+        setOverlay(allowed);
+        const on = settings.notifyOn && settings.popupOn !== false && allowed;
+        return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
+      }).catch(() => {});
+      PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
     };
     run();
     const onVis = () => { if (document.visibilityState === 'visible') run(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [pool, settings]);
+  }, [pool, settings, byId]);
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const what = (e.data as { habibunaPopup?: string } | null)?.habibunaPopup;
+      if (!what || !preview) return;
+      if (what === 'open') { const id = (JSON.parse(preview) as { card: { id: string } }).card.id; const c = byId.get(id)?.c; if (c) setOpen(c); }
+      setPreview(null);
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [preview, byId]);
 
   useEffect(() => {
     if (!cards) return;
@@ -152,6 +174,15 @@ export default function App() {
     if (!(await askPermission())) { say(isNative ? 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف' : notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return false; }
     setSettings((s) => ({ ...s, notifyOn: true }));
     return true;
+  };
+
+  const previewPopup = async () => {
+    const last = feed[feed.length - 1];
+    const c = last?.c ?? cardFor(pool, dayNo, 0);
+    const json = popupJson(c, last ? feed.length - 1 : 0, byId.get(c.id)?.n ?? 0);
+    if (!isNative) { setPreview(json); return; }
+    const r = await PhoneSettings.previewPopup({ json, cardId: c.id }).catch(() => ({ shown: false }));
+    if (!r.shown) say('اسمح أولًا بـ«الظهور فوق التطبيقات الأخرى»');
   };
 
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
@@ -223,6 +254,19 @@ export default function App() {
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
               }}>إشعار تجريبي</button>
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {isNative && (
+                <label className="row">
+                  <span><b>إظهار البطاقة على الشاشة</b><small>تنفتح البطاقة في موعدها فوق أي تطبيق</small></span>
+                  <input type="checkbox" checked={settings.popupOn !== false} onChange={(e) => setSettings({ ...settings, popupOn: e.target.checked })} />
+                </label>
+              )}
+              {isNative && settings.popupOn !== false && overlay === false && (
+                <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بـ«الظهور فوق التطبيقات الأخرى»</button>
+              )}
+              {isNative && settings.popupOn !== false && maker === 'xiaomi' && (
+                <button className="linkbtn" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>شاومي: اسمح بـ«عرض النوافذ المنبثقة أثناء التشغيل في الخلفية»</button>
+              )}
+              <button className="ghost" onClick={() => void previewPopup()}>معاينة البطاقة على الشاشة</button>
               {maker !== 'normal' && <button className="linkbtn" onClick={() => setGuide(true)}>لا تصل الإشعارات والتطبيق مغلق؟ اضغط هنا</button>}
               <button className="linkbtn" onClick={() => setWelcome(isNative ? 2 : 1)}>كيف تعمل الإشعارات؟</button>
               {isNative && (
@@ -305,6 +349,10 @@ export default function App() {
                 ) : (
                   <p className="muted small">الإشعارات مجدولة لأسبوع كامل، وتتجدّد كلما فتحت التطبيق، فتصلك ولو كان مغلقًا.</p>
                 )}
+                <p className="muted small"><b>البطاقة على الشاشة:</b> لتنفتح البطاقة في موعدها فوق أي تطبيق، اسمح بـ«الظهور فوق التطبيقات الأخرى»{maker === 'xiaomi' ? '، وفي شاومي أيضًا بـ«عرض النوافذ المنبثقة أثناء التشغيل في الخلفية»' : ''}. ويمكنك إطفاؤها من الإعدادات.</p>
+                {overlay === false && <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بالظهور فوق التطبيقات</button>}
+                {maker === 'xiaomi' && <button className="ghost" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>النوافذ المنبثقة في الخلفية (شاومي)</button>}
+                <button className="linkbtn" onClick={() => void previewPopup()}>معاينة البطاقة على الشاشة</button>
                 {exact === false && (
                   <>
                     <p className="muted small"><b>مواعيد دقيقة:</b> يؤخّر أندرويد الإشعارات قليلًا ما لم تسمح بـ«المنبّهات والتذكيرات».</p>
@@ -353,6 +401,7 @@ export default function App() {
           </div>
         </div>
       )}
+      {previewSrc && <iframe className="popframe" title="معاينة البطاقة" src={previewSrc} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   );

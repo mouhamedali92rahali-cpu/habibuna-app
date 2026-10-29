@@ -158,6 +158,24 @@ export function schedule(s: Settings, pick: (k: number) => CardData | null): () 
 
 export const WEEK = 7;
 
+export interface WeekSlot { id: number; at: Date; k: number; card: CardData; }
+/** مواعيد الأيام السبعة القادمة وبطاقة كل موعد (للإشعارات ولنوافذ البطاقة) */
+export function weekSlots(s: Settings, pool: CardData[]): WeekSlot[] {
+  if (pool.length === 0) return [];
+  const soon = Date.now() + 60_000, end = Date.now() + WEEK * 86_400_000;
+  const out: WeekSlot[] = [];
+  for (let d = 0; d <= WEEK; d++) {
+    slots(s).forEach((m, k) => {
+      const at = new Date();
+      at.setDate(at.getDate() + d);
+      at.setHours(Math.floor(m / 60), m % 60, 0, 0);
+      if (at.getTime() < soon || at.getTime() > end) return;
+      out.push({ id: d * 10 + k + 1, at, k, card: cardFor(pool, dayNumber(at), k) });
+    });
+  }
+  return out;
+}
+
 /**
  * جدولة أسبوع قادم دفعة واحدة على الهاتف. بطاقة كل موعد تُحسب من رقم اليوم في
  * الترتيب الثابت للبطاقات، فلا تتغيّر ولا تتكرّر عند إعادة الجدولة في الأيام التالية.
@@ -173,18 +191,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
   await ensureChannel();
   const exact = await exactAllowed().catch(() => false);
 
-  const times = slots(s);
-  const soon = Date.now() + 60_000, end = Date.now() + WEEK * 86_400_000;
-  const list: ReturnType<typeof nativeNote>[] = [];
-  for (let d = 0; d <= WEEK; d++) {
-    times.forEach((m, k) => {
-      const at = new Date();
-      at.setDate(at.getDate() + d);
-      at.setHours(Math.floor(m / 60), m % 60, 0, 0);
-      if (at.getTime() < soon || at.getTime() > end) return;
-      list.push(nativeNote(d * 10 + k + 1, cardFor(pool, dayNumber(at), k), at, exact));
-    });
-  }
+  const list = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
   if (list.length) await LocalNotifications.schedule({ notifications: list });
   return list.length;
 }

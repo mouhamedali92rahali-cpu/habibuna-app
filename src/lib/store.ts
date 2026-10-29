@@ -6,7 +6,7 @@ export function load<T>(key: string, fallback: T): T {
 export function save(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* التخزين غير متاح */ }
 }
-export const defaultSettings: Settings = { perDay: 3, from: '09:00', to: '21:00', notifyOn: false };
+export const defaultSettings: Settings = { perDay: 3, from: '09:00', to: '21:00', notifyOn: false, popupOn: true };
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
