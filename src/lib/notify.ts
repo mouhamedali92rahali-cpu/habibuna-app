@@ -26,7 +26,7 @@ const short = (t: string) => (t.length > 160 ? t.slice(0, 157) + '…' : t);
 async function ensureChannel() {
   if (Capacitor.getPlatform() !== 'android') return;
   await LocalNotifications.deleteChannel({ id: 'cards' }).catch(() => {});
-  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'بطاقة في الأوقات التي تختارها', importance: 4, visibility: 1 });
+  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'ثلاث بطاقات كل يوم: 10:00 و15:00 و20:00', importance: 4, visibility: 1 });
 }
 
 /**

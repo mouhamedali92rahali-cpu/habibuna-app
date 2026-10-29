@@ -211,7 +211,7 @@ export default function App() {
             {feed.map((e) => <CardBlock key={e.c.id} c={e.c} n={e.n} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
             {feed.length === 0 && pool.length > 0 && (
               <div className="waiting">
-                <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك بطاقةً بطاقة في المواعيد التي تختارها.</p>
+                <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك ثلاث بطاقات كل يوم: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً.</p>
                 <b>البطاقة القادمة اليوم عند {fmt(times[0])}</b>
                 <small>ما تحفظه بـ ♡ تجده في «المفضلة» متى شئت.</small>
               </div>
