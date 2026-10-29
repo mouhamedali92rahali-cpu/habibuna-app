@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, cardFor, dayNumber, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { PhoneSettings, phoneMaker, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -50,7 +50,6 @@ function CardBlock({ c, n, fav, onFav, onShare }: { c: CardData; n: number; fav:
     );
   }
 
-const PAGE = 8;
 
 export default function App() {
   const [cards, setCards] = useState<CardData[] | null>(null);
@@ -61,7 +60,6 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>(() => ({ ...defaultSettings, ...load<Partial<Settings>>('settings', {}) }));
   const [hidden, setHidden] = useState<string[]>(() => load('hiddenChapters', []));
   const [filterOpen, setFilterOpen] = useState(false);
-  const [count, setCount] = useState(PAGE);
   const [open, setOpen] = useState<CardData | null>(null);
   const [toast, setToast] = useState('');
   const [planned, setPlanned] = useState<number | null>(null);
@@ -71,7 +69,6 @@ export default function App() {
   const [guide, setGuide] = useState(false);
   useEffect(() => { void phoneMaker().then(setMaker); }, []);
   const toastT = useRef<number | undefined>(undefined);
-  const sentinel = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     loadCards().then(setCards).catch(() => setErr(true));
@@ -91,29 +88,42 @@ export default function App() {
 
   useEffect(() => { save('favs', favs); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
-  useEffect(() => { save('hiddenChapters', hidden); setCount(PAGE); }, [hidden]);
+  useEffect(() => { save('hiddenChapters', hidden); }, [hidden]);
 
   const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
 
-  useEffect(() => {
-    if (!cards) return;
-    return schedule(settings, () => cards[Math.floor(Math.random() * cards.length)]);
-  }, [cards, settings]);
-
-  // البطاقات تباعًا بحسب الترتيب العشوائي المحفوظ، مع تجاوز الأنواع المخفيّة
-  const feed = useMemo(() => {
-    if (!deck) return [] as { c: CardData; n: number }[];
-    const L = deck.order.length;
-    const out: { c: CardData; n: number }[] = [];
-    for (let k = 0; k < L; k++) {
-      const e = byId.get(deck.order[(deck.pos + k) % L]);
-      if (e && !hidden.includes(e.c.chapter)) out.push(e);
-    }
-    return out;
-  }, [deck, byId, hidden]);
-
-  // الهاتف: جدولة إشعارات أسبوع قادم من الترتيب المحفوظ (بلا الأنواع المخفيّة)، وإعادتها عند كل فتح أو عودة للتطبيق
+  // ترتيب البطاقات المحفوظ بلا الأنواع المخفيّة؛ منه تُحسب بطاقات كل يوم (في التطبيق وفي الإشعارات)
   const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && !hidden.includes(c.chapter)), [deck?.order, byId, hidden]);
+
+  // الساعة الحالية، تُحدَّث كل دقيقة وعند العودة للتطبيق، لتظهر بطاقة الموعد حين يحين
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const t = window.setInterval(tick, 60_000);
+    const onVis = () => { if (document.visibilityState === 'visible') tick(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { window.clearInterval(t); document.removeEventListener('visibilitychange', onVis); };
+  }, []);
+
+  // بطاقات اليوم فقط: بطاقة الموعد الأول تظهر من بداية اليوم، والبقية حين يحين وقتها
+  const times = useMemo(() => slots(settings), [settings]);
+  const dayNo = dayNumber(now);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const feed = useMemo(() => {
+    if (pool.length === 0) return [] as { c: CardData; n: number }[];
+    return times
+      .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k, times.length).id) }))
+      .filter((x) => x.e && (x.k === 0 || x.m <= nowMin))
+      .map((x) => x.e!);
+  }, [pool, times, dayNo, nowMin, byId]);
+  const nextAt = times.find((m, k) => k > 0 && m > nowMin);
+
+  useEffect(() => {
+    if (pool.length === 0) return;
+    return schedule(settings, (k) => cardFor(pool, dayNumber(new Date()), k, slots(settings).length));
+  }, [pool, settings]);
+
+  // الهاتف: جدولة إشعارات أسبوع قادم بنفس بطاقات كل يوم، وإعادتها عند كل فتح أو عودة للتطبيق
   useEffect(() => {
     if (!isNative || pool.length === 0) return;
     const run = () => {
@@ -131,14 +141,6 @@ export default function App() {
     return listenTaps((id) => { const e = byId.get(id); if (e) setOpen(e.c); });
   }, [cards, byId]);
 
-  const shown = feed.slice(0, count);
-  useEffect(() => {
-    const el = sentinel.current;
-    if (!el || tab !== 'feed') return;
-    const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) setCount((c) => Math.min(c + PAGE, feed.length)); }, { rootMargin: '400px' });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [feed.length, tab, shown.length]);
 
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
   const doShare = async (c: CardData) => {
@@ -162,9 +164,10 @@ export default function App() {
         {tab === 'feed' && (
           <section className="page feed">
             <CardBack />
-            {shown.map((e) => <CardBlock key={e.c.id} c={e.c} n={e.n} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
-            {shown.length < feed.length && <div ref={sentinel} className="more">…</div>}
-            {feed.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
+            {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
+            {feed.map((e) => <CardBlock key={e.c.id} c={e.c} n={e.n} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
+            {feed.length > 0 && <p className="muted next">{nextAt !== undefined ? `البطاقة التالية اليوم عند ${fmt(nextAt)}` : 'تصلك بطاقة جديدة غدًا بإذن الله'}</p>}
+            {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
           </section>
         )}
 
@@ -213,7 +216,7 @@ export default function App() {
               {isNative && (
                 <button className="ghost" onClick={async () => {
                   if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات من إعدادات الهاتف أولًا'); return; }
-                  say((await testLater(feed[1]?.c ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. اخرج من التطبيق بزر الرجوع للرئيسية ولا تغلقه من قائمة التطبيقات');
+                  say((await testLater(cardFor(pool, dayNo + 1, 0, times.length) ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. اخرج من التطبيق بزر الرجوع للرئيسية ولا تغلقه من قائمة التطبيقات');
                 }}>تجربة إشعار بعد دقيقة</button>
               )}
               {isNative && (

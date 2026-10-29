@@ -107,16 +107,22 @@ export function slots(s: Settings): number[] {
 }
 export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
+/** رقم اليوم المحلي (يتغيّر عند منتصف الليل بتوقيت الهاتف) */
+export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
+
+/** بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق */
+export const cardFor = (pool: CardData[], day: number, k: number, perDay: number) => pool[(day * perDay + k) % pool.length];
+
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */
-export function schedule(s: Settings, pick: () => CardData | null): () => void {
+export function schedule(s: Settings, pick: (k: number) => CardData | null): () => void {
   if (!s.notifyOn || isNative) return () => {};
   const timers: number[] = [];
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-  for (const m of slots(s)) {
-    if (m <= nowMin) continue;
-    timers.push(window.setTimeout(() => { const c = pick(); if (c) void showCard(c); }, (m - nowMin) * 60_000));
-  }
+  slots(s).forEach((m, k) => {
+    if (m <= nowMin) return;
+    timers.push(window.setTimeout(() => { const c = pick(k); if (c) void showCard(c); }, (m - nowMin) * 60_000));
+  });
   return () => timers.forEach((t) => clearTimeout(t));
 }
 
@@ -146,8 +152,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
       at.setDate(at.getDate() + d);
       at.setHours(Math.floor(m / 60), m % 60, 0, 0);
       if (at.getTime() < soon || at.getTime() > end) return;
-      const day = Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
-      list.push(nativeNote(d * 10 + k + 1, pool[(day * times.length + k) % pool.length], at, exact));
+      list.push(nativeNote(d * 10 + k + 1, cardFor(pool, dayNumber(at), k, times.length), at, exact));
     });
   }
   if (list.length) await LocalNotifications.schedule({ notifications: list });
