@@ -22,6 +22,7 @@ export function CardFront({ card, n }: { card: CardData; n: number }) {
         <div className="src">
           <div>المصدر: {card.source}</div>
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
+          {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
         </div>
         <div className="chip"><b aria-hidden="true">{markOf(card.chapter)}</b> {card.chapter}</div>
       </div>

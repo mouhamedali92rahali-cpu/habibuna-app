@@ -89,6 +89,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5z"/><path d="M12 6.5v13"/></svg>
         <div id="source"></div>
         <div class="grade" id="grade"></div>
+        <div class="grade weak" id="shifa" hidden>ذكره القاضي عياض في الشفا</div>
       </div>
       <div class="chip" id="chip"></div>
     </div>
@@ -125,6 +126,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('source').textContent = 'المصدر: ' + c.source;
   $('grade').textContent = c.grade;
   if (c.weak) $('grade').classList.add('weak');
+  if (c.shifa) $('shifa').hidden = false;
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
   if (reminder) $('more').style.display = 'none';
   var send = function (what) {
