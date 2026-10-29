@@ -70,6 +70,9 @@ export default function App() {
   const [diag, setDiag] = useState<string[] | null>(null);
   const [maker, setMaker] = useState<Maker>('normal');
   const [guide, setGuide] = useState(false);
+  // صفحة الترحيب: تظهر أول مرة يُفتح فيها التطبيق، وتشرح البطاقات والإشعارات وإعدادات الهاتف
+  const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (load('welcomeSeen', false) ? 0 : 1));
+  const closeWelcome = () => { if (welcome === 2) save('guideSeen', true); setWelcome(0); save('welcomeSeen', true); };
   useEffect(() => { void phoneMaker().then(setMaker); }, []);
   const toastT = useRef<number | undefined>(undefined);
 
@@ -145,6 +148,12 @@ export default function App() {
   }, [cards, byId]);
 
 
+  const enableNotify = async () => {
+    if (!(await askPermission())) { say(isNative ? 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف' : notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return false; }
+    setSettings((s) => ({ ...s, notifyOn: true }));
+    return true;
+  };
+
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
   const doShare = async (c: CardData) => {
     const r = await shareCard(c);
@@ -215,6 +224,7 @@ export default function App() {
               }}>إشعار تجريبي</button>
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
               {maker !== 'normal' && <button className="linkbtn" onClick={() => setGuide(true)}>لا تصل الإشعارات والتطبيق مغلق؟ اضغط هنا</button>}
+              <button className="linkbtn" onClick={() => setWelcome(isNative ? 2 : 1)}>كيف تعمل الإشعارات؟</button>
               {isNative && (
                 <button className="ghost" onClick={async () => {
                   if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات من إعدادات الهاتف أولًا'); return; }
@@ -255,6 +265,56 @@ export default function App() {
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <CardBlock c={open} n={byId.get(open.id)?.n ?? 0} fav={favs.includes(open.id)} onFav={() => toggleFav(open.id)} onShare={() => doShare(open)} />
             <button className="ghost" onClick={() => setOpen(null)}>إغلاق</button>
+          </div>
+        </div>
+      )}
+      {welcome !== 0 && (
+        <div className="modal">
+          <div className="sheet guide welcome">
+            {welcome === 1 ? (
+              <>
+                <h2>مرحبًا بك في «حبيبنا»</h2>
+                <p>مواقف صغيرة موثّقة من السنة، تكشف لك عظمة شخصيته ﷺ وتقرّبك منه.</p>
+                <b>تصلك ثلاث بطاقات كل يوم:</b>
+                <ul>
+                  <li><b>{fmt(times[0])}</b> — من ملامحه ﷺ وحياته اليومية، كأنك تراه.</li>
+                  <li><b>{fmt(times[1])}</b> — موقف من مواقفه وأخلاقه.</li>
+                  <li><b>{fmt(times[2])}</b> — تذكير بالصلاة عليه ﷺ (ويوم الجمعة تذكير خاص).</li>
+                </ul>
+                <p className="muted small">تظهر كل بطاقة في التطبيق حين يحين وقتها. وما يعجبك احفظه بـ ♡ لتجده في «المفضلة»، وتحت كل بطاقة مصدر الحديث ودرجته.</p>
+                {settings.notifyOn ? (
+                  <button className="primary" onClick={() => (isNative ? setWelcome(2) : closeWelcome())}>{isNative ? 'التالي' : 'ابدأ'}</button>
+                ) : (
+                  <button className="primary" onClick={async () => { if (await enableNotify()) { if (isNative) setWelcome(2); else closeWelcome(); } }}>فعّل الإشعارات لتصلك البطاقات</button>
+                )}
+                {!settings.notifyOn && <button className="ghost" onClick={closeWelcome}>لاحقًا</button>}
+              </>
+            ) : (
+              <>
+                <h2>لتصلك البطاقات في وقتها</h2>
+                {maker !== 'normal' ? (
+                  <>
+                    <p className="muted small">هاتفك {maker === 'xiaomi' ? 'من شاومي، وهو' : 'من الهواتف التي'} يُوقف التطبيقات المغلقة ويمسح إشعاراتها. خطوتان مرة واحدة فقط:</p>
+                    <ol>
+                      <li><b>التشغيل التلقائي:</b> فعّله لتطبيق «حبيبنا».</li>
+                      <li><b>توفير البطارية:</b> اجعله «بلا قيود».</li>
+                    </ol>
+                    {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح «التشغيل التلقائي»</button>}
+                    <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات التطبيق (البطارية)</button>
+                  </>
+                ) : (
+                  <p className="muted small">الإشعارات مجدولة لأسبوع كامل، وتتجدّد كلما فتحت التطبيق، فتصلك ولو كان مغلقًا.</p>
+                )}
+                {exact === false && (
+                  <>
+                    <p className="muted small"><b>مواعيد دقيقة:</b> يؤخّر أندرويد الإشعارات قليلًا ما لم تسمح بـ«المنبّهات والتذكيرات».</p>
+                    <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); }}>السماح بالمواعيد الدقيقة</button>
+                  </>
+                )}
+                <p className="muted small"><b>لتغيير الإشعارات لاحقًا:</b> من «الإعدادات ⚙» في التطبيق تُوقفها أو تشغّلها وتجرّبها. ولتغيير صوتها أو طريقة ظهورها: إعدادات الهاتف ← التطبيقات ← «حبيبنا» ← الإشعارات.</p>
+                <button className="primary" onClick={closeWelcome}>ابدأ</button>
+              </>
+            )}
           </div>
         </div>
       )}

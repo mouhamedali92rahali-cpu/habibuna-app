@@ -167,3 +167,5 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .page.feed .waiting b{color:var(--emerald)}
 .page.feed .waiting small{color:var(--muted)}
 @media (prefers-color-scheme: dark){ .page.feed .waiting b{color:var(--gold)} }
+.sheet.welcome p{margin:0;line-height:1.8}
+.sheet.welcome ul{margin:0;padding-inline-start:20px;line-height:1.9}
