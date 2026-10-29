@@ -63,6 +63,13 @@ export async function diagnose(card: CardData): Promise<string[]> {
   await step('إشعار فوري', async () => { await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] }); return 'أُرسل'; });
   await step('إشعار بعد دقيقة', async () => (await testLater(card)) ?? 'جُدول (دقيق)');
   await step('المجدولة', async () => String((await LocalNotifications.getPending()).notifications.length));
+  await step('أقرب المواعيد', async () => {
+    const at = (await LocalNotifications.getPending()).notifications
+      .map((n) => n.schedule?.at ? new Date(n.schedule.at) : null)
+      .filter((d): d is Date => !!d && d.getTime() > Date.now())
+      .sort((a, b) => a.getTime() - b.getTime()).slice(0, 4);
+    return at.map((d) => `${d.getDate()}/${d.getMonth() + 1} ${fmt(d.getHours() * 60 + d.getMinutes())}`).join('، ') || 'لا شيء';
+  });
   return out;
 }
 
