@@ -199,7 +199,7 @@ export default function App() {
             <h1>الإعدادات</h1>
             <div className="panel">
               <label className="row">
-                <span><b>إشعارات البطاقات</b><small>بطاقة تصلك في أوقات تحددها</small></span>
+                <span><b>إشعارات البطاقات</b><small>ثلاث بطاقات تصلك كل يوم</small></span>
                 <input type="checkbox" checked={settings.notifyOn} onChange={async (e) => {
                   const on = e.target.checked;
                   if (on && !(await askPermission())) { say(isNative ? 'لم يُسمح بالإشعارات. فعّلها من إعدادات الهاتف' : notifySupported() ? 'لم يُسمح بالإشعارات من المتصفح' : 'المتصفح لا يدعم الإشعارات'); return; }
@@ -208,9 +208,7 @@ export default function App() {
                   if (on && maker !== 'normal' && !load('guideSeen', false)) { setGuide(true); save('guideSeen', true); }
                 }} />
               </label>
-              <label className="row"><span><b>من الساعة</b></span><input type="time" value={settings.from} onChange={(e) => setSettings({ ...settings, from: e.target.value })} /></label>
-              <label className="row"><span><b>إلى الساعة</b><small>خارج هذه الفترة لا تصلك إشعارات</small></span><input type="time" value={settings.to} onChange={(e) => setSettings({ ...settings, to: e.target.value })} /></label>
-              <p className="muted small">الأوقات المتوقعة: {slots(settings).map(fmt).join(' · ')}</p>
+              <p className="muted small">تصلك ثلاث بطاقات كل يوم: {slots().map(fmt).join(' · ')}</p>
               <button className="ghost" onClick={async () => {
                 if (!(await askPermission())) { say(isNative ? 'فعّل الإشعارات من إعدادات الهاتف أولًا' : 'فعّل الإشعارات من المتصفح أولًا'); return; }
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي');
@@ -238,7 +236,7 @@ export default function App() {
             </div>
             <div className="panel">
               <b>عن التطبيق</b>
-              <p className="muted">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ. عدد البطاقات: {cards.length}.</p>
+              <p className="muted">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ. عدد البطاقات: {cards.filter((c) => c.chapter !== REMINDER).length}.</p>
             </div>
           </section>
         )}

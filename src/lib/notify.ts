@@ -97,13 +97,10 @@ export async function showCard(card: CardData): Promise<string | null> {
   return null;
 }
 
-const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-
-/** أوقات الإشعارات موزعة بالتساوي داخل النافذة الزمنية */
-export function slots(s: Settings): number[] {
-  const a = toMin(s.from), b = Math.max(toMin(s.to), a + 30);
-  if (s.perDay <= 1) return [Math.round((a + b) / 2)];
-  return Array.from({ length: s.perDay }, (_, i) => Math.round(a + ((b - a) * i) / (s.perDay - 1)));
+/** أوقات ثابتة للبطاقات الثلاث (قرار المستخدم): العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً */
+const TIMES = [10 * 60, 15 * 60, 20 * 60];
+export function slots(_s?: Settings): number[] {
+  return TIMES;
 }
 export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
