@@ -8,6 +8,8 @@ import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
 
 type Tab = 'feed' | 'favs' | 'settings';
+/** عدد البطاقات محدود، فالحد الأقصى ثلاث في اليوم حتى لا تتكرّر سريعًا */
+const MAX_PER_DAY = 3;
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'feed', label: 'البطاقات', icon: '✦' }, { id: 'favs', label: 'المفضلة', icon: '♡' }, { id: 'settings', label: 'الإعدادات', icon: '⚙' },
 ];
@@ -57,7 +59,10 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('feed');
   const [deck, setDeck] = useState<Deck | null>(() => load<Deck | null>('deck', null));
   const [favs, setFavs] = useState<string[]>(() => load('favs', []));
-  const [settings, setSettings] = useState<Settings>(() => ({ ...defaultSettings, ...load<Partial<Settings>>('settings', {}) }));
+  const [settings, setSettings] = useState<Settings>(() => {
+    const s = { ...defaultSettings, ...load<Partial<Settings>>('settings', {}) };
+    return { ...s, perDay: Math.min(s.perDay, MAX_PER_DAY) };
+  });
   const [hidden, setHidden] = useState<string[]>(() => load('hiddenChapters', []));
   const [filterOpen, setFilterOpen] = useState(false);
   const [open, setOpen] = useState<CardData | null>(null);
@@ -113,10 +118,10 @@ export default function App() {
     if (pool.length === 0) return [] as { c: CardData; n: number }[];
     return times
       .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k, times.length).id) }))
-      .filter((x) => x.e && (x.k === 0 || x.m <= nowMin))
+      .filter((x) => x.e && x.m <= nowMin)
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId]);
-  const nextAt = times.find((m, k) => k > 0 && m > nowMin);
+  const nextAt = times.find((m) => m > nowMin);
 
   useEffect(() => {
     if (pool.length === 0) return;
@@ -166,7 +171,14 @@ export default function App() {
             <CardBack />
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
             {feed.map((e) => <CardBlock key={e.c.id} c={e.c} n={e.n} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
-            {feed.length > 0 && <p className="muted next">{nextAt !== undefined ? `البطاقة التالية اليوم عند ${fmt(nextAt)}` : 'تصلك بطاقة جديدة غدًا بإذن الله'}</p>}
+            {feed.length === 0 && pool.length > 0 && (
+              <div className="waiting">
+                <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك بطاقةً بطاقة في المواعيد التي تختارها.</p>
+                <b>البطاقة القادمة اليوم عند {fmt(times[0])}</b>
+                <small>ما تحفظه بـ ♡ تجده في «المفضلة» متى شئت.</small>
+              </div>
+            )}
+            {feed.length > 0 && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
           </section>
         )}
@@ -201,7 +213,7 @@ export default function App() {
               <label className="row">
                 <span><b>عدد البطاقات في اليوم</b></span>
                 <select value={settings.perDay} onChange={(e) => setSettings({ ...settings, perDay: Number(e.target.value) })}>
-                  {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
+                  {Array.from({ length: MAX_PER_DAY }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </label>
               <label className="row"><span><b>من الساعة</b></span><input type="time" value={settings.from} onChange={(e) => setSettings({ ...settings, from: e.target.value })} /></label>

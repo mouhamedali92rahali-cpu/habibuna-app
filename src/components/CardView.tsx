@@ -36,7 +36,7 @@ export function CardBack() {
         <div className="brand">حبيبنا</div>
         <p className="tag">مواقف صغيرة ..<br />تكشف لك عظمة شخصيته</p>
         <Divider />
-        <div className="hint">مرّر للأسفل لترى بطاقة اليوم ↓</div>
+        <div className="hint">مرّر للأسفل ↓</div>
       </div>
     </div>
   );
