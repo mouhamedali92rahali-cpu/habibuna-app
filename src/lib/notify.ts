@@ -110,8 +110,22 @@ export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')
 /** رقم اليوم المحلي (يتغيّر عند منتصف الليل بتوقيت الهاتف) */
 export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
 
-/** بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق */
-export const cardFor = (pool: CardData[], day: number, k: number, perDay: number) => pool[(day * perDay + k) % pool.length];
+/** أبواب «يتخيّله فيها»: أول بطاقة كل يوم منها (قرار المستخدم) */
+const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
+
+/**
+ * بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق.
+ * الموعد الأول من الملامح والحياة اليومية، والباقي من الأبواب الأخرى؛
+ * ومع بطاقة واحدة في اليوم: يوم من الملامح ويوم من غيرها.
+ */
+export function cardFor(pool: CardData[], day: number, k: number, perDay: number): CardData {
+  const feat = pool.filter((c) => FEATURED.has(c.chapter));
+  const rest = pool.filter((c) => !FEATURED.has(c.chapter));
+  if (feat.length === 0 || rest.length === 0) return pool[(day * perDay + k) % pool.length];
+  if (perDay <= 1) return day % 2 === 0 ? feat[(day / 2) % feat.length] : rest[((day - 1) / 2) % rest.length];
+  if (k === 0) return feat[day % feat.length];
+  return rest[(day * (perDay - 1) + k - 1) % rest.length];
+}
 
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */
 export function schedule(s: Settings, pick: (k: number) => CardData | null): () => void {
