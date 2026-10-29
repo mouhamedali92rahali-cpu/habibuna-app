@@ -21,7 +21,7 @@ export function CardFront({ card, n }: { card: CardData; n: number }) {
         <Divider />
         <div className="src">
           <div>المصدر: {card.source}</div>
-          <div className="grade">{card.grade}</div>
+          <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
         </div>
         <div className="chip"><b aria-hidden="true">{markOf(card.chapter)}</b> {card.chapter}</div>
       </div>

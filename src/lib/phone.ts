@@ -33,7 +33,7 @@ export async function phoneMaker(): Promise<Maker> {
 
 /** بيانات نافذة البطاقة (public/popup.html): رقم الموعد k والرقم المعروض والبطاقة */
 export const popupJson = (card: CardData, k: number, n: number) =>
-  JSON.stringify({ slot: k, n, card: { id: card.id, chapter: card.chapter, title: card.title, text: card.text, source: card.source, grade: card.grade, theme: card.theme, dua: !!card.dua } });
+  JSON.stringify({ slot: k, n, card: { id: card.id, chapter: card.chapter, title: card.title, text: card.text, source: card.source, grade: card.grade, theme: card.theme, dua: !!card.dua, weak: !!card.weak } });
 
 /** جدولة نوافذ البطاقات على الشاشة لنفس مواعيد الإشعارات؛ قائمة فارغة تُلغيها */
 export async function schedulePopups(entries: WeekSlot[], num: (id: string) => number): Promise<void> {

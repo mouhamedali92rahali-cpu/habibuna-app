@@ -50,6 +50,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .src svg{color:var(--frame);margin-bottom:2px}
 .t-ivory .src svg{color:#8a6a22}
 .grade{opacity:.7;font-size:.76rem}
+.grade.weak{opacity:.6;font-size:.66rem;font-weight:300;font-style:italic;line-height:1.5}
 .chip{margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:16px;background:var(--soft);color:var(--frame);font-size:.88rem;line-height:1.6}
 .t-ivory .chip{color:#6e5518}
 .actions{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,380px);animation:rise .7s .45s ease-out both}
@@ -123,6 +124,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('text').textContent = c.text;
   $('source').textContent = 'المصدر: ' + c.source;
   $('grade').textContent = c.grade;
+  if (c.weak) $('grade').classList.add('weak');
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
   if (reminder) $('more').style.display = 'none';
   var send = function (what) {

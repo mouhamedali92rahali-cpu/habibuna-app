@@ -44,6 +44,7 @@ main{flex:1;overflow-y:auto;padding:0 16px 96px}
 .src{font-size:.82rem;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink2);opacity:.9}
 .src svg{color:var(--frame)}
 .grade{opacity:.75;font-size:.78rem}
+.grade.weak{opacity:.6;font-size:.68rem;font-weight:300;font-style:italic;line-height:1.5}
 .chip{margin-top:10px;padding:6px 16px;border-radius:99px;background:color-mix(in srgb,var(--frame) 14%,transparent);font-size:.82rem;color:var(--frame)}
 .t-ivory .chip{color:#6e5518}
 .logo{position:relative;width:150px;height:170px;color:var(--gold);display:grid;place-items:center}
