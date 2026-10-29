@@ -119,7 +119,9 @@ export const PER_DAY = 3;
  * الأولى من الملامح والحياة اليومية، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
  */
 export function cardFor(pool: CardData[], day: number, k: number): CardData {
-  const reminders = pool.filter((c) => c.chapter === REMINDER);
+  // يوم 0 (1970/1/1) خميس، فالجمعة حين day % 7 === 1: تذكير الجمعة، وفي غيرها تتبدّل بقية التذكيرات
+  const friday = day % 7 === 1;
+  const reminders = pool.filter((c) => c.chapter === REMINDER && !!c.friday === friday);
   if (k === 2 && reminders.length) return reminders[day % reminders.length];
   const body = pool.filter((c) => c.chapter !== REMINDER);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
