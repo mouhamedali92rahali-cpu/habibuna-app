@@ -175,3 +175,9 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .page.feed .past summary{cursor:pointer;font-family:var(--font-title);font-size:1.1rem;color:var(--frame);text-align:center;list-style-position:inside}
 .page.feed .past[open] summary{margin-bottom:6px}
 .page.feed .pastday h3{font-family:var(--font-ui);font-size:.9rem;color:var(--gold);margin:12px 0 8px}
+.page.feed .offer{align-self:stretch;background:var(--paper);border:1px solid var(--gold);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;line-height:1.8}
+.page.feed .offer b{font-family:var(--font-title);font-size:1.1rem;color:var(--frame)}
+.page.feed .offer p{margin:0}
+.page.feed .offer .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sheet .safe{background:color-mix(in srgb,var(--frame) 7%,transparent);border-radius:12px;padding:10px 12px;font-size:.88rem;line-height:1.8}
+.sheet .safe p{margin:0}
