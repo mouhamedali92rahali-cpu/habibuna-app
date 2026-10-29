@@ -111,6 +111,8 @@ export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezone
 const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
 /** باب بطاقات التذكير بالصلاة على النبي ﷺ: البطاقة الثالثة كل يوم، ولا يُخفى */
 export const REMINDER = 'الصلاة عليه';
+/** يوما بطاقات الأدعية: day % 7 (يوم 0 خميس، فالاثنين 4) */
+const DUA_DAYS = [4, 0];
 /** ثلاث بطاقات ثابتة في اليوم (قرار المستخدم) */
 export const PER_DAY = 3;
 
@@ -123,7 +125,11 @@ export function cardFor(pool: CardData[], day: number, k: number): CardData {
   const friday = day % 7 === 1;
   const reminders = pool.filter((c) => c.chapter === REMINDER && !!c.friday === friday);
   if (k === 2 && reminders.length) return reminders[day % reminders.length];
-  const body = pool.filter((c) => c.chapter !== REMINDER);
+  // بطاقات الأدعية متباعدة (قرار المستخدم): مرتين في الأسبوع فقط، يومي الاثنين والخميس في موعد الظهر
+  const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER);
+  const duaDay = DUA_DAYS.indexOf(day % 7);
+  if (k === 1 && duaDay >= 0 && duas.length) return duas[(Math.floor(day / 7) * DUA_DAYS.length + duaDay) % duas.length];
+  const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
   if (feat.length === 0 || rest.length === 0) return body[(day * PER_DAY + k) % body.length];
