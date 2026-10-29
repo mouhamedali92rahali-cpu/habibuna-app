@@ -10,13 +10,13 @@ const MARK: Record<string, string> = {
 };
 export const markOf = (chapter: string) => MARK[chapter] ?? '✦';
 
-export function CardFront({ card, n }: { card: CardData; n: number }) {
+export function CardFront({ card }: { card: CardData }) {
   return (
     <div className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
       <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
       <div className="inner">
         <div className="kicker">{card.chapter === 'الصلاة عليه' ? 'تذكير' : 'من مواقف النبي ﷺ'}</div>
-        <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : n}</span></div>
+        <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : '✦'}</span></div>
         <p className="ctext"><span>{card.text}</span></p>
         <Divider />
         <div className="src">

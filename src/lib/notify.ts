@@ -125,7 +125,7 @@ export const PER_DAY = 3;
 
 /**
  * بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق.
- * الأولى من الملامح والحياة اليومية، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
+ * الأولى من الملامح والحياة اليومية يومًا بعد يوم، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
  */
 export function cardFor(pool: CardData[], day: number, k: number): CardData {
   // يوم 0 (1970/1/1) خميس، فالجمعة حين day % 7 === 1: تذكير الجمعة، وفي غيرها تتبدّل بقية التذكيرات
@@ -140,7 +140,11 @@ export function cardFor(pool: CardData[], day: number, k: number): CardData {
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
   if (feat.length === 0 || rest.length === 0) return body[(day * PER_DAY + k) % body.length];
-  return k === 0 ? feat[day % feat.length] : rest[day % rest.length];
+  // بطاقة الملامح والحياة اليومية يومًا بعد يوم (قرار المستخدم) لتبطئ تكرارها:
+  // في كل يومين ثلاث بطاقات من بقية الأبواب، فيُستهلك البابان بالتوازي تقريبًا
+  const pair = Math.floor(day / 2);
+  if (day % 2 === 0) return k === 0 ? feat[pair % feat.length] : rest[(pair * 3) % rest.length];
+  return rest[(pair * 3 + 1 + k) % rest.length];
 }
 
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */

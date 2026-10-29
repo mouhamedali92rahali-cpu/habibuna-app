@@ -11,12 +11,12 @@ type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'feed', label: 'البطاقات', icon: '✦' }, { id: 'favs', label: 'المفضلة', icon: '♡' }, { id: 'settings', label: 'الإعدادات', icon: '⚙' },
 ];
-function CardBlock({ c, n, fav, onFav, onShare }: { c: CardData; n: number; fav: boolean; onFav: () => void; onShare: () => void }) {
+function CardBlock({ c, fav, onFav, onShare }: { c: CardData; fav: boolean; onFav: () => void; onShare: () => void }) {
     const [showSrc, setShowSrc] = useState(false);
     const [showSharh, setShowSharh] = useState(false);
     return (
       <article className="block">
-        <CardFront card={c} n={n} />
+        <CardFront card={c} />
         <div className="under">
           <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
             {showSrc ? 'إخفاء مصدر الحديث' : 'إظهار مصدر الحديث'}
@@ -72,6 +72,9 @@ export default function App() {
   const [guide, setGuide] = useState(false);
   // صفحة الترحيب: تظهر أول مرة يُفتح فيها التطبيق، وتشرح البطاقات والإشعارات وإعدادات الهاتف
   // ومن رأى الترحيب قبل نافذة البطاقة (النسخة 2.3) يرى خطوة الأذونات مرة واحدة ليعرف الميزة
+  // الغلاف الكبير في أول فتح فقط، وبعده يبدأ التطبيق من بطاقات اليوم
+  const [showCover] = useState(() => !load('coverSeen', false));
+  useEffect(() => { save('coverSeen', true); }, []);
   const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (!load('welcomeSeen', false) ? 1 : isNative && !load('popupIntro', false) ? 2 : 0));
   const closeWelcome = () => { if (welcome === 2) save('guideSeen', true); setWelcome(0); save('welcomeSeen', true); save('popupIntro', true); };
   // نافذة البطاقة على الشاشة: إذن «الظهور فوق التطبيقات»، ومعاينتها على الويب في إطار
@@ -128,6 +131,15 @@ export default function App() {
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId]);
   const nextAt = times.find((m) => m > nowMin);
+  // بطاقات الأيام السبعة الماضية (قرار المستخدم): حتى لا تضيع بطاقة فاتت صاحبها
+  const past = useMemo(() => {
+    if (pool.length === 0) return [] as { label: string; cards: CardData[] }[];
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now.getTime() - (i + 1) * 86_400_000);
+      const label = i === 0 ? 'أمس' : d.toLocaleDateString('ar', { weekday: 'long' });
+      return { label, cards: times.map((_m, k) => cardFor(pool, dayNo - i - 1, k)) };
+    });
+  }, [pool, times, dayNo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (pool.length === 0) return;
@@ -206,9 +218,9 @@ export default function App() {
       <main>
         {tab === 'feed' && (
           <section className="page feed">
-            <CardBack />
+            {showCover && <CardBack />}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
-            {feed.map((e) => <CardBlock key={e.c.id} c={e.c} n={e.n} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
+            {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
             {feed.length === 0 && pool.length > 0 && (
               <div className="waiting">
                 <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك ثلاث بطاقات كل يوم: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً.</p>
@@ -218,6 +230,21 @@ export default function App() {
             )}
             {feed.length > 0 && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
+            {past.length > 0 && (
+              <details className="past">
+                <summary>بطاقات الأيام الماضية</summary>
+                {past.map((g) => (
+                  <div key={g.label} className="pastday">
+                    <h3>{g.label}</h3>
+                    <ul className="list">
+                      {g.cards.map((c) => (
+                        <li key={c.id}><button onClick={() => setOpen(c)}><b><i aria-hidden="true">{markOf(c.chapter)}</i> {c.chapter === REMINDER ? 'تذكير' : c.title}</b><span>{c.text}</span></button></li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </details>
+            )}
           </section>
         )}
 
@@ -307,7 +334,7 @@ export default function App() {
       {open && (
         <div className="modal" onClick={() => setOpen(null)}>
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <CardBlock c={open} n={byId.get(open.id)?.n ?? 0} fav={favs.includes(open.id)} onFav={() => toggleFav(open.id)} onShare={() => doShare(open)} />
+            <CardBlock c={open} fav={favs.includes(open.id)} onFav={() => toggleFav(open.id)} onShare={() => doShare(open)} />
             <button className="ghost" onClick={() => setOpen(null)}>إغلاق</button>
           </div>
         </div>
@@ -321,7 +348,7 @@ export default function App() {
                 <p>مواقف صغيرة موثّقة من السنة، تكشف لك عظمة شخصيته ﷺ وتقرّبك منه.</p>
                 <b>تصلك ثلاث بطاقات كل يوم:</b>
                 <ul>
-                  <li><b>{fmt(times[0])}</b> — من ملامحه ﷺ وحياته اليومية، كأنك تراه.</li>
+                  <li><b>{fmt(times[0])}</b> — يومًا من ملامحه ﷺ وحياته اليومية كأنك تراه، ويومًا من مواقفه.</li>
                   <li><b>{fmt(times[1])}</b> — موقف من مواقفه وأخلاقه.</li>
                   <li><b>{fmt(times[2])}</b> — تذكير بالصلاة عليه ﷺ (ويوم الجمعة تذكير خاص).</li>
                 </ul>

@@ -171,3 +171,7 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .sheet.welcome p{margin:0;line-height:1.8}
 .sheet.welcome ul{margin:0;padding-inline-start:20px;line-height:1.9}
 .popframe{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:40;background:transparent;color-scheme:normal}
+.page.feed .past{align-self:stretch;margin-top:8px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 16px}
+.page.feed .past summary{cursor:pointer;font-family:var(--font-title);font-size:1.1rem;color:var(--frame);text-align:center;list-style-position:inside}
+.page.feed .past[open] summary{margin-bottom:6px}
+.page.feed .pastday h3{font-family:var(--font-ui);font-size:.9rem;color:var(--gold);margin:12px 0 8px}
