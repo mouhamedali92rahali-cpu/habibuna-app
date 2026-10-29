@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, cardFor, dayNumber, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, cardFor, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { PhoneSettings, phoneMaker, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
 
 type Tab = 'feed' | 'favs' | 'settings';
-/** عدد البطاقات محدود، فالحد الأقصى ثلاث في اليوم حتى لا تتكرّر سريعًا */
-const MAX_PER_DAY = 3;
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'feed', label: 'البطاقات', icon: '✦' }, { id: 'favs', label: 'المفضلة', icon: '♡' }, { id: 'settings', label: 'الإعدادات', icon: '⚙' },
 ];
@@ -61,7 +59,7 @@ export default function App() {
   const [favs, setFavs] = useState<string[]>(() => load('favs', []));
   const [settings, setSettings] = useState<Settings>(() => {
     const s = { ...defaultSettings, ...load<Partial<Settings>>('settings', {}) };
-    return { ...s, perDay: Math.min(s.perDay, MAX_PER_DAY) };
+    return { ...s, perDay: PER_DAY };
   });
   const [hidden, setHidden] = useState<string[]>(() => load('hiddenChapters', []));
   const [filterOpen, setFilterOpen] = useState(false);
@@ -81,7 +79,7 @@ export default function App() {
 
   const ids = useMemo(() => (cards ?? []).map((c) => c.id), [cards]);
   const byId = useMemo(() => new Map((cards ?? []).map((c, i) => [c.id, { c, n: i + 1 }])), [cards]);
-  const chapters = useMemo(() => [...new Set((cards ?? []).map((c) => c.chapter))], [cards]);
+  const chapters = useMemo(() => [...new Set((cards ?? []).map((c) => c.chapter))].filter((ch) => ch !== REMINDER), [cards]);
 
   useEffect(() => {
     if (!cards) return;
@@ -98,7 +96,7 @@ export default function App() {
   const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
 
   // ترتيب البطاقات المحفوظ بلا الأنواع المخفيّة؛ منه تُحسب بطاقات كل يوم (في التطبيق وفي الإشعارات)
-  const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && !hidden.includes(c.chapter)), [deck?.order, byId, hidden]);
+  const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && (c.chapter === REMINDER || !hidden.includes(c.chapter))), [deck?.order, byId, hidden]);
 
   // الساعة الحالية، تُحدَّث كل دقيقة وعند العودة للتطبيق، لتظهر بطاقة الموعد حين يحين
   const [now, setNow] = useState(() => new Date());
@@ -117,7 +115,7 @@ export default function App() {
   const feed = useMemo(() => {
     if (pool.length === 0) return [] as { c: CardData; n: number }[];
     return times
-      .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k, times.length).id) }))
+      .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k).id) }))
       .filter((x) => x.e && x.m <= nowMin)
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId]);
@@ -125,7 +123,7 @@ export default function App() {
 
   useEffect(() => {
     if (pool.length === 0) return;
-    return schedule(settings, (k) => cardFor(pool, dayNumber(new Date()), k, slots(settings).length));
+    return schedule(settings, (k) => cardFor(pool, dayNumber(new Date()), k));
   }, [pool, settings]);
 
   // الهاتف: جدولة إشعارات أسبوع قادم بنفس بطاقات كل يوم، وإعادتها عند كل فتح أو عودة للتطبيق
@@ -210,12 +208,6 @@ export default function App() {
                   if (on && maker !== 'normal' && !load('guideSeen', false)) { setGuide(true); save('guideSeen', true); }
                 }} />
               </label>
-              <label className="row">
-                <span><b>عدد البطاقات في اليوم</b></span>
-                <select value={settings.perDay} onChange={(e) => setSettings({ ...settings, perDay: Number(e.target.value) })}>
-                  {Array.from({ length: MAX_PER_DAY }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </label>
               <label className="row"><span><b>من الساعة</b></span><input type="time" value={settings.from} onChange={(e) => setSettings({ ...settings, from: e.target.value })} /></label>
               <label className="row"><span><b>إلى الساعة</b><small>خارج هذه الفترة لا تصلك إشعارات</small></span><input type="time" value={settings.to} onChange={(e) => setSettings({ ...settings, to: e.target.value })} /></label>
               <p className="muted small">الأوقات المتوقعة: {slots(settings).map(fmt).join(' · ')}</p>
@@ -228,7 +220,7 @@ export default function App() {
               {isNative && (
                 <button className="ghost" onClick={async () => {
                   if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات من إعدادات الهاتف أولًا'); return; }
-                  say((await testLater(cardFor(pool, dayNo + 1, 0, times.length) ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. اخرج من التطبيق بزر الرجوع للرئيسية ولا تغلقه من قائمة التطبيقات');
+                  say((await testLater(cardFor(pool, dayNo + 1, 0) ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. اخرج من التطبيق بزر الرجوع للرئيسية ولا تغلقه من قائمة التطبيقات');
                 }}>تجربة إشعار بعد دقيقة</button>
               )}
               {isNative && (
@@ -246,7 +238,7 @@ export default function App() {
             </div>
             <div className="panel">
               <b>عن التطبيق</b>
-              <p className="muted">«حبيبنا» — مواقف صغيرة موثّقة من السنة الصحيحة، تكشف لك عظمة شخصية النبي ﷺ. عدد البطاقات: {cards.length}.</p>
+              <p className="muted">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ. عدد البطاقات: {cards.length}.</p>
             </div>
           </section>
         )}

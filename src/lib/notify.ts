@@ -110,21 +110,25 @@ export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')
 /** رقم اليوم المحلي (يتغيّر عند منتصف الليل بتوقيت الهاتف) */
 export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
 
-/** أبواب «يتخيّله فيها»: أول بطاقة كل يوم منها (قرار المستخدم) */
+/** أبواب «يتخيّله فيها»: البطاقة الأولى كل يوم منها (قرار المستخدم) */
 const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
+/** باب بطاقات التذكير بالصلاة على النبي ﷺ: البطاقة الثالثة كل يوم، ولا يُخفى */
+export const REMINDER = 'الصلاة عليه';
+/** ثلاث بطاقات ثابتة في اليوم (قرار المستخدم) */
+export const PER_DAY = 3;
 
 /**
  * بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق.
- * الموعد الأول من الملامح والحياة اليومية، والباقي من الأبواب الأخرى؛
- * ومع بطاقة واحدة في اليوم: يوم من الملامح ويوم من غيرها.
+ * الأولى من الملامح والحياة اليومية، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
  */
-export function cardFor(pool: CardData[], day: number, k: number, perDay: number): CardData {
-  const feat = pool.filter((c) => FEATURED.has(c.chapter));
-  const rest = pool.filter((c) => !FEATURED.has(c.chapter));
-  if (feat.length === 0 || rest.length === 0) return pool[(day * perDay + k) % pool.length];
-  if (perDay <= 1) return day % 2 === 0 ? feat[(day / 2) % feat.length] : rest[((day - 1) / 2) % rest.length];
-  if (k === 0) return feat[day % feat.length];
-  return rest[(day * (perDay - 1) + k - 1) % rest.length];
+export function cardFor(pool: CardData[], day: number, k: number): CardData {
+  const reminders = pool.filter((c) => c.chapter === REMINDER);
+  if (k === 2 && reminders.length) return reminders[day % reminders.length];
+  const body = pool.filter((c) => c.chapter !== REMINDER);
+  const feat = body.filter((c) => FEATURED.has(c.chapter));
+  const rest = body.filter((c) => !FEATURED.has(c.chapter));
+  if (feat.length === 0 || rest.length === 0) return body[(day * PER_DAY + k) % body.length];
+  return k === 0 ? feat[day % feat.length] : rest[day % rest.length];
 }
 
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */
@@ -166,7 +170,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
       at.setDate(at.getDate() + d);
       at.setHours(Math.floor(m / 60), m % 60, 0, 0);
       if (at.getTime() < soon || at.getTime() > end) return;
-      list.push(nativeNote(d * 10 + k + 1, cardFor(pool, dayNumber(at), k, times.length), at, exact));
+      list.push(nativeNote(d * 10 + k + 1, cardFor(pool, dayNumber(at), k), at, exact));
     });
   }
   if (list.length) await LocalNotifications.schedule({ notifications: list });

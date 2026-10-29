@@ -6,7 +6,7 @@ const MARK: Record<string, string> = {
   'تعامله مع الخدم': '✦', 'رحمته بالأطفال': '✿', 'كرمه': '❂', 'رحمته بغير المسلمين': '☪', 'حبه لأمته': '♡', 'رحمته بأعدائه': '❋',
   'محبة الصحابة له': '❤', 'شجاعته': '⚔', 'حلمه ويُسره': '☘', 'رفقه وتعليمه': '✧', 'مع أهله': '⌂',
   'زهده': '◇', 'عبادته': '☾', 'رحمته بالحيوان': '✾', 'وفاؤه': '❁', 'صبره': '✥', 'دعاؤه لأصحابه': '✺',
-  'رحمته ورأفته': '❦', 'حياته اليومية': '◎',
+  'رحمته ورأفته': '❦', 'حياته اليومية': '◎', 'الصلاة عليه': '❉',
 };
 export const markOf = (chapter: string) => MARK[chapter] ?? '✦';
 
@@ -15,8 +15,8 @@ export function CardFront({ card, n }: { card: CardData; n: number }) {
     <div className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
       <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
       <div className="inner">
-        <div className="kicker">من مواقف النبي ﷺ</div>
-        <div className="num"><span>{n}</span></div>
+        <div className="kicker">{card.chapter === 'الصلاة عليه' ? 'تذكير' : 'من مواقف النبي ﷺ'}</div>
+        <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : n}</span></div>
         <p className="ctext"><span>{card.text}</span></p>
         <Divider />
         <div className="src">
