@@ -404,10 +404,10 @@ export default function App() {
             ) : maker !== 'normal' ? (
               <>
                 <h2>خطوة أخيرة خاصة بهاتفك</h2>
-                <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح أمرين، مرةً واحدة فقط:</p>
+                <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح ما يلي، مرةً واحدة فقط:</p>
                 <ol>
-                  <li><Sys k="autostart" />: فعّله.</li>
                   <li><Sys k="battery" />: اختر <Sys k="noRestrict" />.</li>
+                  <li><Sys k="autostart" />: فعّله إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
                 </ol>
                 <div className="safe">
                   <p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p>
@@ -429,10 +429,10 @@ export default function App() {
         <div className="modal" onClick={() => setGuide(false)}>
           <div className="sheet guide" onClick={(e) => e.stopPropagation()}>
             <h2>لتصلك البطاقات وإن كان التطبيق مغلقًا</h2>
-            <p className="muted small">يوقف هاتفك التطبيقات المغلقة ويمسح مواعيدها توفيرًا للبطارية. يكفي أن تغيّر أمرين، مرةً واحدة فقط:</p>
+            <p className="muted small">يوقف هاتفك التطبيقات المغلقة ويمسح مواعيدها توفيرًا للبطارية. يكفي أن تغيّر ما يلي، مرةً واحدة فقط:</p>
             <ol>
-              <li><Sys k="autostart" />: فعّله لـ«حبيبنا».</li>
               <li><Sys k="battery" />: اختر <Sys k="noRestrict" /> لـ«حبيبنا».</li>
+              <li><Sys k="autostart" />: فعّله لـ«حبيبنا» إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
             </ol>
             {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
             <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>

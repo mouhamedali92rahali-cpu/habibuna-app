@@ -3,7 +3,7 @@
 // الفرنسية: Démarrage automatique و«Économiseur de batterie / Pas de restrictions» من دليل Tchap الحكومي ومجتمع شاومي،
 // و«Superposition sur d'autres applis» من أدلة Pixel ومنتدى شاومي، و«Alarmes et rappels» من وثائق Android.
 // battery وnoRestrict مؤكّدة من لقطة هاتف المستخدم (Xiaomi 15، HyperOS، 2026-10-30): «Puissance» ثم «Pas de restriction» بالمفرد.
-// bgPopup مؤكّد من لقطة «Autres autorisations» في هاتف المستخدم. autostart بالفرنسية لم يُرَ بعد في هاتفه.
+// bgPopup مؤكّد من لقطة «Autres autorisations» في هاتف المستخدم. autostart غير موجود في HyperOS الحديث (هاتفه)، ويبقى للهواتف الأقدم.
 type Key = 'autostart' | 'battery' | 'noRestrict' | 'overlay' | 'bgPopup' | 'alarms' | 'allow';
 const NAMES: Record<Key, { ar: string; fr: string; en: string }> = {
   autostart: { ar: 'التشغيل التلقائي', fr: 'Démarrage automatique', en: 'Autostart' },
