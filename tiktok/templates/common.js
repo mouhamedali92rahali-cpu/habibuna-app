@@ -126,13 +126,28 @@ function cardScene(it, step) {
   });
 }
 
+// آخر كل فيديو (قرار المستخدم): كود QR مع «حمّل تطبيقنا من هنا» يبقى ثلاث ثوانٍ تقريبًا
+function qrScene() {
+  return scene(3.8, (el, s) => {
+    const ti = h(`<div class="title abs" style="font-size:100px">${words('حمّل [تطبيقنا] من هنا')}</div>`); el.appendChild(ti);
+    const box = h(`<div class="qr abs"><img src="qr.svg"><div class="qrcap">${ICON}<span>حبيبنا ﷺ — أندرويد</span></div></div>`); el.appendChild(box);
+    const hint = h(`<div class="hint abs">أو الرابط في البايو</div>`); el.appendChild(hint);
+    sfx(s.start + .2, 'pop');
+    return lt => {
+      revealWords(ti, lt, .05, .08, { dy: 40, blur: 10 });
+      const p = back(seg(lt, .1, .5)); css(box, { opacity: clamp(p * 1.5), transform: `translateX(-50%) scale(${.88 + .12 * p})` });
+      css(hint, { opacity: eo(seg(lt, .6, .4)) * .85 });
+    };
+  });
+}
+
 function finish() {
   const logo = h(`<div class="logo abs">${ICON}حبيبنا ﷺ</div>`); document.body.appendChild(logo);
   scenes.slice(1).forEach(s => sfx(s.start - .12, 'whoosh'));
   sfx(0, 'whoosh', .6);
   window.render = function (t) {
     document.getElementById('pat').style.transform = `translate(${-(t * 6) % 120}px, ${-(t * 10) % 120}px)`;
-    css(logo, { opacity: eo(seg(t, .3, .6)) });
+    css(logo, { opacity: eo(seg(t, .3, .6)) * (1 - seg(t, scenes[scenes.length - 1].start, .3)) });
     scenes.forEach(s => {
       const lt = t - s.start, on = lt >= -.01 && lt < s.dur + .01;
       s.el.style.display = on ? '' : 'none';

@@ -38,7 +38,7 @@ def tick(pitch=1.0):
     f = 520 * pitch
     x = np.sin(2 * np.pi * f * t) * env(n, .003, .022)
     x += .35 * lowpass(rng.standard_normal(n), 900) * env(n, .001, .01)
-    return x * .3
+    return x * .2  # خُفّضت من .3 بطلب المستخدم
 
 
 def pop():

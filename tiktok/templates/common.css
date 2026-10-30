@@ -61,3 +61,9 @@ body{font-family:Tajawal,Amiri,sans-serif;color:var(--ivory);position:relative}
 .panel p .w{margin:0 .06em}
 .panel small{display:block;margin-top:14px;font:400 28px Tajawal;color:var(--muted)}
 .ctext .q{color:var(--tc)}
+/* مشهد الكود */
+.qr{left:50%;top:520px;width:640px;padding:44px 44px 30px;border-radius:48px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:22px;box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.qr img{width:552px;height:552px;display:block}
+.qrcap{display:flex;align-items:center;gap:14px;font:700 36px Amiri,serif;color:#0f5c4d}
+.qrcap svg{width:54px;height:54px;border-radius:14px}
+.hint{left:0;right:0;top:1330px;text-align:center;font:400 40px Tajawal;color:var(--muted)}

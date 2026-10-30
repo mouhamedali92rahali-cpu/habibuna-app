@@ -27,7 +27,8 @@ const D = window.DATA;
 const it = D.items[0];
 
 // 1) السؤال والعدّ التنازلي
-const qN = D.question.split(' ').length, qEnd = .35 + qN * .25 + .3;
+const Q0 = 1.5; // «خمّن الجواب» وحده قبل السؤال
+const qN = D.question.split(' ').length, qEnd = Q0 + qN * .25 + .3;
 const thinkN = (D.thinkSub || 'فكّر في [جوابك] .. قبل أن ترى البطاقة').split(' ').length;
 const subStart = qEnd + .1, cs = subStart + thinkN * .27 + .4;
 scene(cs + 3.25, (el, s) => {
@@ -42,8 +43,8 @@ scene(cs + 3.25, (el, s) => {
   [0, 1, 2].forEach(k => sfx(s.start + cs + k, 'beat'));
   return lt => {
     ch(lt);
-    const p = back(seg(lt, .05, .5)); css(q, { opacity: clamp(p * 1.5), transform: `scale(${.92 + .08 * p})` });
-    revealWords(q.querySelector('p'), lt, .35, .25, { dy: 30, blur: 10 });
+    const p = back(seg(lt, Q0 - .35, .5)); css(q, { opacity: clamp(p * 1.5), transform: `scale(${.92 + .08 * p})` });
+    revealWords(q.querySelector('p'), lt, Q0, .25, { dy: 30, blur: 10 });
     const c = eo(seg(lt, cs - .5, .5)); css(cnt, { opacity: c, transform: `scale(${.7 + .3 * c})` });
     const e = clamp((lt - cs) / 3);
     arc.setAttribute('stroke-dashoffset', C * e);
@@ -53,7 +54,7 @@ scene(cs + 3.25, (el, s) => {
   };
 });
 // نقرة لكل كلمة من السؤال (نص كتبناه نحن لا نص البطاقة)
-function qWords(q, s) { wordTimes(q.querySelector('p'), .35, .25).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1)); }
+function qWords(q, s) { wordTimes(q.querySelector('p'), Q0, .25).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1)); }
 
 // 2) الجواب: البطاقة نفسها
 const ans = cardScene(it, 'الجواب');
@@ -72,6 +73,7 @@ scene(5.2, (el, s) => {
   };
 });
 
+qrScene();
 finish();
 </script>
 </body>
