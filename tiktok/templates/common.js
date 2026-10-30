@@ -92,7 +92,7 @@ function cardScene(it, step) {
   const c = it.card;
   const tmp = h(`<div>${words(c.text)}</div>`); const n = wordCount(tmp);
   // البطاقة تأتي بعد اكتمال العنوان (d)، وتبقى بعد اكتمال نصها hold ثانية
-  const d = Math.max(0, .12 + it.label.split(' ').length * TITLE_STEP + .3 - .7);
+  const d = Math.max(0, .12 + it.label.split(' ').length * TITLE_STEP + .3 - .7) + (it.pause || 0); // pause: وقفة على العنوان وحده
   const T = 1.85 + d, textEnd = T + n * .2 + .3, readEnd = textEnd + (it.hold || 2.6);
   const withSharh = !!(it.sharhTitle && c.sharh);
   const sharhN = withSharh ? c.sharh.text.split(' ').length : 0;

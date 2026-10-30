@@ -25,6 +25,7 @@
 const D = window.DATA;
 const it = D.items[0], c = it.card;
 it.hold = it.hold || 4.2; // وقت أطول على البطاقة قبل الانتقال إلى الدعاء
+it.pause = it.pause ?? 1.5; // العنوان يبقى وحده قبل أن تأتي البطاقة
 
 // 1) البطاقة كاملة (العنوان هو الهوك: يظهر من أول جزء من الثانية)
 cardScene(it, D.topic);
