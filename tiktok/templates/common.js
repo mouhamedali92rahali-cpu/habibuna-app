@@ -58,7 +58,7 @@ function scene(dur, build) {
 function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
   let badge = null;
   if (step) {
-    badge = h(`<div class="badge abs"><div class="pill"><i></i>${step[2] || ''}${step[0]}/${step[1]}</div><div class="dots">${Array.from({ length: step[1] }, (_, i) => `<b class="${i < step[0] ? 'on' : ''}"></b>`).join('')}</div></div>`);
+    badge = h(`<div class="badge abs"><div class="pill"><i></i>${step[2] ? step[2].replace('ﷺ', '<span class="saw">ﷺ</span>') + '&nbsp; · &nbsp;' : ''}${step[0]}/${step[1]}</div><div class="dots">${Array.from({ length: step[1] }, (_, i) => `<b class="${i < step[0] ? 'on' : ''}"></b>`).join('')}</div></div>`);
     el.appendChild(badge);
   }
   const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
