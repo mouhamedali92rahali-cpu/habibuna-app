@@ -160,6 +160,7 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .2 }) {
   }
   const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
   const su = h(`<div class="sub abs">${words(sub)}</div>`); el.appendChild(su);
+  wordTimes(su, subStart, subStep).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1));
   return lt => {
     if (badge) { const p = eo(seg(lt, .05, .4)); css(badge, { opacity: p, transform: `translateX(-50%) translateY(${(1 - p) * -20}px)` }); }
     revealWords(ti, lt, .12, .11, { dy: 60, blur: 14 });
@@ -215,7 +216,6 @@ scene(7.8, (el, s) => {
     <div class="ctext">${words('كان وجه رسول الله ﷺ مثل القمر؛ سُئل البراء: أكان وجهه مثل السيف؟ قال: لا، بل مثل القمر.')}</div></div></div>`);
   el.appendChild(card);
   const tx = card.querySelector('.ctext');
-  wordTimes(tx, 1.1, .2).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1));
   sfx(s.start + .4, 'pop');
     return lt => {
     ch(lt);
@@ -246,27 +246,24 @@ scene(5.4, (el, s) => {
 });
 
 // 4) المساء: التذكير Z01 والزر
-scene(8.4, (el, s) => {
+scene(6.6, (el, s) => {
   const ch = chrome(el, s, { step: [4, 4], title: '[صلِّ] عليه ﷺ', sub: 'وفي المساء: تذكير [بالصلاة] عليه ﷺ', subStart: 1.0, subStep: .27 });
   const gr = h(`<div class="greet abs" style="left:0;right:0;top:470px">${MOON}مساء الخير</div>`); el.appendChild(gr);
   const card = h(`<div class="card emer abs" style="left:130px;width:820px;top:550px"><div class="inner" style="padding:54px 46px 40px">${corners()}
     <div class="kicker">تذكير</div><div class="ctitle" style="font-size:56px">صلِّ على الحبيب ﷺ</div>
-    <div class="ctext" style="font-size:40px;line-height:1.95">${words('لا تنسَ الصلاة على الحبيب ﷺ؛ قال: «من صلّى عليّ صلاةً صلّى الله عليه بها عشرًا». اللهم صلِّ وسلّم على نبينا محمد.')}</div>
+    <div class="ctext" style="font-size:40px;line-height:1.95">لا تنسَ الصلاة على الحبيب ﷺ؛ قال: «من صلّى عليّ صلاةً صلّى الله عليه بها عشرًا». اللهم صلِّ وسلّم على نبينا محمد.</div>
     <div class="divider"><span></span><i></i><span></span></div><div class="src" style="font-size:30px"><div>مسلم <bdi dir="ltr">(384)</bdi></div><div class="grade">صحيح — مسلم</div></div></div></div>`);
   el.appendChild(card);
   const btn = h(`<div class="pray abs" style="left:130px;width:820px;top:1250px">اللهم صلِّ وسلِّم على نبيّنا محمد</div>`); el.appendChild(btn);
   const ring = h(`<div class="ring abs"></div>`); el.appendChild(ring);
-  const zt = card.querySelector('.ctext');
-  wordTimes(zt, 1.0, .2).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1));
-  sfx(s.start + .35, 'pop'); sfx(s.start + 5.7, 'chime');
+  sfx(s.start + .35, 'pop'); sfx(s.start + 3.9, 'chime');
   return lt => {
     ch(lt);
     const g = eo(seg(lt, .2, .5)); css(gr, { opacity: g, transform: `translateY(${(1 - g) * 20}px)` });
     const p = back(seg(lt, .3, .7)); css(card, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 120}px) scale(${.94 + .06 * p})` });
-    const b = eo(seg(lt, .8, .5)), press = seg(lt, 5.55, .15) - seg(lt, 5.75, .2);
-    revealWords(zt, lt, 1.0, .2, { dy: 14, blur: 6 });
-    css(btn, { opacity: b, transform: `translateY(${(1 - b) * 40}px) scale(${1 - .05 * press})`, filter: `brightness(${1 + .25 * seg(lt, 5.7, .1) * (1 - seg(lt, 6.1, .6))})` });
-    const r = seg(lt, 5.7, 1.1); const R = 60 + 900 * eo(r);
+    const b = eo(seg(lt, .8, .5)), press = seg(lt, 3.75, .15) - seg(lt, 3.95, .2);
+    css(btn, { opacity: b, transform: `translateY(${(1 - b) * 40}px) scale(${1 - .05 * press})`, filter: `brightness(${1 + .25 * seg(lt, 3.9, .1) * (1 - seg(lt, 4.3, .6))})` });
+    const r = seg(lt, 3.9, 1.1); const R = 60 + 900 * eo(r);
     css(ring, { width: R + 'px', height: R + 'px', left: (540 - R / 2) + 'px', top: (1310 - R / 2) + 'px', opacity: r > 0 ? (1 - r) * .8 : 0 });
   };
 });
