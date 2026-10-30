@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>قالب «الدعاء»</title>
+<!-- قالب «الدعاء» (الاثنين والخميس كما في التطبيق): البطاقة كاملة بمصدرها، ثم لفظ الدعاء وحده بخط كبير ليُحفظ، ثم كود التحميل.
+     لفظ الدعاء هو ما بين «» في نص البطاقة كما هو. البيانات: {topic, items:[{id, label, sharhTitle?}], memTitle, memSub} -->
+<link rel="stylesheet" href="common.css">
+<style>
+.mem{left:60px;right:60px;top:540px;min-height:760px;display:flex;flex-direction:column;justify-content:center;padding:90px 60px;border-radius:48px;background:radial-gradient(120% 90% at 50% 0%,#174f43,#10241f 70%);
+  border:3px solid rgba(217,178,94,.55);text-align:center;box-shadow:0 40px 90px rgba(0,0,0,.5),0 0 0 12px rgba(217,178,94,.08)}
+.mem .corner{width:90px;height:90px;color:#d9b25e}
+.mem p{font:700 84px/1.8 Amiri,serif;color:var(--ivory)}
+.mem p .w{margin:0 .08em}
+.mem small{display:block;margin-top:26px;font:400 32px Tajawal;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="bg" class="abs"></div>
+<div id="pat" class="abs"></div>
+<div id="root"></div>
+<div id="vig" class="abs"></div>
+<script src="common.js"></script>
+<script>
+const D = window.DATA;
+const it = D.items[0], c = it.card;
+
+// 1) البطاقة كاملة (العنوان هو الهوك: يظهر من أول جزء من الثانية)
+cardScene(it, D.topic);
+
+// 2) لفظ الدعاء وحده ليُحفظ (كلمات الدعاء بلا صوت؛ النقرة للترجمة السفلية فقط)
+const quote = c.text.slice(c.text.indexOf('«') + 1, c.text.lastIndexOf('»'));
+const qn = quote.split(' ').length, Q0 = .9, qEnd = Q0 + qn * .3 + .3;
+const subStart = qEnd + .3, subN = D.memSub.split(' ').length;
+scene(subStart + subN * .27 + 3.6, (el, s) => {
+  const ch = chrome(el, s, { step: D.topic, title: D.memTitle, sub: D.memSub, subStart });
+  const m = h(`<div class="mem abs">${corners()}<p>${words(quote)}</p><small>${bidiNums(c.source)}</small></div>`); el.appendChild(m);
+  const p = m.querySelector('p');
+  sfx(s.start + .5, 'pop', .8); sfx(s.start + qEnd, 'chime', .4);
+  return lt => {
+    ch(lt);
+    const a = back(seg(lt, .4, .7)); css(m, { opacity: clamp(a * 1.5), transform: `scale(${.92 + .08 * a})` });
+    revealWords(p, lt, Q0, .3, { dy: 24, blur: 10 });
+    m.querySelector('small').style.opacity = eo(seg(lt, qEnd, .5)) * .9;
+    // توهّج هادئ بعد اكتمال الدعاء
+    const g = seg(lt, qEnd, 1.2); m.style.boxShadow = `0 40px 90px rgba(0,0,0,.5),0 0 0 ${12 + 20 * eo(g)}px rgba(217,178,94,${.08 + .12 * Math.sin(Math.PI * g)})`;
+  };
+});
+
+qrScene();
+finish();
+</script>
+</body>
+</html>
