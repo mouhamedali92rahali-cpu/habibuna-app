@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>قالب «خمّن»</title>
-<!-- قالب «خمّن»: سؤال (هو الهوك، يظهر من أول نصف ثانية) ثم عدّ تنازلي 3-2-1 ليكتب المشاهد جوابه، ثم البطاقة جوابًا (وشرحها إن طُلب)، ثم «هل أصبت؟».
+<!-- قالب «خمّن»: سؤال (هو الهوك، يظهر من أول نصف ثانية) ثم عدّ تنازلي 3-2-1 يفكّر فيه المشاهد في الجواب (التعليق يُطلب في الخاتمة لا أثناء العدّ)، ثم البطاقة جوابًا (وشرحها إن طُلب)، ثم «هل أصبت؟».
      البيانات في window.DATA يحقنها render.mjs: {question, topic, items:[{id, label, sharhTitle?}], outroTitle, outroSub} -->
 <link rel="stylesheet" href="common.css">
 <style>
@@ -28,9 +28,10 @@ const it = D.items[0];
 
 // 1) السؤال والعدّ التنازلي
 const qN = D.question.split(' ').length, qEnd = .35 + qN * .25 + .3;
-const subStart = qEnd + .1, cs = subStart + 4 * .27 + .5;
+const thinkN = (D.thinkSub || 'فكّر في [جوابك] .. قبل أن ترى البطاقة').split(' ').length;
+const subStart = qEnd + .1, cs = subStart + thinkN * .27 + .4;
 scene(cs + 3.25, (el, s) => {
-  const ch = chrome(el, s, { step: D.topic, title: 'خمّن [الجواب]', sub: 'اكتب جوابك في [التعليقات]', subStart });
+  const ch = chrome(el, s, { step: D.topic, title: 'خمّن [الجواب]', sub: D.thinkSub || 'فكّر في [جوابك] .. قبل أن ترى البطاقة', subStart });
   const q = h(`<div class="ques abs"><div class="mark">؟</div><p>${words(D.question)}</p></div>`); el.appendChild(q);
   const R = 130, C = 2 * Math.PI * R;
   const cnt = h(`<div class="count abs"><svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="${R}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="14"/>
