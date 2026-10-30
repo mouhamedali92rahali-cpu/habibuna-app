@@ -102,6 +102,8 @@ function cardScene(it, step) {
     const flip = h(`<div class="flip abs" style="left:110px;top:560px;width:860px;height:760px"><div class="back">${MIHRAB}</div><div class="face">${cardFace(c)}</div></div>`);
     el.appendChild(flip);
     const [bk, face] = flip.children, tx = face.querySelector('.ctext'), su = el.querySelector('.sub');
+    // البطاقة الطويلة (كبطاقة الجمعة) يصغر خطها حتى لا تتجاوز 900px فتغطي أسفل الشاشة
+    for (let fs = 50; face.firstChild.offsetHeight > 900 && fs > 34; fs -= 2) tx.style.fontSize = fs + 'px';
     let panel = null, pt = null;
     if (withSharh) {
       panel = h(`<div class="panel abs"><h3>${words(it.sharhTitle)}</h3><p>${words(c.sharh.text)}</p><small>${c.sharh.source}</small></div>`);
