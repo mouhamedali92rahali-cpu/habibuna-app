@@ -79,7 +79,7 @@ export async function testLater(card: CardData): Promise<string | null> {
     await ensureChannel();
     const exact = await exactAllowed().catch(() => false);
     await LocalNotifications.schedule({ notifications: [{ ...nativeNote(TEST_ID - 1, card, new Date(Date.now() + 60_000), exact), title: 'حبيبنا ﷺ — تجربة بعد دقيقة' }] });
-    return exact ? null : 'جُدول، لكن الموعد تقريبي (المواعيد الدقيقة غير مسموحة) فقد يتأخر';
+    return exact ? null : 'جُدول الإشعار، لكن موعده تقريبي لأن المواعيد الدقيقة غير مفعّلة، فقد يتأخر قليلًا.';
   } catch (e) {
     return `لم يُجدول: ${errText(e)}`;
   }
@@ -97,7 +97,7 @@ export async function showCard(card: CardData): Promise<string | null> {
       return `لم يُرسل الإشعار: ${errText(e)}`;
     }
   }
-  if (!notifySupported() || Notification.permission !== 'granted') return 'فعّل الإشعارات من المتصفح أولًا';
+  if (!notifySupported() || Notification.permission !== 'granted') return 'فعّل الإشعارات أولًا في المتصفح.';
   const opts: NotificationOptions = { body: short(card.text), icon: 'icon.svg', tag: 'qarib', lang: 'ar', dir: 'rtl' };
   const reg = await navigator.serviceWorker?.getRegistration();
   if (reg) await reg.showNotification(TITLE, opts); else new Notification(TITLE, opts);
