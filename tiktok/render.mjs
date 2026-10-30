@@ -1,9 +1,10 @@
 // يسجّل مشهد HTML إطارًا إطارًا (render(t)) ثم يركّب المؤثرات الصوتية ويُخرج mp4 عموديًّا 1080×1920.
-// الاستعمال: node tiktok/render.mjs tiktok/video1/scene.html tiktok/out/video1.mp4 [--stills 1,5,10]
+// الاستعمال: node tiktok/render.mjs <scene.html | videos/xxx.json> tiktok/out/xxx.mp4 [--stills 1,5,10]
+// ملف json = فيديو من قالب: {template, ...، items:[{id,...}]}؛ تُؤخذ البطاقات من public/cards.json بمعرّفها كما هي.
 import { createRequire } from 'node:module';
 const { chromium } = createRequire(import.meta.url)('playwright');
 import { spawn, execFileSync } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,7 +15,15 @@ mkdirSync(dirname(resolve(out)), { recursive: true });
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
-await page.goto('file://' + resolve(src));
+let url = 'file://' + resolve(src);
+if (src.endsWith('.json')) {
+  const spec = JSON.parse(readFileSync(src, 'utf8'));
+  const cards = Object.fromEntries(JSON.parse(readFileSync(join(here, '../public/cards.json'), 'utf8')).cards.map(c => [c.id, c]));
+  for (const it of spec.items || []) { it.card = cards[it.id]; if (!it.card) throw new Error('بطاقة غير موجودة: ' + it.id); }
+  await page.addInitScript(d => { window.DATA = d; }, spec);
+  url = 'file://' + join(here, 'templates', spec.template + '.html');
+}
+await page.goto(url);
 await page.evaluate(() => document.fonts.ready);
 const meta = await page.evaluate(() => window.META);
 
@@ -46,4 +55,5 @@ const cues = out.replace(/\.mp4$/, '.sfx.json'), wav = out.replace(/\.mp4$/, '.s
 writeFileSync(cues, JSON.stringify(meta));
 execFileSync('python3', ['-I', join(here, 'sfx.py'), cues, wav], { stdio: 'inherit' });
 execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', silent, '-i', wav, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], { stdio: 'inherit' });
+for (const f of [silent, cues, wav]) unlinkSync(f);
 console.log('done', out, meta.duration + 's');
