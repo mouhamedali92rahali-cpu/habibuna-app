@@ -76,14 +76,21 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
     el.appendChild(badge);
   }
   const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
-  if (ti.scrollWidth > 1000) ti.style.fontSize = Math.floor(108 * 1000 / ti.scrollWidth) + 'px'; // العنوان الطويل يصغر ليبقى في سطر
+  // العنوان الطويل يصغر ليبقى في سطر؛ فإن صار أصغر من 90px انقسم سطرين بخط 96px (كأسئلة الهوك الطويلة)
+  if (ti.scrollWidth > 1000) {
+    const fs = Math.floor(108 * 1000 / ti.scrollWidth);
+    if (fs >= 90) ti.style.fontSize = fs + 'px';
+    else css(ti, { fontSize: '96px', whiteSpace: 'normal', left: '60px', right: '60px', lineHeight: '1.45' });
+  }
   const su = sub ? h(`<div class="sub abs">${words(sub)}</div>`) : null;
   if (su) { el.appendChild(su); wordTimes(su, subStart, subStep).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1)); }
-  return lt => {
+  const upd = lt => {
     if (badge) { const p = eo(seg(lt, .05, .4)); css(badge, { opacity: p, transform: `translateX(-50%) translateY(${(1 - p) * -20}px)` }); }
     revealWords(ti, lt, .12, TITLE_STEP, { dy: 60, blur: 14 });
     if (su) revealWords(su, lt, subStart, subStep);
   };
+  upd.titleEl = ti;
+  return upd;
 }
 
 // مشهد بطاقة: تصعد مقلوبة ثم تنقلب، يظهر نصها كلمة كلمة (بلا صوت)، ثم الشرح إن طُلب (sharhTitle).
@@ -103,7 +110,11 @@ function cardScene(it, step) {
     el.appendChild(flip);
     const [bk, face] = flip.children, tx = face.querySelector('.ctext'), su = el.querySelector('.sub');
     // البطاقة الطويلة (كبطاقة الجمعة) يصغر خطها حتى لا تتجاوز 900px فتغطي أسفل الشاشة
-    for (let fs = 50; face.firstChild.offsetHeight > 900 && fs > 34; fs -= 2) tx.style.fontSize = fs + 'px';
+    // العنوان المقسوم سطرين يدفع البطاقة إلى الأسفل بقدر السطر الزائد
+    const extra = Math.max(0, ch.titleEl.offsetHeight - 150);
+    if (extra) flip.style.top = (560 + extra) + 'px';
+    for (let fs = 50; face.firstChild.offsetHeight > 900 - extra && fs > 34; fs -= 2) tx.style.fontSize = fs + 'px';
+    const fit = Math.min(1, (1530 - 560 - extra) / face.firstChild.offsetHeight); // وإن بقيت طويلة تُصغَّر كلها حتى لا تصل إلى الشعار
     let panel = null, pt = null;
     if (withSharh) {
       panel = h(`<div class="panel abs"><h3>${words(it.sharhTitle)}</h3><p>${words(c.sharh.text)}</p><small>${c.sharh.source}</small></div>`);
@@ -117,7 +128,7 @@ function cardScene(it, step) {
       const up = back(seg(lt, .7 + d, .55)), rot = 180 * (1 - eo(seg(lt, 1.1 + d, .7)));
       bk.style.transform = `rotateY(${rot - 180}deg)`; face.style.transform = `rotateY(${rot}deg)`;
       const shrink = withSharh ? eo(seg(lt, P, .8)) : 0;
-      css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink)})`, transformOrigin: '50% 0%' });
+      css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink) * fit})`, transformOrigin: '50% 0%' });
       revealWords(tx, lt, T, .2, { dy: 14, blur: 6 });
       if (withSharh) {
         if (su) su.style.visibility = lt > P + .5 ? 'hidden' : '';
