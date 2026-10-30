@@ -33,11 +33,12 @@ def whoosh():
 
 
 def tick(pitch=1.0):
-    n = int(.07 * SR); t = np.arange(n) / SR
-    f = 1500 * pitch
-    x = np.sin(2 * np.pi * f * t) * env(n, .0015, .018)
-    x += .25 * np.sin(2 * np.pi * 2 * f * t) * env(n, .001, .008)
-    return x * .5
+    # نقرة خافتة مكتومة (أنعم من النسخة الأولى): نبضة منخفضة قصيرة مع همسة ضجيج مرشَّح
+    n = int(.09 * SR); t = np.arange(n) / SR
+    f = 520 * pitch
+    x = np.sin(2 * np.pi * f * t) * env(n, .003, .022)
+    x += .35 * lowpass(rng.standard_normal(n), 900) * env(n, .001, .01)
+    return x * .3
 
 
 def pop():

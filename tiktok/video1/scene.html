@@ -85,6 +85,12 @@ body{font-family:Tajawal,Amiri,sans-serif;color:var(--ivory);position:relative}
 .row .v{font:700 44px Tajawal,Amiri;color:var(--ivory);margin-top:4px}
 .ok{width:58px;height:58px;border-radius:50%;background:#2f8f6b;display:grid;place-items:center;margin-inline-start:auto;flex:none}
 .stamp{font:700 34px Amiri,serif;color:var(--gold);border:3px solid var(--gold);border-radius:18px;padding:8px 26px;text-align:center}
+/* الكود */
+.qr{left:50%;top:520px;width:640px;padding:44px 44px 30px;border-radius:48px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:22px}
+.qr img{width:552px;height:552px;display:block}
+.qrcap{display:flex;align-items:center;gap:14px;font:700 36px Amiri,serif;color:#0f5c4d}
+.qrcap svg{width:54px;height:54px;border-radius:14px}
+.hint{left:0;right:0;top:1515px;text-align:center;font:400 38px Tajawal;color:var(--muted)}
 /* الخاتمة */
 .icon{width:380px;height:380px;border-radius:92px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 3px rgba(217,178,94,.5)}
 .slogan{font:400 54px/1.6 Amiri,serif;color:var(--ivory);text-align:center}
@@ -163,8 +169,8 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .2 }) {
 }
 
 // 0) الافتتاح: ثلاث بطاقات في اليوم
-scene(4.6, (el, s) => {
-  const ch = chrome(el, s, { title: 'تعرّف على [نبيّك] ﷺ', sub: '[3_بطاقات] قصيرة كل يوم .. من حياته ﷺ', subStart: 1.2, subStep: .22 });
+scene(5.2, (el, s) => {
+  const ch = chrome(el, s, { title: 'تعرّف على [نبيّك] ﷺ', sub: '[3_بطاقات] قصيرة كل يوم .. من حياته ﷺ', subStart: 1.3, subStep: .27 });
   const data = [['emer', '20:00', MOON, 'مساء الخير'], ['navy', '15:00', '', 'وقفة قصيرة'], ['ivory', '10:00', SUN, 'صباحك نور']];
   const minis = data.map(([cls, t, ic, g]) => {
     const m = h(`<div class="mini abs ${cls}"><div class="in"><div class="t">${t}</div><div class="g">${g}</div><div class="l"></div><div class="l s"></div></div></div>`);
@@ -184,8 +190,8 @@ scene(4.6, (el, s) => {
 });
 
 // 1) الصباح: الهاتف يرنّ 10:00
-scene(5.0, (el, s) => {
-  const ch = chrome(el, s, { step: [1, 4], title: '[الصباح] 10:00', sub: 'في الصباح تصلك بطاقة من [ملامحه] وحياته اليومية', subStart: 1.6, subStep: .2 });
+scene(5.6, (el, s) => {
+  const ch = chrome(el, s, { step: [1, 4], title: '[الصباح] 10:00', sub: 'في الصباح تصلك بطاقة من [ملامحه] وحياته اليومية', subStart: 1.7, subStep: .25 });
   const ph = h(`<div class="phone abs"><div class="screen"><div class="date">الجمعة</div><div class="clock">09:59</div>
     <div class="note"><div class="hd">${ICON}حبيبنا ﷺ<small>الآن</small></div><p>كان وجه رسول الله ﷺ مثل القمر؛ سُئل البراء: أكان وجهه مثل السيف؟ قال: لا، بل مثل القمر.</p></div></div></div>`);
   el.appendChild(ph);
@@ -202,8 +208,8 @@ scene(5.0, (el, s) => {
 });
 
 // 2) البطاقة: نص M01 كلمة كلمة
-scene(7.2, (el, s) => {
-  const ch = chrome(el, s, { step: [2, 4], title: 'اقرأ [البطاقة]', sub: 'موقف صغير .. [يقرّبك] منه ﷺ', subStart: 4.6, subStep: .24 });
+scene(7.8, (el, s) => {
+  const ch = chrome(el, s, { step: [2, 4], title: 'اقرأ [البطاقة]', sub: 'موقف صغير .. [يقرّبك] منه ﷺ', subStart: 5.0, subStep: .28 });
   const gr = h(`<div class="greet abs" style="left:0;right:0;top:520px">${SUN}صباحك نور</div>`); el.appendChild(gr);
   const card = h(`<div class="card ivory abs" style="left:110px;width:860px;top:610px"><div class="inner">${corners()}
     <div class="kicker">◈ الملامح والشكل</div><div class="num"><span>✦</span></div><div class="ctitle">كالقمر لا كالسيف</div>
@@ -211,19 +217,18 @@ scene(7.2, (el, s) => {
   el.appendChild(card);
   const tx = card.querySelector('.ctext');
   sfx(s.start + .4, 'pop');
-  wordTimes(tx, 1.1, .17).forEach(t => sfx(s.start + t, 'tick', .55));
-  return lt => {
+    return lt => {
     ch(lt);
     const g = eo(seg(lt, .3, .5)); css(gr, { opacity: g, transform: `translateY(${(1 - g) * 20}px)` });
     const p = back(seg(lt, .35, .7));
     css(card, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 120}px) scale(${.94 + .06 * p + lt * .004})` });
-    revealWords(tx, lt, 1.1, .17, { dy: 14, blur: 6 });
+    revealWords(tx, lt, 1.1, .2, { dy: 14, blur: 6 });
   };
 });
 
 // 3) التوثيق: المصدر والدرجة
-scene(5.0, (el, s) => {
-  const ch = chrome(el, s, { step: [3, 4], title: '[موثّقة] بمصدرها', sub: 'كل بطاقة معها [مصدرها] ودرجتها', subStart: 2.3, subStep: .22 });
+scene(5.4, (el, s) => {
+  const ch = chrome(el, s, { step: [3, 4], title: '[موثّقة] بمصدرها', sub: 'كل بطاقة معها [مصدرها] ودرجتها', subStart: 2.4, subStep: .27 });
   const pn = h(`<div class="panel abs" style="left:130px;top:640px">
     <div class="row"><div class="ic">${BOOK}</div><div><div class="k">المصدر</div><div class="v">البخاري <bdi dir="ltr">(3552)</bdi></div></div><div class="ok">${CHECK}</div></div>
     <div class="row"><div class="ic">${SCALE}</div><div><div class="k">الدرجة</div><div class="v">صحيح — البخاري</div></div><div class="ok">${CHECK}</div></div>
@@ -241,8 +246,8 @@ scene(5.0, (el, s) => {
 });
 
 // 4) المساء: التذكير Z01 والزر
-scene(6.2, (el, s) => {
-  const ch = chrome(el, s, { step: [4, 4], title: '[صلِّ] عليه ﷺ', sub: 'وفي المساء: تذكير [بالصلاة] عليه ﷺ', subStart: 1.0, subStep: .22 });
+scene(6.6, (el, s) => {
+  const ch = chrome(el, s, { step: [4, 4], title: '[صلِّ] عليه ﷺ', sub: 'وفي المساء: تذكير [بالصلاة] عليه ﷺ', subStart: 1.0, subStep: .27 });
   const gr = h(`<div class="greet abs" style="left:0;right:0;top:470px">${MOON}مساء الخير</div>`); el.appendChild(gr);
   const card = h(`<div class="card emer abs" style="left:130px;width:820px;top:550px"><div class="inner" style="padding:54px 46px 40px">${corners()}
     <div class="kicker">تذكير</div><div class="ctitle" style="font-size:56px">صلِّ على الحبيب ﷺ</div>
@@ -264,21 +269,35 @@ scene(6.2, (el, s) => {
 });
 
 // 5) الخاتمة: حمّل حبيبنا
-scene(5.2, (el, s) => {
-  const ch = chrome(el, s, { title: 'حمّل [حبيبنا]', sub: 'الرابط في [البايو] .. وتابعنا', subStart: 2.0, subStep: .24 });
+scene(5.0, (el, s) => {
+  const ch = chrome(el, s, { title: '[حبيبنا] ﷺ', sub: 'تطبيق [مجاني] على أندرويد', subStart: 2.0, subStep: .27 });
   const ic = h(`<div class="icon abs" style="left:350px;top:540px">${ICON}</div>`); el.appendChild(ic);
   const glow = h(`<div class="abs" style="left:240px;top:430px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,94,.35),transparent 65%)"></div>`); el.insertBefore(glow, ic);
   const sl = h(`<div class="slogan abs" style="left:60px;right:60px;top:965px">مواقف صغيرة .. تكشف لك عظمة شخصيته</div>`); el.appendChild(sl);
   const chips = h(`<div class="chips abs" style="left:0;right:0;top:1110px"><span>مجاني</span><span>بلا حساب</span><span>بلا إعلانات</span></div>`); el.appendChild(chips);
   const cs = [...chips.children];
   sfx(s.start + .35, 'pop'); sfx(s.start + .5, 'chime', .7);
-  [1.25, 1.4, 1.55].forEach(t => sfx(s.start + t, 'tick', .7));
+  [1.25, 1.4, 1.55].forEach(t => sfx(s.start + t, 'check', .5));
   return lt => {
     ch(lt);
     const p = back(seg(lt, .3, .8)); css(ic, { opacity: clamp(p * 1.5), transform: `scale(${.6 + .4 * p + .015 * Math.sin(lt * 2.4)}) rotate(${(1 - p) * -8}deg)` });
     css(glow, { opacity: eo(seg(lt, .5, 1)) * (.75 + .25 * Math.sin(lt * 2.4)) });
     const q = eo(seg(lt, .8, .6)); css(sl, { opacity: q, transform: `translateY(${(1 - q) * 30}px)` });
     cs.forEach((c, i) => { const k = back(seg(lt, 1.25 + i * .15, .4)); css(c, { opacity: clamp(k * 1.5), transform: `scale(${.7 + .3 * k})` }); });
+  };
+});
+
+// 6) التحميل: كود QR يبقى على الشاشة ليُصوَّر
+scene(7.0, (el, s) => {
+  const ch = chrome(el, s, { title: 'حمّل [التطبيق]', sub: '[صوّر] الشاشة .. وامسح الكود', subStart: 1.1, subStep: .27 });
+  const box = h(`<div class="qr abs"><img src="qr.svg"><div class="qrcap">${ICON}<span>حبيبنا ﷺ — أندرويد</span></div></div>`); el.appendChild(box);
+  const hint = h(`<div class="hint abs">أو الرابط في البايو</div>`); el.appendChild(hint);
+  sfx(s.start + .35, 'pop'); sfx(s.start + 3.2, 'chime', .6);
+  return lt => {
+    ch(lt);
+    const p = back(seg(lt, .25, .7)); css(box, { opacity: clamp(p * 1.5), transform: `translateX(-50%) scale(${.85 + .15 * p})` });
+    const sh = seg(lt, 3.1, .5); css(box, { boxShadow: `0 40px 90px rgba(0,0,0,.55),0 0 0 ${6 + 30 * eo(sh)}px rgba(217,178,94,${.5 * (1 - sh)})` });
+    const q = eo(seg(lt, 3.4, .5)); css(hint, { opacity: q * .85 });
   };
 });
 
@@ -290,7 +309,7 @@ sfx(0, 'whoosh', .6);
 
 window.render = function (t) {
   document.getElementById('pat').style.transform = `translate(${-(t * 6) % 120}px, ${-(t * 10) % 120}px)`;
-  css(logo, { opacity: eo(seg(t, .3, .6)) });
+  css(logo, { opacity: eo(seg(t, .3, .6)) * (1 - seg(t, scenes[scenes.length - 1].start, .3)) });
   scenes.forEach(s => {
     const lt = t - s.start, on = lt >= -.01 && lt < s.dur + .01;
     s.el.style.display = on ? '' : 'none';
