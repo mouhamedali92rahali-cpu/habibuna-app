@@ -6,6 +6,7 @@ import { loadCards } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { CardBack, CardFront, markOf } from './components/CardView';
+import { Sys, sysText } from './lib/sysnames';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -198,7 +199,7 @@ export default function App() {
     const json = popupJson(c, last ? feed.length - 1 : 0, byId.get(c.id)?.n ?? 0);
     if (!isNative) { setPreview(json); return; }
     const r = await PhoneSettings.previewPopup({ json, cardId: c.id }).catch(() => ({ shown: false }));
-    if (!r.shown) say('يلزم أولًا السماح بـ«الظهور فوق التطبيقات الأخرى».');
+    if (!r.shown) say(`يلزم أولًا السماح بـ${sysText('overlay')}.`);
   };
 
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
@@ -242,7 +243,7 @@ export default function App() {
                     <p>تصلك البطاقة الآن تنبيهًا صغيرًا في أعلى الشاشة، وقد يضيع بين التنبيهات الكثيرة.</p>
                     <p>وإن شئت، تنفتح البطاقة نفسها على شاشتك في مواعيدها: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً، حتى لو كنت تستعمل تطبيقًا آخر؛ فتقرؤها، ثم تغلقها بزرّ «اللهم صلِّ وسلِّم على نبيّنا محمد». ولترى شكلها اضغط «معاينة».</p>
                     <div className="safe">
-                      <p>تحتاج هذه الميزة إلى إذن «الظهور فوق التطبيقات الأخرى». ربما سمعت تحذيرًا من هذا الإذن، لأن بعض التطبيقات تسيء استعماله؛ أما «حبيبنا» فلا يستعمله إلا لأمر واحد: إظهار بطاقته في مواعيدها الثلاثة.</p>
+                      <p>تحتاج هذه الميزة إلى إذن <Sys k="overlay" />. ربما سمعت تحذيرًا من هذا الإذن، لأن بعض التطبيقات تسيء استعماله؛ أما «حبيبنا» فلا يستعمله إلا لأمر واحد: إظهار بطاقته في مواعيدها الثلاثة.</p>
                       <p>فهو لا يرى ما على شاشتك، ولا يقرأ ما تكتبه، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الميزة متى شئت من «الإعدادات ⚙».</p>
                     </div>
                     <div className="btns">
@@ -256,7 +257,7 @@ export default function App() {
                     <b>{overlay ? 'تم تفعيل البطاقة على الشاشة' : 'بقيت خطوة واحدة'}</b>
                     {!overlay && <p>في الصفحة التي ستنفتح، فعّل الزرّ المقابل لـ«حبيبنا»، ثم عُد إلى التطبيق.</p>}
                     {!overlay && <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>فتح صفحة الإذن</button>}
-                    {maker === 'xiaomi' && <p>وفي هواتف شاومي: فعّل أيضًا «عرض النوافذ المنبثقة أثناء التشغيل في الخلفية» من صفحة أذونات «حبيبنا».</p>}
+                    {maker === 'xiaomi' && <p>وفي هواتف شاومي: فعّل أيضًا <Sys k="bgPopup" /> من صفحة أذونات «حبيبنا».</p>}
                     {maker === 'xiaomi' && <button className="ghost" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>فتح أذونات «حبيبنا»</button>}
                     <button className="linkbtn" onClick={closeOffer}>تم</button>
                   </>
@@ -321,10 +322,10 @@ export default function App() {
                 </label>
               )}
               {isNative && settings.popupOn !== false && overlay === false && (
-                <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بـ«الظهور فوق التطبيقات الأخرى»</button>
+                <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بـ<Sys k="overlay" /></button>
               )}
               {isNative && settings.popupOn !== false && maker === 'xiaomi' && (
-                <button className="linkbtn" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>في شاومي: السماح بـ«عرض النوافذ المنبثقة أثناء التشغيل في الخلفية»</button>
+                <button className="linkbtn" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>في شاومي: السماح بـ<Sys k="bgPopup" /></button>
               )}
               <button className="ghost" onClick={() => void previewPopup()}>معاينة البطاقة على الشاشة</button>
               {maker !== 'normal' && <button className="linkbtn" onClick={() => setGuide(true)}>لا تصلك البطاقات حين يكون التطبيق مغلقًا؟</button>}
@@ -341,11 +342,11 @@ export default function App() {
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
               {isNative && exact === false && (
                 <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل البطاقات في وقتها بالضبط.' : 'ستبقى المواعيد تقريبية، وقد تتأخر البطاقة دقائق قليلة.'); }}>
-                  لتصل البطاقات في وقتها بالضبط: اسمح بـ«المنبّهات والتذكيرات»
+                  لتصل البطاقات في وقتها بالضبط: اسمح بـ<Sys k="alarms" />
                 </button>
               )}
               <p className="note">{isNative
-                ? 'يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته. وفي هواتف شاومي وهواوي وأوبو: فعّل «التشغيل التلقائي» واجعل «توفير البطارية» على «بلا قيود»، وإلا فقد تتأخر البطاقات أو لا تصل.'
+                ? `يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`
                 : 'في المتصفح لا تصل الإشعارات إلا والتطبيق مفتوح. أما وصولها والتطبيق مغلق فيحتاج إلى نسخة الهاتف.'}</p>
             </div>
             <div className="panel">
@@ -394,7 +395,7 @@ export default function App() {
                       <p>لننبّهك حين يحين موعد البطاقة، ثلاث مرات في اليوم لا أكثر.</p>
                       <p>«حبيبنا» لا يطلب حسابًا ولا رقم هاتف، ولا يصل إلى رسائلك أو صورك أو جهات اتصالك، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الإشعارات متى شئت من «الإعدادات ⚙».</p>
                     </div>
-                    <p className="muted small">بعد الضغط ستظهر لك رسالة من الهاتف؛ اختر فيها «السماح».</p>
+                    <p className="muted small">بعد الضغط ستظهر لك رسالة من الهاتف؛ اختر فيها <Sys k="allow" />.</p>
                     <button className="primary" onClick={async () => { if (await enableNotify()) { if (isNative && maker !== 'normal') setWelcome(2); else closeWelcome(); } }}>فعّل الإشعارات</button>
                     <button className="ghost" onClick={closeWelcome}>لاحقًا</button>
                   </>
@@ -405,8 +406,8 @@ export default function App() {
                 <h2>خطوة أخيرة خاصة بهاتفك</h2>
                 <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح أمرين، مرةً واحدة فقط:</p>
                 <ol>
-                  <li><b>التشغيل التلقائي:</b> فعّله.</li>
-                  <li><b>توفير البطارية:</b> اختر «بلا قيود».</li>
+                  <li><Sys k="autostart" />: فعّله.</li>
+                  <li><Sys k="battery" />: اختر <Sys k="noRestrict" />.</li>
                 </ol>
                 <div className="safe">
                   <p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p>
@@ -430,10 +431,10 @@ export default function App() {
             <h2>لتصلك البطاقات وإن كان التطبيق مغلقًا</h2>
             <p className="muted small">يوقف هاتفك التطبيقات المغلقة ويمسح مواعيدها توفيرًا للبطارية. يكفي أن تغيّر أمرين، مرةً واحدة فقط:</p>
             <ol>
-              <li><b>{maker === 'xiaomi' ? 'التشغيل التلقائي' : 'التشغيل التلقائي / التشغيل في الخلفية'}:</b> فعّله لـ«حبيبنا».</li>
-              <li><b>توفير البطارية:</b> اختر «بلا قيود» لـ«حبيبنا».</li>
+              <li><Sys k="autostart" />: فعّله لـ«حبيبنا».</li>
+              <li><Sys k="battery" />: اختر <Sys k="noRestrict" /> لـ«حبيبنا».</li>
             </ol>
-            {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح «التشغيل التلقائي»</button>}
+            {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
             <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
             <p className="muted small">بعد ذلك جرّب زرّ «تجربة إشعار بعد دقيقة»، ثم أغلق التطبيق وانتظر.</p>
             <button className="ghost" onClick={() => setGuide(false)}>تم</button>
