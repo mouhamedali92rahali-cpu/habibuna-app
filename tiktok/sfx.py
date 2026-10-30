@@ -1,5 +1,5 @@
 # مؤثرات صوتية مولّدة (بلا موسيقى ولا ملفات خارجية): whoosh للانتقال بين المشاهد، tick لكل كلمة،
-# pop لظهور البطاقة، ding للإشعار، check للتوثيق، chime لزر الصلاة والخاتمة.
+# pop لظهور البطاقة، beat للعدّ التنازلي، ding للإشعار، check للتوثيق، chime لزر الصلاة والخاتمة.
 # الاستعمال: python3 sfx.py cues.json out.wav   (cues = {"duration": ث, "sfx": [{"t","kind","gain"}]})
 import json, sys, wave
 import numpy as np
@@ -60,6 +60,15 @@ def ding():
     return out * .35
 
 
+def beat():
+    # دقّة خشبية للعدّ التنازلي
+    n = int(.25 * SR); t = np.arange(n) / SR
+    f = 180 + 120 * np.exp(-t / .02)
+    x = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, .002, .06)
+    x += .3 * lowpass(rng.standard_normal(n), 2500) * env(n, .001, .006)
+    return x * .9
+
+
 def check():
     return bell([(1568, 1, 1), (3136, .2, .4)], .09, .3) * .4
 
@@ -78,7 +87,7 @@ def main(cues_path, out_path):
     total = np.zeros(int((meta['duration'] + 1) * SR))
     for i, c in enumerate(meta['sfx']):
         k = c['kind']
-        x = {'whoosh': whoosh, 'pop': pop, 'ding': ding, 'check': check, 'chime': chime}.get(k)
+        x = {'whoosh': whoosh, 'beat': beat, 'pop': pop, 'ding': ding, 'check': check, 'chime': chime}.get(k)
         x = x() if x else tick(1 + .06 * ((i * 5) % 4 - 1.5))
         s = max(0, int(c['t'] * SR)); e = min(len(total), s + len(x))
         total[s:e] += x[:e - s] * c.get('gain', 1)

@@ -37,11 +37,21 @@ function revealWords(el, lt, start, step, { dy = 26, blur = 8 } = {}) {
 const wordCount = el => el.querySelectorAll('.w').length;
 const wordTimes = (el, start, step) => [...el.querySelectorAll('.w')].map((_, i) => start + i * step);
 
+// كلمات القول بين «» تُلوَّن بلون الباب داخل البطاقة
+function quoteMark(html) {
+  let inQ = false;
+  return html.replace(/<span class="w">([^]*?)<\/span>/g, (m, w) => {
+    if (w.includes('«')) inQ = true;
+    const out = `<span class="w${inQ ? ' q' : ''}">${w}</span>`;
+    if (w.includes('»')) inQ = false;
+    return out;
+  });
+}
 // وجه البطاقة من بيانات cards.json كما هي (العنوان والنص والمصدر والدرجة)
 function cardFace(c, { textSize } = {}) {
   return `<div class="card ${c.theme || 'ivory'}"><div class="inner">${corners()}
     <div class="kicker">${MARK[c.chapter] || '✦'} ${c.chapter}</div><div class="num"><span>✦</span></div><div class="ctitle">${c.title}</div>
-    <div class="ctext"${textSize ? ` style="font-size:${textSize}px"` : ''}>${words(c.text)}</div>
+    <div class="ctext"${textSize ? ` style="font-size:${textSize}px"` : ''}>${quoteMark(words(c.text))}</div>
     <div class="divider"><span></span><i></i><span></span></div>
     <div class="src"><div>${bidiNums(c.source)}</div><div class="grade">${c.grade}</div></div></div></div>`;
 }
@@ -57,7 +67,10 @@ function scene(dur, build) {
 // شارة الخطوة والعنوان والترجمة السفلية (بنقرة لكل كلمة)
 function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
   let badge = null;
-  if (step) {
+  if (typeof step === 'string') {
+    badge = h(`<div class="badge abs"><div class="pill"><i></i>${step.replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`);
+    el.appendChild(badge);
+  } else if (step) {
     badge = h(`<div class="badge abs"><div class="pill"><i></i>${step[2] ? step[2].replace('ﷺ', '<span class="saw">ﷺ</span>') + '&nbsp; · &nbsp;' : ''}${step[0]}/${step[1]}</div><div class="dots">${Array.from({ length: step[1] }, (_, i) => `<b class="${i < step[0] ? 'on' : ''}"></b>`).join('')}</div></div>`);
     el.appendChild(badge);
   }
@@ -69,6 +82,48 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
     revealWords(ti, lt, .12, .11, { dy: 60, blur: 14 });
     if (su) revealWords(su, lt, subStart, subStep);
   };
+}
+
+// مشهد بطاقة: تصعد مقلوبة ثم تنقلب، يظهر نصها كلمة كلمة (بلا صوت)، ثم الشرح إن طُلب (sharhTitle).
+// step: [رقم، عدد، موضوع] أو نص للشارة وحده.
+function cardScene(it, step) {
+  const c = it.card;
+  const tmp = h(`<div>${words(c.text)}</div>`); const n = wordCount(tmp);
+  const T = 1.85, textEnd = T + n * .2 + .3, readEnd = textEnd + 2.6;
+  const withSharh = !!(it.sharhTitle && c.sharh);
+  const sharhN = withSharh ? c.sharh.text.split(' ').length : 0;
+  const P = readEnd, sharhStart = P + 1.0, dur = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
+  return scene(dur, (el, s) => {
+    const ch = chrome(el, s, { step, title: it.label });
+    const flip = h(`<div class="flip abs" style="left:110px;top:560px;width:860px;height:760px"><div class="back">${MIHRAB}</div><div class="face">${cardFace(c)}</div></div>`);
+    el.appendChild(flip);
+    const [bk, face] = flip.children, tx = face.querySelector('.ctext'), su = el.querySelector('.sub');
+    let panel = null, pt = null;
+    if (withSharh) {
+      panel = h(`<div class="panel abs"><h3>${words(it.sharhTitle)}</h3><p>${words(c.sharh.text)}</p><small>${c.sharh.source}</small></div>`);
+      el.appendChild(panel); pt = panel.querySelector('p');
+      sfx(s.start + P + .1, 'whoosh', .5); sfx(s.start + sharhStart, 'pop', .8);
+    }
+    sfx(s.start + 1.3, 'pop');
+    return lt => {
+      ch(lt);
+      // الصعود ثم القلب من الظهر إلى الوجه
+      const up = back(seg(lt, .7, .55)), rot = 180 * (1 - eo(seg(lt, 1.1, .7)));
+      bk.style.transform = `rotateY(${rot - 180}deg)`; face.style.transform = `rotateY(${rot}deg)`;
+      const shrink = withSharh ? eo(seg(lt, P, .8)) : 0;
+      css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink)})`, transformOrigin: '50% 0%' });
+      revealWords(tx, lt, T, .2, { dy: 14, blur: 6 });
+      if (withSharh) {
+        if (su) su.style.visibility = lt > P + .5 ? 'hidden' : '';
+        if (su) css(su, { opacity: 1 - seg(lt, P, .4) });
+        const q = back(seg(lt, sharhStart - .2, .6));
+        css(panel, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 80}px)` });
+        revealWords(panel.querySelector('h3'), lt, sharhStart, .12, { dy: 20 });
+        revealWords(pt, lt, sharhStart + .5, .08, { dy: 10, blur: 4 });
+        panel.querySelector('small').style.opacity = eo(seg(lt, sharhStart + .6 + sharhN * .08, .5)) * .9;
+      }
+    };
+  });
 }
 
 function finish() {

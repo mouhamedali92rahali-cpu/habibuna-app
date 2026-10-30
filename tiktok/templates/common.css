@@ -54,3 +54,10 @@ body{font-family:Tajawal,Amiri,sans-serif;color:var(--ivory);position:relative}
 .back::before{content:"";position:absolute;inset:22px;border:3px solid rgba(212,178,92,.7);border-radius:28px}
 .flip{perspective:2400px}
 .flip>*{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* لوحة الشرح تحت البطاقة */
+.panel{left:90px;right:90px;top:1000px;border-radius:40px;background:#13221e;border:2px solid rgba(217,178,94,.3);padding:40px 48px 34px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+.panel h3{font:700 60px/1.4 Amiri,serif;color:var(--ivory)}
+.panel p{font:400 42px/1.85 Naskh,Amiri,serif;color:#efe8d4;margin-top:12px}
+.panel p .w{margin:0 .06em}
+.panel small{display:block;margin-top:14px;font:400 28px Tajawal;color:var(--muted)}
+.ctext .q{color:var(--tc)}
