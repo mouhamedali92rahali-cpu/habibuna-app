@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حبيبنا — فيديو 1</title>
+<!-- الفيديو الأول لقناة تيك توك: «تعرّف على حبيبنا». كل إطار يُحسب من الزمن render(t)، ويسجّله render.mjs إطارًا إطارًا.
+     نصوص البطاقات (M01 وZ01) منقولة من public/cards.json حرفيًّا. -->
+<style>
+@font-face{font-family:Amiri;src:url(../../public/fonts/amiri-400.woff2) format('woff2');font-weight:400}
+@font-face{font-family:Amiri;src:url(../../public/fonts/amiri-700.woff2) format('woff2');font-weight:700}
+@font-face{font-family:Naskh;src:url(../../public/fonts/naskh-400.woff2) format('woff2')}
+@font-face{font-family:Tajawal;src:url(../../public/fonts/tajawal-400.woff2) format('woff2');font-weight:400}
+@font-face{font-family:Tajawal;src:url(../../public/fonts/tajawal-700.woff2) format('woff2');font-weight:700}
+:root{--bg:#0c1714;--gold:#d9b25e;--gold2:#c9a24b;--ivory:#f3e7c4;--emerald:#0f5c4d;--muted:#8fa49c}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+body{font-family:Tajawal,Amiri,sans-serif;color:var(--ivory);position:relative}
+.abs{position:absolute}
+#bg{inset:0;background:
+  radial-gradient(70% 38% at 50% 8%,rgba(15,92,77,.55),transparent 70%),
+  radial-gradient(60% 30% at 50% 100%,rgba(201,162,75,.12),transparent 70%),var(--bg)}
+#pat{inset:-120px;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23e9d8a6' stroke-width='.8'%3E%3Crect x='18' y='18' width='24' height='24'/%3E%3Crect x='18' y='18' width='24' height='24' transform='rotate(45 30 30)'/%3E%3C/g%3E%3C/svg%3E")}
+#vig{inset:0;background:radial-gradient(90% 70% at 50% 45%,transparent 55%,rgba(0,0,0,.55))}
+.scene{inset:0}
+/* الشارة والعنوان والترجمة */
+.badge{top:200px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:14px}
+.pill{display:flex;align-items:center;gap:14px;padding:10px 26px;border-radius:99px;background:rgba(255,255,255,.06);border:1.5px solid rgba(217,178,94,.35);font:700 32px Tajawal;color:var(--ivory);white-space:nowrap}
+.pill i{width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.dots{display:flex;gap:8px}.dots b{width:26px;height:5px;border-radius:3px;background:rgba(255,255,255,.15)}.dots b.on{background:var(--gold)}
+.title{top:300px;left:0;right:0;text-align:center;font:700 112px/1.35 Amiri,serif;white-space:nowrap}
+.w{display:inline-block;position:relative;margin:0 .1em}
+.acc{color:var(--gold)}
+.saw{font-family:Amiri,serif;font-size:.85em;font-weight:400}
+.ul{position:absolute;left:8%;right:8%;bottom:.02em;height:.06em;border-radius:9px;background:var(--gold);transform-origin:right center}
+.sub{top:1420px;left:40px;right:40px;text-align:center;font:700 52px/1.6 Tajawal,Amiri,sans-serif;color:#efe8d4}
+.sub .w{margin:0 .12em}
+.logo{top:1560px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:8px 22px 8px 14px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font:700 30px Amiri,serif;color:var(--ivory)}
+.logo svg{width:40px;height:40px;border-radius:10px}
+/* البطاقة (على شكل نافذة التطبيق) */
+.card{border-radius:44px;background:var(--frame);padding:26px;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 2px rgba(255,255,255,.06) inset}
+.inner{position:relative;border-radius:26px;background:#f7f1e2;background-image:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.7),transparent 60%);
+  padding:62px 52px 44px;display:flex;flex-direction:column;align-items:center;text-align:center;color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--cg) 55%,transparent) inset}
+.corner{position:absolute;width:110px;height:110px;color:var(--cg)}
+.tl{top:8px;left:8px}.tr{top:8px;right:8px;transform:scaleX(-1)}.bl{bottom:8px;left:8px;transform:scaleY(-1)}.br{bottom:8px;right:8px;transform:scale(-1,-1)}
+.kicker{font:400 36px Amiri,serif;opacity:.85}
+.num{display:flex;align-items:center;gap:18px;width:72%;margin:16px 0 8px}
+.num::before,.num::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--cg))}
+.num::after{background:linear-gradient(-90deg,transparent,var(--cg))}
+.num span{width:62px;height:62px;border-radius:50%;background:var(--nb);color:#fff;display:grid;place-items:center;font-size:30px;box-shadow:0 0 0 4px #f7f1e2,0 0 0 6px var(--cg)}
+.ctitle{font:700 62px/1.5 Amiri,serif;color:var(--tc);margin:12px 0 10px}
+.ctext{font:400 46px/2.05 Naskh,Amiri,serif}
+.ctext .w{margin:0 .08em}
+.divider{display:flex;align-items:center;gap:14px;width:60%;margin:24px 0 18px}
+.divider span{flex:1;height:2px;background:var(--cg)}.divider i{width:13px;height:13px;background:var(--cg);transform:rotate(45deg)}
+.src{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:32px}
+.grade{font-size:29px;opacity:.7}
+.ivory{--frame:#cdb67a;--cg:#a8822f;--ink:#3b2f12;--tc:#6e5518;--nb:#a8822f}
+.emer{--frame:#0f5c4d;--cg:#c9a24b;--ink:#1d2a28;--tc:#0f5c4d;--nb:#0f5c4d}
+.greet{font:400 46px Amiri,serif;color:var(--ivory);text-align:center;display:flex;align-items:center;justify-content:center;gap:14px}
+.pray{border-radius:32px;padding:30px 20px;font:700 44px Amiri,serif;color:#1d2a28;text-align:center;background:linear-gradient(180deg,#e7c97a,#c9a24b);box-shadow:0 16px 40px rgba(201,162,75,.35),0 2px 0 rgba(255,255,255,.5) inset}
+/* الهاتف */
+.phone{width:540px;height:1000px;border-radius:78px;background:#05100d;padding:16px;box-shadow:0 50px 100px rgba(0,0,0,.6),0 0 0 3px #2b3b36}
+.screen{position:relative;width:100%;height:100%;border-radius:64px;overflow:hidden;background:radial-gradient(120% 70% at 50% 0%,#1d5e50,#0b1a16 75%)}
+.clock{position:absolute;top:150px;left:0;right:0;text-align:center;font:400 168px/1 Tajawal;color:#f3ede0;direction:ltr;letter-spacing:2px}
+.date{position:absolute;top:110px;left:0;right:0;text-align:center;font:700 34px Tajawal;color:rgba(243,237,224,.8)}
+.note{position:absolute;top:400px;left:26px;right:26px;border-radius:40px;padding:26px 28px;background:rgba(247,241,226,.94);color:#1d2a28;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.note .hd{display:flex;align-items:center;gap:14px;font:700 28px Tajawal,Amiri}
+.note .hd svg{width:52px;height:52px;border-radius:13px}
+.note .hd small{margin-inline-start:auto;font-weight:400;opacity:.6;font-size:24px}
+.note p{margin-top:14px;font:400 30px/1.6 Naskh,Amiri;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* بطاقات الافتتاح المصغّرة */
+.mini{width:330px;height:500px;border-radius:34px;padding:16px;background:var(--frame);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.mini .in{width:100%;height:100%;border-radius:22px;background:#f7f1e2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:var(--ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--cg) 55%,transparent) inset}
+.mini .t{font:700 74px Tajawal;direction:ltr;color:var(--tc)}
+.mini .g{font:400 36px Amiri,serif}
+.mini .l{width:60%;height:10px;border-radius:5px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.mini .l.s{width:42%}
+.navy{--frame:#17305c;--cg:#c9a24b;--ink:#1d2a28;--tc:#17305c;--nb:#17305c}
+/* التوثيق */
+.panel{width:820px;border-radius:40px;background:#13221e;border:2px solid rgba(217,178,94,.25);padding:44px 48px;box-shadow:0 40px 80px rgba(0,0,0,.45)}
+.row{display:flex;align-items:center;gap:26px;padding:26px 0;border-bottom:1.5px solid rgba(255,255,255,.07)}
+.row:last-child{border:none}
+.row .ic{width:86px;height:86px;border-radius:24px;display:grid;place-items:center;background:rgba(217,178,94,.12);color:var(--gold);flex:none}
+.row .k{font:400 30px Tajawal;color:var(--muted)}
+.row .v{font:700 44px Tajawal,Amiri;color:var(--ivory);margin-top:4px}
+.ok{width:58px;height:58px;border-radius:50%;background:#2f8f6b;display:grid;place-items:center;margin-inline-start:auto;flex:none}
+.stamp{font:700 34px Amiri,serif;color:var(--gold);border:3px solid var(--gold);border-radius:18px;padding:8px 26px;text-align:center}
+/* الخاتمة */
+.icon{width:380px;height:380px;border-radius:92px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 3px rgba(217,178,94,.5)}
+.slogan{font:400 54px/1.6 Amiri,serif;color:var(--ivory);text-align:center}
+.chips{display:flex;gap:18px;justify-content:center}
+.chips span{padding:12px 30px;border-radius:99px;border:2px solid rgba(217,178,94,.45);font:700 34px Tajawal;color:var(--gold)}
+.ring{border-radius:50%;border:4px solid var(--gold)}
+</style>
+</head>
+<body>
+<div id="bg" class="abs"></div>
+<div id="pat" class="abs"></div>
+<div id="root"></div>
+<div id="vig" class="abs"></div>
+<script>
+// ---------- أدوات ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, d) => clamp((t - a) / d);
+const eo = x => 1 - Math.pow(1 - x, 3);
+const ei = x => x * x * x;
+const back = x => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const h = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
+const css = (el, o) => Object.assign(el.style, o);
+const SFX = [];
+const sfx = (t, kind, gain = 1) => SFX.push({ t: +t.toFixed(3), kind, gain });
+
+const CORNER = `<svg class="corner CLS" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2h56M2 2v56" stroke-width="2.4"/><path d="M10 10h40M10 10v40"/><g transform="translate(34 34)"><rect x="-15" y="-15" width="30" height="30"/><rect x="-15" y="-15" width="30" height="30" transform="rotate(45)"/><circle r="5.5"/></g><path d="M34 19v-9M19 34h-9M49 34h9M34 49v9"/></g></svg>`;
+const corners = () => ['tl', 'tr', 'bl', 'br'].map(c => CORNER.replace('CLS', c)).join('');
+const ICON = `<svg viewBox="0 0 512 512"><rect width="512" height="512" fill="#0f5c4d"/><path d="M256 70c60 40 110 70 110 150v170H146V220c0-80 50-110 110-150z" fill="none" stroke="#d4b25c" stroke-width="10"/><text x="256" y="320" text-anchor="middle" font-size="150" fill="#f3e7c4" font-family="Amiri">محمد</text></svg>`;
+const SUN = `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#e7c97a" stroke-width="1.8"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>`;
+const MOON = `<svg width="44" height="44" viewBox="0 0 24 24" fill="#e7c97a"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>`;
+const BOOK = `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5z"/><path d="M12 6.5v13"/></svg>`;
+const SCALE = `<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg>`;
+const CHECK = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+
+// نص بكلمة مُبرزة بين [ ]  → كلمات منفصلة تظهر واحدة واحدة
+function words(text) {
+  return text.split(' ').map(w => {
+    const acc = w.startsWith('[') && w.endsWith(']');
+    w = (acc ? w.slice(1, -1) : w).replace(/_/g, '\u00a0').replace('ﷺ', '<span class="saw">ﷺ</span>');
+    return `<span class="w${acc ? ' acc' : ''}">${w}${acc ? '<i class="ul"></i>' : ''}</span>`;
+  }).join(' ');
+}
+function revealWords(el, lt, start, step, { tick = null, dy = 26, blur = 8 } = {}) {
+  [...el.querySelectorAll('.w')].forEach((w, i) => {
+    const a = start + i * step, p = eo(seg(lt, a, .28));
+    css(w, { opacity: p, transform: `translateY(${(1 - p) * dy}px)`, filter: `blur(${(1 - p) * blur}px)` });
+    const ul = w.querySelector('.ul');
+    if (ul) ul.style.transform = `scaleX(${eo(seg(lt, a + .25, .35))})`;
+  });
+}
+function wordTimes(el, start, step) { return [...el.querySelectorAll('.w')].map((_, i) => start + i * step); }
+
+// ---------- المشاهد ----------
+const root = document.getElementById('root');
+const scenes = [];
+let T0 = 0;
+function scene(dur, build) {
+  const el = h('<div class="scene abs"></div>'); root.appendChild(el);
+  const s = { start: T0, dur, el }; s.update = build(el, s); scenes.push(s); T0 += dur; return s;
+}
+// شارة الخطوة والعنوان والترجمة: مشتركة بين المشاهد
+function chrome(el, s, { step, title, sub, subStart = .7, subStep = .2 }) {
+  let badge = null;
+  if (step) {
+    badge = h(`<div class="badge abs"><div class="pill"><i></i>الخطوة ${step[0]}/${step[1]}</div><div class="dots">${Array.from({ length: step[1] }, (_, i) => `<b class="${i < step[0] ? 'on' : ''}"></b>`).join('')}</div></div>`);
+    el.appendChild(badge);
+  }
+  const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
+  const su = h(`<div class="sub abs">${words(sub)}</div>`); el.appendChild(su);
+  wordTimes(su, subStart, subStep).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1));
+  return lt => {
+    if (badge) { const p = eo(seg(lt, .05, .4)); css(badge, { opacity: p, transform: `translateX(-50%) translateY(${(1 - p) * -20}px)` }); }
+    revealWords(ti, lt, .12, .11, { dy: 60, blur: 14 });
+    revealWords(su, lt, subStart, subStep);
+  };
+}
+
+// 0) الافتتاح: ثلاث بطاقات في اليوم
+scene(4.6, (el, s) => {
+  const ch = chrome(el, s, { title: 'تعرّف على [نبيّك] ﷺ', sub: '[3_بطاقات] قصيرة كل يوم .. من حياته ﷺ', subStart: 1.2, subStep: .22 });
+  const data = [['emer', '20:00', MOON, 'مساء الخير'], ['navy', '15:00', '', 'وقفة قصيرة'], ['ivory', '10:00', SUN, 'صباحك نور']];
+  const minis = data.map(([cls, t, ic, g]) => {
+    const m = h(`<div class="mini abs ${cls}"><div class="in"><div class="t">${t}</div><div class="g">${g}</div><div class="l"></div><div class="l s"></div></div></div>`);
+    el.appendChild(m); return m;
+  });
+  sfx(s.start + .75, 'pop', .8); sfx(s.start + .95, 'pop', .9); sfx(s.start + 1.15, 'pop', 1);
+  return lt => {
+    ch(lt);
+    minis.forEach((m, i) => {
+      const p = back(seg(lt, .65 + i * .2, .55)), f = eo(seg(lt, .7 + i * .2, .9));
+      const k = i - 1; // -1 0 1
+      const x = 540 - 165 + k * 250 * f, y = 560 + 420 * 0 + Math.abs(k) * 40 * f + (1 - p) * 500;
+      const r = k * 13 * f + Math.sin(lt * 1.3 + i) * 1.5;
+      css(m, { left: x + 'px', top: y + 'px', opacity: clamp(p * 1.4), transform: `rotate(${r}deg) scale(${.9 + .1 * p})`, zIndex: i === 1 ? 3 : 2 - Math.abs(k) + i });
+    });
+  };
+});
+
+// 1) الصباح: الهاتف يرنّ 10:00
+scene(5.0, (el, s) => {
+  const ch = chrome(el, s, { step: [1, 4], title: '[الصباح] 10:00', sub: 'في الصباح تصلك بطاقة من [ملامحه] وحياته اليومية', subStart: 1.6, subStep: .2 });
+  const ph = h(`<div class="phone abs"><div class="screen"><div class="date">الجمعة</div><div class="clock">09:59</div>
+    <div class="note"><div class="hd">${ICON}حبيبنا ﷺ<small>الآن</small></div><p>كان وجه رسول الله ﷺ مثل القمر؛ سُئل البراء: أكان وجهه مثل السيف؟ قال: لا، بل مثل القمر.</p></div></div></div>`);
+  el.appendChild(ph);
+  const clock = ph.querySelector('.clock'), note = ph.querySelector('.note');
+  sfx(s.start + 1.35, 'ding');
+  return lt => {
+    ch(lt);
+    const p = eo(seg(lt, .15, .7));
+    css(ph, { left: '270px', top: (480 + (1 - p) * 300) + 'px', opacity: p, transform: `scale(${.9 + .02 * Math.sin(lt * 2)})`, transformOrigin: '50% 30%' });
+    clock.textContent = lt < 1.1 ? '09:59' : '10:00';
+    const f = seg(lt, 1.05, .12); css(clock, { transform: `translateY(${f < 1 && f > 0 ? -10 : 0}px)`, opacity: lt < 1.1 ? 1 - f * .4 : .6 + .4 * eo(seg(lt, 1.1, .2)) });
+    const n = back(seg(lt, 1.3, .55)); css(note, { transform: `translateY(${(1 - n) * -260}px) scale(${.9 + .1 * n})`, opacity: clamp(n * 1.5) });
+  };
+});
+
+// 2) البطاقة: نص M01 كلمة كلمة
+scene(7.2, (el, s) => {
+  const ch = chrome(el, s, { step: [2, 4], title: 'اقرأ [البطاقة]', sub: 'موقف صغير .. [يقرّبك] منه ﷺ', subStart: 4.6, subStep: .24 });
+  const gr = h(`<div class="greet abs" style="left:0;right:0;top:520px">${SUN}صباحك نور</div>`); el.appendChild(gr);
+  const card = h(`<div class="card ivory abs" style="left:110px;width:860px;top:610px"><div class="inner">${corners()}
+    <div class="kicker">◈ الملامح والشكل</div><div class="num"><span>✦</span></div><div class="ctitle">كالقمر لا كالسيف</div>
+    <div class="ctext">${words('كان وجه رسول الله ﷺ مثل القمر؛ سُئل البراء: أكان وجهه مثل السيف؟ قال: لا، بل مثل القمر.')}</div></div></div>`);
+  el.appendChild(card);
+  const tx = card.querySelector('.ctext');
+  sfx(s.start + .4, 'pop');
+  wordTimes(tx, 1.1, .17).forEach(t => sfx(s.start + t, 'tick', .55));
+  return lt => {
+    ch(lt);
+    const g = eo(seg(lt, .3, .5)); css(gr, { opacity: g, transform: `translateY(${(1 - g) * 20}px)` });
+    const p = back(seg(lt, .35, .7));
+    css(card, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 120}px) scale(${.94 + .06 * p + lt * .004})` });
+    revealWords(tx, lt, 1.1, .17, { dy: 14, blur: 6 });
+  };
+});
+
+// 3) التوثيق: المصدر والدرجة
+scene(5.0, (el, s) => {
+  const ch = chrome(el, s, { step: [3, 4], title: '[موثّقة] بمصدرها', sub: 'كل بطاقة معها [مصدرها] ودرجتها', subStart: 2.3, subStep: .22 });
+  const pn = h(`<div class="panel abs" style="left:130px;top:640px">
+    <div class="row"><div class="ic">${BOOK}</div><div><div class="k">المصدر</div><div class="v">البخاري <bdi dir="ltr">(3552)</bdi></div></div><div class="ok">${CHECK}</div></div>
+    <div class="row"><div class="ic">${SCALE}</div><div><div class="k">الدرجة</div><div class="v">صحيح — البخاري</div></div><div class="ok">${CHECK}</div></div>
+  </div>`);
+  el.appendChild(pn);
+  const rows = [...pn.querySelectorAll('.row')], oks = [...pn.querySelectorAll('.ok')];
+  sfx(s.start + .3, 'pop', .8);
+  const okT = [1.0, 1.55]; okT.forEach(t => sfx(s.start + t, 'check'));
+  return lt => {
+    ch(lt);
+    const p = back(seg(lt, .25, .6)); css(pn, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 100}px) scale(${1.1 + .05 * p})` });
+    rows.forEach((r, i) => { const q = eo(seg(lt, .5 + i * .3, .4)); css(r, { opacity: q, transform: `translateX(${(1 - q) * -40}px)` }); });
+    oks.forEach((o, i) => { const q = back(seg(lt, okT[i], .35)); css(o, { transform: `scale(${q})`, opacity: clamp(q * 2) }); });
+  };
+});
+
+// 4) المساء: التذكير Z01 والزر
+scene(6.2, (el, s) => {
+  const ch = chrome(el, s, { step: [4, 4], title: '[صلِّ] عليه ﷺ', sub: 'وفي المساء: تذكير [بالصلاة] عليه ﷺ', subStart: 1.0, subStep: .22 });
+  const gr = h(`<div class="greet abs" style="left:0;right:0;top:470px">${MOON}مساء الخير</div>`); el.appendChild(gr);
+  const card = h(`<div class="card emer abs" style="left:130px;width:820px;top:550px"><div class="inner" style="padding:54px 46px 40px">${corners()}
+    <div class="kicker">تذكير</div><div class="ctitle" style="font-size:56px">صلِّ على الحبيب ﷺ</div>
+    <div class="ctext" style="font-size:40px;line-height:1.95">لا تنسَ الصلاة على الحبيب ﷺ؛ قال: «من صلّى عليّ صلاةً صلّى الله عليه بها عشرًا». اللهم صلِّ وسلّم على نبينا محمد.</div>
+    <div class="divider"><span></span><i></i><span></span></div><div class="src" style="font-size:30px"><div>مسلم <bdi dir="ltr">(384)</bdi></div><div class="grade">صحيح — مسلم</div></div></div></div>`);
+  el.appendChild(card);
+  const btn = h(`<div class="pray abs" style="left:130px;width:820px;top:1250px">اللهم صلِّ وسلِّم على نبيّنا محمد</div>`); el.appendChild(btn);
+  const ring = h(`<div class="ring abs"></div>`); el.appendChild(ring);
+  sfx(s.start + .35, 'pop'); sfx(s.start + 3.9, 'chime');
+  return lt => {
+    ch(lt);
+    const g = eo(seg(lt, .2, .5)); css(gr, { opacity: g, transform: `translateY(${(1 - g) * 20}px)` });
+    const p = back(seg(lt, .3, .7)); css(card, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 120}px) scale(${.94 + .06 * p})` });
+    const b = eo(seg(lt, .8, .5)), press = seg(lt, 3.75, .15) - seg(lt, 3.95, .2);
+    css(btn, { opacity: b, transform: `translateY(${(1 - b) * 40}px) scale(${1 - .05 * press})`, filter: `brightness(${1 + .25 * seg(lt, 3.9, .1) * (1 - seg(lt, 4.3, .6))})` });
+    const r = seg(lt, 3.9, 1.1); const R = 60 + 900 * eo(r);
+    css(ring, { width: R + 'px', height: R + 'px', left: (540 - R / 2) + 'px', top: (1310 - R / 2) + 'px', opacity: r > 0 ? (1 - r) * .8 : 0 });
+  };
+});
+
+// 5) الخاتمة: حمّل حبيبنا
+scene(5.2, (el, s) => {
+  const ch = chrome(el, s, { title: 'حمّل [حبيبنا]', sub: 'الرابط في [البايو] .. وتابعنا', subStart: 2.0, subStep: .24 });
+  const ic = h(`<div class="icon abs" style="left:350px;top:540px">${ICON}</div>`); el.appendChild(ic);
+  const glow = h(`<div class="abs" style="left:240px;top:430px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,94,.35),transparent 65%)"></div>`); el.insertBefore(glow, ic);
+  const sl = h(`<div class="slogan abs" style="left:60px;right:60px;top:965px">مواقف صغيرة .. تكشف لك عظمة شخصيته</div>`); el.appendChild(sl);
+  const chips = h(`<div class="chips abs" style="left:0;right:0;top:1110px"><span>مجاني</span><span>بلا حساب</span><span>بلا إعلانات</span></div>`); el.appendChild(chips);
+  const cs = [...chips.children];
+  sfx(s.start + .35, 'pop'); sfx(s.start + .5, 'chime', .7);
+  [1.25, 1.4, 1.55].forEach(t => sfx(s.start + t, 'tick', .7));
+  return lt => {
+    ch(lt);
+    const p = back(seg(lt, .3, .8)); css(ic, { opacity: clamp(p * 1.5), transform: `scale(${.6 + .4 * p + .015 * Math.sin(lt * 2.4)}) rotate(${(1 - p) * -8}deg)` });
+    css(glow, { opacity: eo(seg(lt, .5, 1)) * (.75 + .25 * Math.sin(lt * 2.4)) });
+    const q = eo(seg(lt, .8, .6)); css(sl, { opacity: q, transform: `translateY(${(1 - q) * 30}px)` });
+    cs.forEach((c, i) => { const k = back(seg(lt, 1.25 + i * .15, .4)); css(c, { opacity: clamp(k * 1.5), transform: `scale(${.7 + .3 * k})` }); });
+  };
+});
+
+const DURATION = T0;
+// شعار القناة أسفل الشاشة (ثابت)
+const logo = h(`<div class="logo abs">${ICON}حبيبنا ﷺ</div>`); document.body.appendChild(logo);
+scenes.slice(1).forEach(s => sfx(s.start - .12, 'whoosh'));
+sfx(0, 'whoosh', .6);
+
+window.render = function (t) {
+  document.getElementById('pat').style.transform = `translate(${-(t * 6) % 120}px, ${-(t * 10) % 120}px)`;
+  css(logo, { opacity: eo(seg(t, .3, .6)) });
+  scenes.forEach(s => {
+    const lt = t - s.start, on = lt >= -.01 && lt < s.dur + .01;
+    s.el.style.display = on ? '' : 'none';
+    if (!on) return;
+    s.update(lt);
+    // خروج المشهد: صعود وتلاشٍ مع ضبابية (الأخير يبقى)
+    const last = s === scenes[scenes.length - 1];
+    const o = last ? seg(lt, s.dur - .45, .45) : ei(seg(lt, s.dur - .3, .3));
+    const i = s.start > 0 ? eo(seg(lt, 0, .25)) : 1;
+    css(s.el, { opacity: i * (1 - o), transform: `translateY(${(1 - i) * 30 - o * 70}px)`, filter: o > 0 ? `blur(${o * 12}px)` : 'none' });
+  });
+};
+window.META = { duration: DURATION, sfx: SFX.sort((a, b) => a.t - b.t) };
+render(+(location.hash.slice(1) || 0));
+</script>
+</body>
+</html>
