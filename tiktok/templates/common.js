@@ -8,6 +8,7 @@ const back = x => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c *
 const h = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
 const css = (el, o) => Object.assign(el.style, o);
 const SFX = [];
+const TITLE_STEP = .2; // سرعة ظهور كلمات العنوان (أبطأ بطلب المستخدم؛ كانت .11)
 const sfx = (t, kind, gain = 1) => SFX.push({ t: +t.toFixed(3), kind, gain });
 
 const CORNER = `<svg class="corner CLS" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2h56M2 2v56" stroke-width="2.4"/><path d="M10 10h40M10 10v40"/><g transform="translate(34 34)"><rect x="-15" y="-15" width="30" height="30"/><rect x="-15" y="-15" width="30" height="30" transform="rotate(45)"/><circle r="5.5"/></g><path d="M34 19v-9M19 34h-9M49 34h9M34 49v9"/></g></svg>`;
@@ -75,11 +76,12 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
     el.appendChild(badge);
   }
   const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
+  if (ti.scrollWidth > 1000) ti.style.fontSize = Math.floor(108 * 1000 / ti.scrollWidth) + 'px'; // العنوان الطويل يصغر ليبقى في سطر
   const su = sub ? h(`<div class="sub abs">${words(sub)}</div>`) : null;
   if (su) { el.appendChild(su); wordTimes(su, subStart, subStep).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .85 : 1)); }
   return lt => {
     if (badge) { const p = eo(seg(lt, .05, .4)); css(badge, { opacity: p, transform: `translateX(-50%) translateY(${(1 - p) * -20}px)` }); }
-    revealWords(ti, lt, .12, .11, { dy: 60, blur: 14 });
+    revealWords(ti, lt, .12, TITLE_STEP, { dy: 60, blur: 14 });
     if (su) revealWords(su, lt, subStart, subStep);
   };
 }
@@ -89,7 +91,9 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
 function cardScene(it, step) {
   const c = it.card;
   const tmp = h(`<div>${words(c.text)}</div>`); const n = wordCount(tmp);
-  const T = 1.85, textEnd = T + n * .2 + .3, readEnd = textEnd + 2.6;
+  // البطاقة تأتي بعد اكتمال العنوان (d)، وتبقى بعد اكتمال نصها hold ثانية
+  const d = Math.max(0, .12 + it.label.split(' ').length * TITLE_STEP + .3 - .7);
+  const T = 1.85 + d, textEnd = T + n * .2 + .3, readEnd = textEnd + (it.hold || 2.6);
   const withSharh = !!(it.sharhTitle && c.sharh);
   const sharhN = withSharh ? c.sharh.text.split(' ').length : 0;
   const P = readEnd, sharhStart = P + 1.0, dur = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
@@ -104,11 +108,11 @@ function cardScene(it, step) {
       el.appendChild(panel); pt = panel.querySelector('p');
       sfx(s.start + P + .1, 'whoosh', .5); sfx(s.start + sharhStart, 'pop', .8);
     }
-    sfx(s.start + 1.3, 'pop');
+    sfx(s.start + 1.3 + d, 'pop');
     return lt => {
       ch(lt);
       // الصعود ثم القلب من الظهر إلى الوجه
-      const up = back(seg(lt, .7, .55)), rot = 180 * (1 - eo(seg(lt, 1.1, .7)));
+      const up = back(seg(lt, .7 + d, .55)), rot = 180 * (1 - eo(seg(lt, 1.1 + d, .7)));
       bk.style.transform = `rotateY(${rot - 180}deg)`; face.style.transform = `rotateY(${rot}deg)`;
       const shrink = withSharh ? eo(seg(lt, P, .8)) : 0;
       css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink)})`, transformOrigin: '50% 0%' });
