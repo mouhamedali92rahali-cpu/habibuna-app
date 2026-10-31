@@ -250,3 +250,4 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .wtimes b{font-family:'Noto Naskh Arabic',serif;color:#0f5c4d;direction:ltr;flex:none}
 .wdots{display:flex;gap:6px;margin-top:4px}.wdots i{width:22px;height:4px;border-radius:3px;background:#e1d6b8}.wdots i.on{background:#c9a24b}
 .tabs{z-index:6}
+.sysname{display:inline-block;max-width:100%;line-height:1.5;vertical-align:middle}

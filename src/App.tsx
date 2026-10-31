@@ -111,6 +111,8 @@ export default function App() {
   const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
   const donePhoneStep = () => { setPhoneStep(false); save('guideSeen', true); };
   const [sub, setSub] = useState<'main' | 'help'>('main');
+  // كل صفحة تُفتح من أعلاها
+  useEffect(() => { document.querySelector('main')?.scrollTo(0, 0); }, [tab, sub]);
   const [intro, setIntro] = useState<Intro | null>(() => load<Intro | null>('introCards', null));
   // نافذة البطاقة على الشاشة: إذن «الظهور فوق التطبيقات»، ومعاينتها على الويب في إطار
   const [overlay, setOverlay] = useState<boolean | null>(null);
@@ -361,7 +363,7 @@ export default function App() {
               <Frame className="ready">
                 <b className="big">كل شيء جاهز</b>
                 <p>هذه إعداداتك، وتجدها متى شئت في «الإعدادات ⚙» أسفل الشاشة.</p>
-                {!(isNative && maker !== 'normal' && phoneStep) && <button className="primary" onClick={() => { setFirstRun(false); setTab('feed'); }}>إلى بطاقاتك ✦</button>}
+                {!(isNative && maker !== 'normal' && phoneStep) && <button className="primary" onClick={() => { setFirstRun(false); setTab('feed'); }}>ابدأ الآن .. وصلِّ عليه ﷺ ✦</button>}
               </Frame>
             )}
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
@@ -373,7 +375,7 @@ export default function App() {
                 </ol>
                 <div className="safe"><p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p></div>
                 <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
-                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، إلى بطاقاتك ✦' : 'تم'}</button>
+                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن .. وصلِّ عليه ﷺ ✦' : 'تم'}</button>
               </Frame>
             )}
             <Frame title="البطاقات">
