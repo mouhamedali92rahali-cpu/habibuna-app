@@ -7,6 +7,12 @@ export const isNative = Capacitor.isNativePlatform();
 
 export const notifySupported = () => isNative || (typeof window !== 'undefined' && 'Notification' in window);
 
+/** هل أذن المستخدم بالإشعارات؟ (دون أن يُسأل) */
+export async function hasPermission(): Promise<boolean> {
+  if (isNative) return (await LocalNotifications.checkPermissions()).display === 'granted';
+  return notifySupported() && Notification.permission === 'granted';
+}
+
 export async function askPermission(): Promise<boolean> {
   if (isNative) {
     if ((await LocalNotifications.checkPermissions()).display === 'granted') return true;

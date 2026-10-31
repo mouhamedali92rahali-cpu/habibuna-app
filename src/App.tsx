@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, cardFor, FEATURED, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -106,7 +106,11 @@ export default function App() {
   const [isNew] = useState(() => !load('welcomeSeen', false) && !load('firstOpen', 0));
   const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (!load('welcomeSeen', false) ? 1 : 0));
   const [firstRun, setFirstRun] = useState(false);
-  const closeWelcome = () => { setWelcome(0); save('welcomeSeen', true); setTab('settings'); setFirstRun(true); };
+  // بعد الترحيب: شاومي وأمثالها إلى الإعدادات (خطوة البطارية)، وبقية الهواتف إلى البطاقات مباشرة
+  const closeWelcome = (granted = settings.notifyOn) => {
+    setWelcome(0); save('welcomeSeen', true);
+    if (isNative && maker !== 'normal' && granted && !load('guideSeen', false)) { setTab('settings'); setFirstRun(true); }
+  };
   // خطوة البطارية لشاومي وأمثالها: في صفحة الإعدادات الأولى حتى يضغط «تم»
   const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
   const donePhoneStep = () => { setPhoneStep(false); save('guideSeen', true); };
@@ -151,6 +155,14 @@ export default function App() {
 
   useEffect(() => { save('favs', favs); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
+  // الإشعارات بلا زرّ إيقاف داخل التطبيق (قرار المستخدم): مفعّلة ما دام الإذن موجودًا، وتُطفأ من إعدادات الهاتف فقط
+  useEffect(() => {
+    const sync = () => { void hasPermission().then((g) => setSettings((s) => (s.notifyOn === g ? s : { ...s, notifyOn: g }))).catch(() => {}); };
+    sync();
+    const onVis = () => { if (document.visibilityState === 'visible') sync(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
   useEffect(() => { save('hiddenChapters', hidden); }, [hidden]);
 
   const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
@@ -280,6 +292,13 @@ export default function App() {
       <main>
         {tab === 'feed' && (
           <section className="page feed">
+            {isNative && !settings.notifyOn && welcome === 0 && (
+              <div className="offer notify-off">
+                <b>الإشعارات غير مفعّلة</b>
+                <p>بدونها لا تصلك البطاقات في مواعيدها.</p>
+                <div className="btns"><button className="primary" onClick={async () => { if (!(await enableNotify())) void PhoneSettings.openAppSettings().catch(() => {}); }}>فعّل الإشعارات</button></div>
+              </div>
+            )}
             {isNative && latestApp && newer(latestApp, __APP_VERSION__) && updLater !== dayNo && (
               <div className="offer update">
                 <b>نسخة جديدة من «حبيبنا»</b>
@@ -369,13 +388,6 @@ export default function App() {
         {tab === 'settings' && sub === 'main' && (
           <section className="page settings">
             <h1><span>✦</span> الإعدادات <span>✦</span></h1>
-            {firstRun && (
-              <Frame className="ready">
-                <b className="big">كل شيء جاهز</b>
-                <p>هذه إعداداتك، وتجدها متى شئت في «الإعدادات ⚙» أسفل الشاشة.</p>
-                {!(isNative && maker !== 'normal' && phoneStep) && <button className="primary" onClick={() => { setFirstRun(false); setTab('feed'); }}>ابدأ الآن .. وصلِّ عليه ﷺ ✦</button>}
-              </Frame>
-            )}
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
               <Frame title="خطوة خاصة بهاتفك" className="hl">
                 <p>{maker === 'xiaomi' ? 'هواتف شاومي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
@@ -385,18 +397,10 @@ export default function App() {
                 </ul>
                 <div className="safe"><p>لن يعمل التطبيق في الخلفية ولن يستهلك بطاريتك؛ فقط تبقى مواعيد البطاقات محفوظة.</p></div>
                 <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
-                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن .. وصلِّ عليه ﷺ ✦' : 'تم'}</button>
+                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن ✦ وصلِّ عليه ﷺ' : 'تم'}</button>
               </Frame>
             )}
-            <Frame title="البطاقات">
-              <label className="row">
-                <span><b>إشعارات البطاقات</b><small>ثلاث بطاقات تصلك كل يوم</small></span>
-                <input type="checkbox" checked={settings.notifyOn} onChange={async (e) => {
-                  const on = e.target.checked;
-                  if (on && !(await askPermission())) { say(isNative ? 'لم تُفعَّل الإشعارات. يمكنك تفعيلها من إعدادات الهاتف.' : notifySupported() ? 'لم تُفعَّل الإشعارات في المتصفح.' : 'هذا المتصفح لا يدعم الإشعارات.'); return; }
-                  setSettings({ ...settings, notifyOn: on });
-                }} />
-              </label>
+            <Frame title="مواعيد البطاقات">
               <div className="times">{slots().map((m, k) => <span key={m}><b>{fmt(m)}</b><small>{['صباحًا', 'ظهرًا', 'مساءً'][k]}</small></span>)}</div>
             </Frame>
             <Frame title="البطاقة على شاشتك">
@@ -415,11 +419,6 @@ export default function App() {
               <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
             </Frame>
             <button className="helplink" onClick={() => setSub('help')}>لا تصلك البطاقات؟ المساعدة وتجربة الإشعارات ‹</button>
-            <Frame>
-              <div className="about"><div className="logo"><Mihrab /><span className="name">محمد<small>ﷺ</small></span></div></div>
-              <p className="center">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ.</p>
-              <p className="muted small">عدد البطاقات: {cards.filter((c) => c.chapter !== REMINDER).length}</p>
-            </Frame>
           </section>
         )}
 
@@ -498,18 +497,18 @@ export default function App() {
                     <li><b>{fmt(times[1])}</b><span>موقف من مواقفه وأخلاقه</span></li>
                     <li><b>{fmt(times[2])}</b><span>تذكير بالصلاة عليه ﷺ</span></li>
                   </ul>
-                  <button className="primary" onClick={() => (settings.notifyOn ? closeWelcome() : setWelcome(2))}>{settings.notifyOn ? 'ابدأ' : 'التالي'}</button>
+                  <button className="primary" onClick={() => (settings.notifyOn ? closeWelcome(true) : setWelcome(2))}>{settings.notifyOn ? 'ابدأ' : 'التالي'}</button>
                 </>
               ) : (
                 <>
                   <h2>إذن واحد فقط</h2>
                   <p>لننبّهك حين يحين موعد البطاقة، ثلاث مرات في اليوم لا أكثر.</p>
                   <div className="safe">
-                    <p>«حبيبنا» لا يطلب حسابًا ولا رقم هاتف، ولا يصل إلى رسائلك أو صورك أو جهات اتصالك، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الإشعارات متى شئت من «الإعدادات ⚙».</p>
+                    <p>«حبيبنا» لا يطلب حسابًا ولا رقم هاتف، ولا يصل إلى رسائلك أو صورك أو جهات اتصالك، ولا يجمع عنك أي معلومة. ويمكنك إيقافها متى شئت من إعدادات الهاتف.</p>
                   </div>
                   <p className="muted small">بعد الضغط ستظهر لك رسالة من الهاتف؛ اختر فيها <Sys k="allow" />.</p>
-                  <button className="primary" onClick={async () => { if (await enableNotify()) closeWelcome(); }}>فعّل الإشعارات</button>
-                  <button className="linkbtn" onClick={closeWelcome}>لاحقًا</button>
+                  <button className="primary" onClick={async () => { if (await enableNotify()) closeWelcome(true); }}>فعّل الإشعارات</button>
+                  <button className="linkbtn" onClick={() => closeWelcome(false)}>لاحقًا</button>
                 </>
               )}
               <div className="wdots"><i className={welcome === 1 ? 'on' : ''} /><i className={welcome === 2 ? 'on' : ''} /></div>
