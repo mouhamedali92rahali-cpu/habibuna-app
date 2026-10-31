@@ -1,17 +1,45 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, cardFor, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, cardFor, FEATURED, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { loadCards } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
-import { CardBack, CardFront, markOf } from './components/CardView';
+import { CardFront, markOf } from './components/CardView';
+import { Corner, Divider, Mihrab } from './components/Ornaments';
 import { Sys, sysText } from './lib/sysnames';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'feed', label: 'البطاقات', icon: '✦' }, { id: 'favs', label: 'المفضلة', icon: '♡' }, { id: 'settings', label: 'الإعدادات', icon: '⚙' },
 ];
+// إطار بشكل البطاقة (وجه عاجي وإطار زمردي وزخارف ذهبية) لصفحات الإعدادات والمساعدة
+function Frame({ title, className, children }: { title?: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={'panel framed' + (className ? ' ' + className : '')}>
+      <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
+      {title && <h2 className="ptitle">{title}</h2>}
+      {children}
+    </div>
+  );
+}
+type Intro = { day: number; ids: string[] };
+// بطاقات البداية (قرار المستخدم): ثلاث بطاقات اعتباطية تظهر لمن ثبّت التطبيق حديثًا في يومه الأول،
+// ثم تُستثنى من البطاقات القادمة فلا تتكرّر عليه. واحدة من الملامح والحياة اليومية واثنتان من بابين آخرين،
+// بلا أدعية ولا تذكير ولا ضعيف ولا طويل.
+function pickIntro(cards: CardData[]): string[] {
+  const ok = cards.filter((c) => c.chapter !== REMINDER && !c.dua && !c.weak && !c.long && !c.shifa);
+  const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+  const feat = ok.filter((c) => FEATURED.has(c.chapter));
+  const out: CardData[] = feat.length ? [rnd(feat)] : [];
+  while (out.length < 3) {
+    const left = ok.filter((c) => !FEATURED.has(c.chapter) && !out.some((o) => o.chapter === c.chapter));
+    if (!left.length) break;
+    out.push(rnd(left));
+  }
+  return out.map((c) => c.id);
+}
+
 function CardBlock({ c, fav, onFav, onShare }: { c: CardData; fav: boolean; onFav: () => void; onShare: () => void }) {
     const [showSrc, setShowSrc] = useState(false);
     const [showSharh, setShowSharh] = useState(false);
@@ -74,10 +102,16 @@ export default function App() {
   // صفحة الترحيب (أول فتح): إذن الإشعارات وحده، وفي شاومي وأمثالها خطوة واحدة لإعدادات التطبيق.
   // نافذة البطاقة على الشاشة لا تُطلب هنا؛ تُعرض بعد يومين في بطاقة «popupOffer» (قرار المستخدم)
   // الغلاف الكبير في أول فتح فقط، وبعده يبدأ التطبيق من بطاقات اليوم
-  const [showCover] = useState(() => !load('coverSeen', false));
-  useEffect(() => { save('coverSeen', true); }, []);
+  // الترحيب في صفحتين (الفكرة، ثم إذن الإشعارات)، ثم صفحة الإعدادات، ثم البطاقات (قرار المستخدم)
+  const [isNew] = useState(() => !load('welcomeSeen', false) && !load('firstOpen', 0));
   const [welcome, setWelcome] = useState<0 | 1 | 2>(() => (!load('welcomeSeen', false) ? 1 : 0));
-  const closeWelcome = () => { if (welcome === 2) save('guideSeen', true); setWelcome(0); save('welcomeSeen', true); };
+  const [firstRun, setFirstRun] = useState(false);
+  const closeWelcome = () => { setWelcome(0); save('welcomeSeen', true); setTab('settings'); setFirstRun(true); };
+  // خطوة البطارية لشاومي وأمثالها: في صفحة الإعدادات الأولى حتى يضغط «تم»
+  const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
+  const donePhoneStep = () => { setPhoneStep(false); save('guideSeen', true); };
+  const [sub, setSub] = useState<'main' | 'help'>('main');
+  const [intro, setIntro] = useState<Intro | null>(() => load<Intro | null>('introCards', null));
   // نافذة البطاقة على الشاشة: إذن «الظهور فوق التطبيقات»، ومعاينتها على الويب في إطار
   const [overlay, setOverlay] = useState<boolean | null>(null);
   // عرض النافذة بعد يومين من أول فتح، مرة واحدة، لمن لم يفعّلها (قرار المستخدم: لا تُطلب أذوناتها في الترحيب)
@@ -92,6 +126,12 @@ export default function App() {
   useEffect(() => {
     loadCards().then(setCards).catch(() => setErr(true));
   }, []);
+
+  useEffect(() => {
+    if (!cards || !isNew || intro) return;
+    const it = { day: dayNumber(new Date()), ids: pickIntro(cards) };
+    setIntro(it); save('introCards', it);
+  }, [cards, isNew, intro]);
 
   const ids = useMemo(() => (cards ?? []).map((c) => c.id), [cards]);
   const byId = useMemo(() => new Map((cards ?? []).map((c, i) => [c.id, { c, n: i + 1 }])), [cards]);
@@ -112,7 +152,11 @@ export default function App() {
   const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
 
   // ترتيب البطاقات المحفوظ بلا الأنواع المخفيّة؛ منه تُحسب بطاقات كل يوم (في التطبيق وفي الإشعارات)
-  const pool = useMemo(() => (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && (c.chapter === REMINDER || !hidden.includes(c.chapter))), [deck?.order, byId, hidden]);
+  // بطاقات البداية مستثناة منه، فلا تعود في الأيام القادمة
+  const pool = useMemo(() => {
+    const skip = new Set(intro?.ids ?? []);
+    return (deck?.order ?? []).map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c && !skip.has(c.id) && (c.chapter === REMINDER || !hidden.includes(c.chapter)));
+  }, [deck?.order, byId, hidden, intro]);
 
   // الساعة الحالية، تُحدَّث كل دقيقة وعند العودة للتطبيق، لتظهر بطاقة الموعد حين يحين
   const [now, setNow] = useState(() => new Date());
@@ -128,23 +172,32 @@ export default function App() {
   const times = useMemo(() => slots(settings), [settings]);
   const dayNo = dayNumber(now);
   const nowMin = now.getHours() * 60 + now.getMinutes();
+  // العدّ يبدأ من التثبيت (قرار المستخدم): في يوم التثبيت لا تظهر إلا مواعيد ما بعد ساعة التثبيت
+  const installDay = dayNumber(new Date(firstOpen));
+  const installMin = new Date(firstOpen).getHours() * 60 + new Date(firstOpen).getMinutes();
+  const slotOk = (day: number, m: number) => day > installDay || (day === installDay && m > installMin);
   const feed = useMemo(() => {
     if (pool.length === 0) return [] as { c: CardData; n: number }[];
     return times
       .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k).id) }))
-      .filter((x) => x.e && x.m <= nowMin)
+      .filter((x) => x.e && x.m <= nowMin && slotOk(dayNo, x.m))
       .map((x) => x.e!);
-  }, [pool, times, dayNo, nowMin, byId]);
+  }, [pool, times, dayNo, nowMin, byId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
+  const introToday = intro && intro.day === dayNo ? introCards : [];
   const nextAt = times.find((m) => m > nowMin);
   // بطاقات الأيام السبعة الماضية (قرار المستخدم): حتى لا تضيع بطاقة فاتت صاحبها
+  // تمتلئ يومًا بعد يوم من التثبيت حتى سبعة أيام؛ ويوم التثبيت فيه بطاقات البداية وما وصل بعدها
   const past = useMemo(() => {
     if (pool.length === 0) return [] as { label: string; cards: CardData[] }[];
     return Array.from({ length: 7 }, (_, i) => {
+      const day = dayNo - i - 1;
       const d = new Date(now.getTime() - (i + 1) * 86_400_000);
       const label = i === 0 ? 'أمس' : d.toLocaleDateString('ar', { weekday: 'long' });
-      return { label, cards: times.map((_m, k) => cardFor(pool, dayNo - i - 1, k)) };
-    });
-  }, [pool, times, dayNo]); // eslint-disable-line react-hooks/exhaustive-deps
+      const cards = times.flatMap((m, k) => (slotOk(day, m) ? [cardFor(pool, day, k)] : []));
+      return { label, cards: intro && intro.day === day ? [...introCards, ...cards] : cards };
+    }).filter((g) => g.cards.length > 0);
+  }, [pool, times, dayNo, intro, introCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (pool.length === 0) return;
@@ -213,7 +266,7 @@ export default function App() {
   if (!cards || !deck) return <div className="splash"><div className="spin" />جارٍ التحميل…</div>;
 
   return (
-    <div className="app">
+    <div className={'app' + (tab === 'settings' ? ' dressed' : '')}>
       <header className="top">
         <span className="brandmark">حبيبنا</span>
         {tab === 'feed' && (
@@ -223,17 +276,23 @@ export default function App() {
       <main>
         {tab === 'feed' && (
           <section className="page feed">
-            {showCover && <CardBack />}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
             {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
-            {feed.length === 0 && pool.length > 0 && (
+            {introToday.length > 0 && (
+              <>
+                <h2 className="today">ثلاث بطاقات للبداية</h2>
+                <p className="muted small intro-note">لتتعرّف على «حبيبنا». وبعدها تصلك البطاقات في مواعيدها: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً.</p>
+                {introToday.map((c) => <CardBlock key={c.id} c={c} fav={favs.includes(c.id)} onFav={() => toggleFav(c.id)} onShare={() => doShare(c)} />)}
+              </>
+            )}
+            {feed.length === 0 && introToday.length === 0 && pool.length > 0 && (
               <div className="waiting">
                 <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك ثلاث بطاقات كل يوم: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً.</p>
-                <b>البطاقة القادمة اليوم عند {fmt(times[0])}</b>
+                <b>{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</b>
                 <small>ما تحفظه بـ ♡ تجده في «المفضلة» متى شئت.</small>
               </div>
             )}
-            {feed.length > 0 && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
+            {(feed.length > 0 || introToday.length > 0) && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
             {isNative && offer && settings.notifyOn && (offer === 'done' || (settings.popupOn === false && Date.now() - firstOpen > 2 * 86_400_000)) && (
               <div className="offer">
@@ -295,41 +354,72 @@ export default function App() {
           </section>
         )}
 
-        {tab === 'settings' && (
+        {tab === 'settings' && sub === 'main' && (
           <section className="page settings">
-            <h1>الإعدادات</h1>
-            <div className="panel">
+            <h1><span>✦</span> الإعدادات <span>✦</span></h1>
+            {firstRun && (
+              <Frame className="ready">
+                <b className="big">كل شيء جاهز</b>
+                <p>هذه إعداداتك، وتجدها متى شئت في «الإعدادات ⚙» أسفل الشاشة.</p>
+                {!(isNative && maker !== 'normal' && phoneStep) && <button className="primary" onClick={() => { setFirstRun(false); setTab('feed'); }}>إلى بطاقاتك ✦</button>}
+              </Frame>
+            )}
+            {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
+              <Frame title="خطوة خاصة بهاتفك" className="hl">
+                <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح ما يلي، مرةً واحدة فقط:</p>
+                <ol>
+                  <li><Sys k="battery" />: اختر <Sys k="noRestrict" />.</li>
+                  <li><Sys k="autostart" />: فعّله إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
+                </ol>
+                <div className="safe"><p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p></div>
+                <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
+                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، إلى بطاقاتك ✦' : 'تم'}</button>
+              </Frame>
+            )}
+            <Frame title="البطاقات">
               <label className="row">
                 <span><b>إشعارات البطاقات</b><small>ثلاث بطاقات تصلك كل يوم</small></span>
                 <input type="checkbox" checked={settings.notifyOn} onChange={async (e) => {
                   const on = e.target.checked;
                   if (on && !(await askPermission())) { say(isNative ? 'لم تُفعَّل الإشعارات. يمكنك تفعيلها من إعدادات الهاتف.' : notifySupported() ? 'لم تُفعَّل الإشعارات في المتصفح.' : 'هذا المتصفح لا يدعم الإشعارات.'); return; }
                   setSettings({ ...settings, notifyOn: on });
-                  // هواتف شاومي وأمثالها: إرشاد مرة واحدة لتصل الإشعارات والتطبيق مغلق
-                  if (on && maker !== 'normal' && !load('guideSeen', false)) { setGuide(true); save('guideSeen', true); }
                 }} />
               </label>
-              <p className="muted small">تصلك ثلاث بطاقات كل يوم: {slots().map(fmt).join(' · ')}</p>
-              <button className="ghost" onClick={async () => {
-                if (!(await askPermission())) { say(isNative ? 'فعّل الإشعارات أولًا من إعدادات الهاتف.' : 'فعّل الإشعارات أولًا في المتصفح.'); return; }
-                say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي.');
-              }}>إشعار تجريبي</button>
-              {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
-              {isNative && (
+              <div className="times">{slots().map((m, k) => <span key={m}><b>{fmt(m)}</b><small>{['صباحًا', 'ظهرًا', 'مساءً'][k]}</small></span>)}</div>
+            </Frame>
+            <Frame title="البطاقة على شاشتك">
+              {isNative ? (
                 <label className="row">
                   <span><b>إظهار البطاقة على الشاشة</b><small>تنفتح البطاقة على شاشتك في موعدها</small></span>
                   <input type="checkbox" checked={settings.popupOn !== false} onChange={(e) => setSettings({ ...settings, popupOn: e.target.checked })} />
                 </label>
-              )}
+              ) : <p className="muted small">في نسخة الهاتف تنفتح البطاقة على شاشتك في موعدها.</p>}
               {isNative && settings.popupOn !== false && overlay === false && (
                 <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بـ<Sys k="overlay" /></button>
               )}
               {isNative && settings.popupOn !== false && maker === 'xiaomi' && (
                 <button className="linkbtn" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>في شاومي: السماح بـ<Sys k="bgPopup" /></button>
               )}
-              <button className="ghost" onClick={() => void previewPopup()}>معاينة البطاقة على الشاشة</button>
-              {maker !== 'normal' && <button className="linkbtn" onClick={() => setGuide(true)}>لا تصلك البطاقات حين يكون التطبيق مغلقًا؟</button>}
-              <button className="linkbtn" onClick={() => setWelcome(isNative ? 2 : 1)}>كيف تعمل الإشعارات؟</button>
+              <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
+            </Frame>
+            <button className="helplink" onClick={() => setSub('help')}>لا تصلك البطاقات؟ المساعدة وتجربة الإشعارات ‹</button>
+            <Frame>
+              <div className="about"><div className="logo"><Mihrab /><span className="name">محمد<small>ﷺ</small></span></div></div>
+              <p className="center">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ.</p>
+              <p className="muted small">عدد البطاقات: {cards.filter((c) => c.chapter !== REMINDER).length}</p>
+            </Frame>
+          </section>
+        )}
+
+        {tab === 'settings' && sub === 'help' && (
+          <section className="page settings">
+            <button className="backbtn" onClick={() => setSub('main')}>› الإعدادات</button>
+            <h1><span>✦</span> المساعدة <span>✦</span></h1>
+            <Frame title="تجربة الإشعارات">
+              <button className="ghost" onClick={async () => {
+                if (!(await askPermission())) { say(isNative ? 'فعّل الإشعارات أولًا من إعدادات الهاتف.' : 'فعّل الإشعارات أولًا في المتصفح.'); return; }
+                say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي.');
+              }}>إشعار تجريبي الآن</button>
               {isNative && (
                 <button className="ghost" onClick={async () => {
                   if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات أولًا من إعدادات الهاتف.'); return; }
@@ -339,27 +429,32 @@ export default function App() {
               {isNative && (
                 <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); setDiag(await diagnose(feed[0]?.c ?? cards[0])); }}>فحص الإشعارات</button>
               )}
+              {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
-              {isNative && exact === false && (
-                <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل البطاقات في وقتها بالضبط.' : 'ستبقى المواعيد تقريبية، وقد تتأخر البطاقة دقائق قليلة.'); }}>
-                  لتصل البطاقات في وقتها بالضبط: اسمح بـ<Sys k="alarms" />
-                </button>
-              )}
-              <p className="note">{isNative
-                ? `يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`
+            </Frame>
+            {isNative && (maker !== 'normal' || exact === false) && (
+              <Frame title="إن لم تصل البطاقات">
+                {maker !== 'normal' && <button className="ghost" onClick={() => setGuide(true)}>لتصل البطاقات والتطبيق مغلق</button>}
+                {exact === false && (
+                  <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل البطاقات في وقتها بالضبط.' : 'ستبقى المواعيد تقريبية، وقد تتأخر البطاقة دقائق قليلة.'); }}>
+                    لتصل في وقتها بالضبط: اسمح بـ<Sys k="alarms" />
+                  </button>
+                )}
+              </Frame>
+            )}
+            <Frame title="كيف تعمل الإشعارات؟">
+              <p>{isNative
+                ? `يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته، فتصلك البطاقات ولو كان مغلقًا. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} إن وجدته، واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`
                 : 'في المتصفح لا تصل الإشعارات إلا والتطبيق مفتوح. أما وصولها والتطبيق مغلق فيحتاج إلى نسخة الهاتف.'}</p>
-            </div>
-            <div className="panel">
-              <b>عن التطبيق</b>
-              <p className="muted">«حبيبنا» — مواقف صغيرة موثّقة من السنة النبوية، تكشف لك عظمة شخصية النبي ﷺ. عدد البطاقات: {cards.filter((c) => c.chapter !== REMINDER).length}.</p>
-            </div>
+              {isNative && <p className="muted small">ولتغيير صوت الإشعارات أو طريقة ظهورها: إعدادات الهاتف ← التطبيقات ← «حبيبنا» ← الإشعارات.</p>}
+            </Frame>
           </section>
         )}
       </main>
 
       <nav className="tabs">
         {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)}>
+          <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => { setTab(t.id); setSub('main'); }}>
             <i>{t.icon}</i>{t.label}
           </button>
         ))}
@@ -374,54 +469,39 @@ export default function App() {
         </div>
       )}
       {welcome !== 0 && (
-        <div className="modal">
-          <div className="sheet guide welcome">
-            {welcome === 1 ? (
-              <>
-                <h2>مرحبًا بك في «حبيبنا»</h2>
-                <p>مواقف صغيرة موثّقة من السنة، تكشف لك عظمة شخصيته ﷺ وتقرّبك منه.</p>
-                <b>تصلك ثلاث بطاقات كل يوم:</b>
-                <ul>
-                  <li><b>{fmt(times[0])}</b> — يومًا من ملامحه ﷺ وحياته اليومية كأنك تراه، ويومًا من مواقفه.</li>
-                  <li><b>{fmt(times[1])}</b> — موقف من مواقفه وأخلاقه.</li>
-                  <li><b>{fmt(times[2])}</b> — تذكير بالصلاة عليه ﷺ (ويوم الجمعة تذكير خاص).</li>
-                </ul>
-                {settings.notifyOn ? (
-                  <button className="primary" onClick={() => (isNative && maker !== 'normal' ? setWelcome(2) : closeWelcome())}>{isNative && maker !== 'normal' ? 'التالي' : 'ابدأ'}</button>
-                ) : (
-                  <>
-                    <div className="safe">
-                      <b>إذن واحد: الإشعارات</b>
-                      <p>لننبّهك حين يحين موعد البطاقة، ثلاث مرات في اليوم لا أكثر.</p>
-                      <p>«حبيبنا» لا يطلب حسابًا ولا رقم هاتف، ولا يصل إلى رسائلك أو صورك أو جهات اتصالك، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الإشعارات متى شئت من «الإعدادات ⚙».</p>
-                    </div>
-                    <p className="muted small">بعد الضغط ستظهر لك رسالة من الهاتف؛ اختر فيها <Sys k="allow" />.</p>
-                    <button className="primary" onClick={async () => { if (await enableNotify()) { if (isNative && maker !== 'normal') setWelcome(2); else closeWelcome(); } }}>فعّل الإشعارات</button>
-                    <button className="ghost" onClick={closeWelcome}>لاحقًا</button>
-                  </>
-                )}
-              </>
-            ) : maker !== 'normal' ? (
-              <>
-                <h2>خطوة أخيرة خاصة بهاتفك</h2>
-                <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح ما يلي، مرةً واحدة فقط:</p>
-                <ol>
-                  <li><Sys k="battery" />: اختر <Sys k="noRestrict" />.</li>
-                  <li><Sys k="autostart" />: فعّله إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
-                </ol>
-                <div className="safe">
-                  <p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p>
-                </div>
-                <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
-                <button className="ghost" onClick={closeWelcome}>تم</button>
-              </>
-            ) : (
-              <>
-                <h2>كيف تعمل الإشعارات؟</h2>
-                <p className="muted small">يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته، فتصلك البطاقات ولو كان مغلقًا. ولتغيير صوت الإشعارات أو طريقة ظهورها: إعدادات الهاتف ← التطبيقات ← «حبيبنا» ← الإشعارات.</p>
-                <button className="primary" onClick={closeWelcome}>تم</button>
-              </>
-            )}
+        <div className="modal wmodal">
+          <div className="wcard">
+            <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
+            <div className="winner">
+              {welcome === 1 ? (
+                <>
+                  <div className="logo"><Mihrab /><span className="name">محمد<small>ﷺ</small></span></div>
+                  <h2>حبيبنا</h2>
+                  <p className="tagline">مواقف صغيرة .. تكشف لك عظمة شخصيته ﷺ</p>
+                  <Divider />
+                  <p>مواقف قصيرة موثّقة من السنة، تُقرّبك منه ﷺ وتزيدك له حبًّا.</p>
+                  <p><b>لا تحتاج إلى البحث عنها؛ تصلك كل يوم ثلاث بطاقات:</b></p>
+                  <ul className="wtimes">
+                    <li><b>{fmt(times[0])}</b><span>من ملامحه ﷺ وحياته اليومية، أو من مواقفه</span></li>
+                    <li><b>{fmt(times[1])}</b><span>موقف من مواقفه وأخلاقه</span></li>
+                    <li><b>{fmt(times[2])}</b><span>تذكير بالصلاة عليه ﷺ</span></li>
+                  </ul>
+                  <button className="primary" onClick={() => (settings.notifyOn ? closeWelcome() : setWelcome(2))}>{settings.notifyOn ? 'ابدأ' : 'التالي'}</button>
+                </>
+              ) : (
+                <>
+                  <h2>إذن واحد فقط</h2>
+                  <p>لننبّهك حين يحين موعد البطاقة، ثلاث مرات في اليوم لا أكثر.</p>
+                  <div className="safe">
+                    <p>«حبيبنا» لا يطلب حسابًا ولا رقم هاتف، ولا يصل إلى رسائلك أو صورك أو جهات اتصالك، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الإشعارات متى شئت من «الإعدادات ⚙».</p>
+                  </div>
+                  <p className="muted small">بعد الضغط ستظهر لك رسالة من الهاتف؛ اختر فيها <Sys k="allow" />.</p>
+                  <button className="primary" onClick={async () => { if (await enableNotify()) closeWelcome(); }}>فعّل الإشعارات</button>
+                  <button className="linkbtn" onClick={closeWelcome}>لاحقًا</button>
+                </>
+              )}
+              <div className="wdots"><i className={welcome === 1 ? 'on' : ''} /><i className={welcome === 2 ? 'on' : ''} /></div>
+            </div>
           </div>
         </div>
       )}

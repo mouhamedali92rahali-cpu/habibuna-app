@@ -115,7 +115,7 @@ export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')
 export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
 
 /** أبواب «يتخيّله فيها»: البطاقة الأولى كل يوم منها (قرار المستخدم) */
-const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
+export const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
 /** باب بطاقات التذكير بالصلاة على النبي ﷺ: البطاقة الثالثة كل يوم، ولا يُخفى */
 export const REMINDER = 'الصلاة عليه';
 /** يوما بطاقات الأدعية: day % 7 (يوم 0 خميس، فالاثنين 4) */

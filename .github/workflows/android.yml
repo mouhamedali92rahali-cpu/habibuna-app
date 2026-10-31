@@ -1,4 +1,7 @@
 # يبني APK للتجربة مع كل تحديث على main، وينشره في إصدار ثابت اسمه apk-latest
+# ومع كل رقم نسخة جديد (versionName في android/app/build.gradle) ينشئ إصدارًا دائمًا v<النسخة> لا يُستبدل أبدًا،
+# فيتراكم عدّ التحميلات فيه؛ وصفحة التحميل تشير إلى أحدثها: releases/latest/download/habibuna.apk
+# (العدد الكلي = مجموع download_count لإصدارات v*، و33 تحميلًا قبل ذلك من apk-latest حتى 2026-10-31)
 # (رابط التحميل: https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/tag/apk-latest)
 name: Android APK
 
@@ -49,3 +52,23 @@ jobs:
             آخر بناء: ${{ github.sha }}
           prerelease: true
           files: habibuna-debug.apk
+      - name: إصدار دائم لكل رقم نسخة (لا يُستبدل، ليتراكم عدّ التحميلات)
+        id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
+          echo "v=$V" >> "$GITHUB_OUTPUT"
+          if gh release view "v$V" >/dev/null 2>&1; then echo "new=false" >> "$GITHUB_OUTPUT"; else echo "new=true" >> "$GITHUB_OUTPUT"; fi
+          cp habibuna-debug.apk habibuna.apk
+      - if: steps.ver.outputs.new == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.v }}
+          name: حبيبنا ${{ steps.ver.outputs.v }}
+          body: |
+            حبيبنا — النسخة ${{ steps.ver.outputs.v }} للأندرويد.
+            حمّل الملف habibuna.apk على الهاتف وثبّته فوق النسخة القديمة (تبقى المفضلة والإعدادات).
+          prerelease: false
+          make_latest: true
+          files: habibuna.apk
