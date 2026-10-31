@@ -384,7 +384,7 @@ export default function App() {
                   <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
                 </ul>
                 <div className="safe"><p>لن يعمل التطبيق في الخلفية ولن يستهلك بطاريتك؛ فقط تبقى مواعيد البطاقات محفوظة.</p></div>
-                <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
+                <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
                 <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن .. وصلِّ عليه ﷺ ✦' : 'تم'}</button>
               </Frame>
             )}
@@ -527,7 +527,7 @@ export default function App() {
               <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
             </ul>
             {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
-            <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
+            <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
             <p className="muted small">ثم جرّب «تجربة إشعار بعد دقيقة» وأغلق التطبيق.</p>
             <button className="ghost" onClick={() => setGuide(false)}>تم</button>
           </div>
