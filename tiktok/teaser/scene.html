@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>فيديو تشويقي</title>
+<!-- فيديو تشويقي لفيسبوك (طلب المستخدم): نحو 16 ثانية، بلا اسم التطبيق ولا شعاره ولا كود التحميل، ولا يشرح الفكرة مباشرة.
+     سؤال ← لحظات قليلة في اليوم ← بطاقة تنقلب ولا يظهر منها إلا أول سطر ← ثلاثة أوقات ← «قريبًا». -->
+<link rel="stylesheet" href="../templates/common.css">
+<style>
+.big{top:680px;left:60px;right:60px;text-align:center;font:700 112px/1.5 Amiri,serif}
+.small{top:1120px;left:60px;right:60px;text-align:center;font:400 52px/1.6 Tajawal,Amiri,sans-serif;color:var(--muted)}
+.glow{left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,rgba(217,178,94,.22),transparent)}
+.mih{display:grid;place-items:center;color:#d4b25c}
+.mih text{display:none}
+.blurline{filter:blur(13px);opacity:.75}
+.times{top:780px;left:0;right:0;display:flex;justify-content:center;gap:70px;direction:ltr}
+.tm{display:flex;flex-direction:column;align-items:center;gap:18px}
+.tm b{font:700 96px Naskh,serif;color:var(--ivory)}
+.tm i{width:16px;height:16px;border-radius:50%;background:var(--gold);box-shadow:0 0 24px var(--gold)}
+.soon{top:740px;left:0;right:0;text-align:center;font:700 170px/1.4 Amiri,serif;color:var(--gold)}
+.line{top:1010px;left:50%;width:420px;height:3px;margin-left:-210px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform-origin:center}
+</style>
+</head>
+<body>
+<div id="bg" class="abs"></div>
+<div id="pat" class="abs"></div>
+<div id="root"></div>
+<div id="vig" class="abs"></div>
+<script src="../templates/common.js"></script>
+<script>
+// نص بكلمات تظهر واحدة واحدة مع نقرة خافتة لكل كلمة (قاعدة الصوت A)
+function textScene(dur, big, small) {
+  return scene(dur, (el, s) => {
+    const b = h(`<div class="big abs">${big.split('|').map(words).join('<br>')}</div>`); el.appendChild(b);
+    const sm = small ? h(`<div class="small abs">${words(small)}</div>`) : null; if (sm) el.appendChild(sm);
+    const nb = wordCount(b), st = .3, step = .26, st2 = st + nb * step + .35;
+    wordTimes(b, st, step).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .7 : .85));
+    if (sm) wordTimes(sm, st2, .22).forEach(t => sfx(s.start + t, 'tick', .5));
+    return lt => { revealWords(b, lt, st, step, { dy: 50, blur: 14 }); if (sm) revealWords(sm, lt, st2, .22); };
+  });
+}
+
+// 1) سؤال
+textScene(3.1, 'كم مرّة في يومك|[تتذكّره]؟');
+// 2) تلميح
+textScene(3.3, 'لحظاتٌ قليلة|كلّ يوم', 'تُقرّبك منه .. أكثر مما تظن');
+
+// 3) بطاقة تنقلب، ولا يظهر منها إلا أول سطر
+scene(4.4, (el, s) => {
+  const glow = h('<div class="glow abs"></div>'); el.appendChild(glow);
+  const face = `<div class="card emerald"><div class="inner">${corners()}
+    <div class="kicker">✦</div><div class="num"><span>✦</span></div>
+    <div class="ctext"><span class="w">كان</span> <span class="w">رسول</span> <span class="w">الله</span> <span class="w"><span class="saw">ﷺ</span></span> <span class="w">..</span></div>
+    <div class="ctext blurline">ـــــ ـــــــ ــــ ـــــــــ ـــ ــــــ ـــــــ<br>ــــــــ ـــ ـــــــ ــــــ ـــــ ــــ</div>
+    <div class="divider"><span></span><i></i><span></span></div>
+    <div class="src blurline"><div>ـــــــــ ـــــ</div><div class="grade">ـــــ — ــــــــ</div></div></div></div>`;
+  const flip = h(`<div class="flip abs" style="left:150px;top:560px;width:780px;height:760px"><div class="back mih">${MIHRAB.replace('محمد', '')}</div><div class="face">${face}</div></div>`);
+  el.appendChild(flip);
+  const [bk, fc] = flip.children, tx = fc.querySelector('.ctext');
+  sfx(s.start + .5, 'pop', .8); sfx(s.start + 1.5, 'whoosh', .5);
+  wordTimes(tx, 2.3, .3).forEach(t => sfx(s.start + t, 'tick', .55));
+  return lt => {
+    const up = back(seg(lt, .1, .6)), rot = 180 * (1 - eo(seg(lt, 1.4, .8)));
+    bk.style.transform = `rotateY(${rot - 180}deg)`; fc.style.transform = `rotateY(${rot}deg)`;
+    css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160}px) scale(${.9 + .1 * up})` });
+    css(glow, { opacity: .6 + .4 * Math.sin(lt * 2.4) });
+    revealWords(tx, lt, 2.3, .3, { dy: 14, blur: 6 });
+  };
+});
+
+// 4) ثلاثة أوقات
+scene(2.8, (el, s) => {
+  const box = h(`<div class="times abs">${['10:00', '15:00', '20:00'].map(x => `<div class="tm"><b>${x}</b><i></i></div>`).join('')}</div>`); el.appendChild(box);
+  const items = [...box.children];
+  items.forEach((_, i) => sfx(s.start + .3 + i * .45, 'pop', .6));
+  return lt => items.forEach((it, i) => { const p = back(seg(lt, .3 + i * .45, .5)); css(it, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 60}px)` }); });
+});
+
+// 5) قريبًا
+scene(3.2, (el, s) => {
+  const t = h(`<div class="soon abs">قريبًا</div>`); el.appendChild(t);
+  const ln = h('<div class="line abs"></div>'); el.appendChild(ln);
+  const sm = h(`<div class="small abs" style="top:1060px">${words('ترقّبوا ..')}</div>`); el.appendChild(sm);
+  sfx(s.start + .25, 'chime', .5);
+  return lt => {
+    const p = eo(seg(lt, .2, .8));
+    css(t, { opacity: p, transform: `scale(${.92 + .08 * p})`, filter: `blur(${(1 - p) * 16}px)` });
+    ln.style.transform = `scaleX(${eo(seg(lt, .7, .6))})`;
+    revealWords(sm, lt, 1.2, .25);
+  };
+});
+
+finish();
+document.querySelector('.logo').style.display = 'none'; // بلا اسم التطبيق
+</script>
+</body>
+</html>
