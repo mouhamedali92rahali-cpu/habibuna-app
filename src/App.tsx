@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, cardFor, FEATURED, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
-import { loadCards } from './lib/cards';
+import { latestApp, loadCards, newer } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { CardFront, markOf } from './components/CardView';
@@ -118,6 +118,8 @@ export default function App() {
   const [overlay, setOverlay] = useState<boolean | null>(null);
   // عرض النافذة بعد يومين من أول فتح، مرة واحدة، لمن لم يفعّلها (قرار المستخدم: لا تُطلب أذوناتها في الترحيب)
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
+  // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
+  const [updLater, setUpdLater] = useState(() => load<number>('updateLater', 0));
   const [offer, setOffer] = useState<'ask' | 'done' | null>(() => (load('popupOffer', false) ? null : 'ask'));
   const closeOffer = () => { setOffer(null); save('popupOffer', true); };
   const [preview, setPreview] = useState<string | null>(null);
@@ -278,6 +280,16 @@ export default function App() {
       <main>
         {tab === 'feed' && (
           <section className="page feed">
+            {isNative && latestApp && newer(latestApp, __APP_VERSION__) && updLater !== dayNo && (
+              <div className="offer update">
+                <b>نسخة جديدة من «حبيبنا»</b>
+                <p>حمّلها وثبّتها فوق نسختك؛ تبقى مفضلتك وإعداداتك كما هي. بعد التحميل افتح الملف واضغط <Sys k="update" />.</p>
+                <div className="btns">
+                  <a className="primary" href="https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/latest/download/habibuna.apk" target="_blank" rel="noopener">تحميل التحديث</a>
+                  <button className="linkbtn" onClick={() => { setUpdLater(dayNo); save('updateLater', dayNo); }}>لاحقًا</button>
+                </div>
+              </div>
+            )}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
             {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
             {introToday.length > 0 && (
@@ -301,11 +313,9 @@ export default function App() {
                 {offer === 'ask' ? (
                   <>
                     <b>ميزة اختيارية: البطاقة على شاشتك</b>
-                    <p>تصلك البطاقة الآن تنبيهًا صغيرًا في أعلى الشاشة، وقد يضيع بين التنبيهات الكثيرة.</p>
-                    <p>وإن شئت، تنفتح البطاقة نفسها على شاشتك في مواعيدها: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً، حتى لو كنت تستعمل تطبيقًا آخر؛ فتقرؤها، ثم تغلقها بزرّ «اللهم صلِّ وسلِّم على نبيّنا محمد». ولترى شكلها اضغط «معاينة».</p>
+                    <p>بدل التنبيه الصغير، تنفتح البطاقة نفسها على شاشتك في مواعيدها، ولو كنت في تطبيق آخر، ثم تغلقها بزرّ «اللهم صلِّ وسلِّم على نبيّنا محمد».</p>
                     <div className="safe">
-                      <p>تحتاج هذه الميزة إلى إذن <Sys k="overlay" />. ربما سمعت تحذيرًا من هذا الإذن، لأن بعض التطبيقات تسيء استعماله؛ أما «حبيبنا» فلا يستعمله إلا لأمر واحد: إظهار بطاقته في مواعيدها الثلاثة.</p>
-                      <p>فهو لا يرى ما على شاشتك، ولا يقرأ ما تكتبه، ولا يجمع عنك أي معلومة. ويمكنك إيقاف الميزة متى شئت من «الإعدادات ⚙».</p>
+                      <p>تحتاج إذن <Sys k="overlay" />. قد تكون سمعت تحذيرًا منه، لكن «حبيبنا» لا يستعمله إلا لإظهار بطاقته: لا يرى شاشتك، ولا يجمع عنك شيئًا، وتوقفها متى شئت من «الإعدادات ⚙».</p>
                     </div>
                     <div className="btns">
                       <button className="primary" onClick={() => { setSettings({ ...settings, popupOn: true }); setOffer('done'); if (overlay !== true) void PhoneSettings.openOverlaySettings().catch(() => {}); }}>نعم، فعّلها</button>
@@ -368,12 +378,12 @@ export default function App() {
             )}
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
               <Frame title="خطوة خاصة بهاتفك" className="hl">
-                <p>{maker === 'xiaomi' ? 'توقف هواتف شاومي' : 'توقف بعض الهواتف'} التطبيقاتِ المغلقة توفيرًا للبطارية، فتضيع معها مواعيد البطاقات. ولكي تصلك البطاقات وإن أغلقت التطبيق، اضغط الزرّ أدناه، ثم غيّر في الصفحة التي ستنفتح ما يلي، مرةً واحدة فقط:</p>
-                <ol>
-                  <li><Sys k="battery" />: اختر <Sys k="noRestrict" />.</li>
-                  <li><Sys k="autostart" />: فعّله إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
-                </ol>
-                <div className="safe"><p>لن يبقى التطبيق يعمل في الخلفية، ولن يستهلك بطاريتك؛ كلّ ما في الأمر أن مواعيد البطاقات الثلاث تبقى محفوظة بعد إغلاقه.</p></div>
+                <p>{maker === 'xiaomi' ? 'هواتف شاومي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
+                <ul className="steps">
+                  <li><Sys k="battery" /> ← <Sys k="noRestrict" /></li>
+                  <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
+                </ul>
+                <div className="safe"><p>لن يعمل التطبيق في الخلفية ولن يستهلك بطاريتك؛ فقط تبقى مواعيد البطاقات محفوظة.</p></div>
                 <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
                 <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن .. وصلِّ عليه ﷺ ✦' : 'تم'}</button>
               </Frame>
@@ -510,15 +520,15 @@ export default function App() {
       {guide && (
         <div className="modal" onClick={() => setGuide(false)}>
           <div className="sheet guide" onClick={(e) => e.stopPropagation()}>
-            <h2>لتصلك البطاقات وإن كان التطبيق مغلقًا</h2>
-            <p className="muted small">يوقف هاتفك التطبيقات المغلقة ويمسح مواعيدها توفيرًا للبطارية. يكفي أن تغيّر ما يلي، مرةً واحدة فقط:</p>
-            <ol>
-              <li><Sys k="battery" />: اختر <Sys k="noRestrict" /> لـ«حبيبنا».</li>
-              <li><Sys k="autostart" />: فعّله لـ«حبيبنا» إن وجدته؛ فبعض الهواتف الحديثة لم يعد فيها هذا الخيار.</li>
-            </ol>
+            <h2>لتصلك البطاقات والتطبيق مغلق</h2>
+            <p className="muted small">يكفي أن تغيّر مرةً واحدة في إعدادات «حبيبنا»:</p>
+            <ul className="steps">
+              <li><Sys k="battery" /> ← <Sys k="noRestrict" /></li>
+              <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
+            </ul>
             {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
             <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>فتح إعدادات «حبيبنا»</button>
-            <p className="muted small">بعد ذلك جرّب زرّ «تجربة إشعار بعد دقيقة»، ثم أغلق التطبيق وانتظر.</p>
+            <p className="muted small">ثم جرّب «تجربة إشعار بعد دقيقة» وأغلق التطبيق.</p>
             <button className="ghost" onClick={() => setGuide(false)}>تم</button>
           </div>
         </div>

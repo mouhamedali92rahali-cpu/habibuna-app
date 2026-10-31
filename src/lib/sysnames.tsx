@@ -4,7 +4,7 @@
 // و«Superposition sur d'autres applis» من أدلة Pixel ومنتدى شاومي، و«Alarmes et rappels» من وثائق Android.
 // battery وnoRestrict مؤكّدة من لقطة هاتف المستخدم (Xiaomi 15، HyperOS، 2026-10-30): «Puissance» ثم «Pas de restriction» بالمفرد.
 // bgPopup مؤكّد من لقطة «Autres autorisations» في هاتف المستخدم. autostart غير موجود في HyperOS الحديث (هاتفه)، ويبقى للهواتف الأقدم.
-type Key = 'autostart' | 'battery' | 'noRestrict' | 'overlay' | 'bgPopup' | 'alarms' | 'allow';
+type Key = 'autostart' | 'battery' | 'noRestrict' | 'overlay' | 'bgPopup' | 'alarms' | 'allow' | 'update';
 const NAMES: Record<Key, { ar: string; fr: string; en: string }> = {
   autostart: { ar: 'التشغيل التلقائي', fr: 'Démarrage automatique', en: 'Autostart' },
   battery: { ar: 'توفير البطارية', fr: 'Puissance › Économiseur de batterie', en: 'Battery saver' },
@@ -13,6 +13,7 @@ const NAMES: Record<Key, { ar: string; fr: string; en: string }> = {
   bgPopup: { ar: 'عرض النوافذ المنبثقة أثناء التشغيل في الخلفية', fr: "Ouvrir de nouvelles fenêtres contextuelles pendant l'exécution en arrière-plan", en: 'Display pop-up windows while running in the background' },
   alarms: { ar: 'المنبّهات والتذكيرات', fr: 'Alarmes et rappels', en: 'Alarms & reminders' },
   allow: { ar: 'السماح', fr: 'Autoriser', en: 'Allow' },
+  update: { ar: 'تحديث', fr: 'Mettre à jour', en: 'Update' }, // زرّ مثبّت أندرويد عند تثبيت نسخة فوق نسخة (ذكره المستخدم: «Mettre à jour»)
 };
 const lang = (): 'fr' | 'en' | null => {
   const l = (navigator.languages?.[0] ?? navigator.language ?? '').toLowerCase();
