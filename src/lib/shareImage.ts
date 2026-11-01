@@ -40,11 +40,13 @@ export async function cardToBlob(card: CardData): Promise<Blob | null> {
   ctx.fillStyle = frame; ctx.font = '400 32px "Noto Naskh Arabic", serif';
   ctx.fillText('المصدر: ' + card.source, W / 2, H - 250);
   ctx.fillStyle = gold; ctx.font = '700 40px Amiri, serif'; ctx.fillText('حبيبنا', W / 2, H - 170);
+  ctx.fillStyle = frame; ctx.font = '400 26px "Noto Naskh Arabic", serif'; ctx.fillText('mouhamedali92rahali-cpu.github.io/habibuna-app', W / 2, H - 125);
   return new Promise((res) => c.toBlob((b) => res(b), 'image/png'));
 }
 
 export async function shareCard(card: CardData) {
-  const text = `${card.text}\n\n— ${card.source}\nتطبيق «حبيبنا»`;
+  // رابط صفحة التحميل في آخر النص المشارَك (اقتراح وافق عليه المستخدم): كل مشاركة دعوة للتطبيق
+  const text = `${card.text}\n\n— ${card.source}\n\nحمّل تطبيق «حبيبنا»: https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html`;
   const blob = await cardToBlob(card);
   if (blob) {
     const file = new File([blob], 'card.png', { type: 'image/png' });
