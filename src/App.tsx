@@ -7,7 +7,7 @@ import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from
 import { shareCard } from './lib/shareImage';
 import { CardFront, markOf } from './components/CardView';
 import { Corner, Divider, Mihrab } from './components/Ornaments';
-import { Sys, sysText } from './lib/sysnames';
+import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -411,10 +411,18 @@ export default function App() {
                 </label>
               ) : <p className="muted small">في نسخة الهاتف تنفتح البطاقة على شاشتك في موعدها.</p>}
               {isNative && settings.popupOn !== false && overlay === false && (
-                <button className="ghost" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>السماح بـ<Sys k="overlay" /></button>
+                <div className="perm">
+                  <p>لتظهر البطاقة على شاشتك، اسمح بـ{sysAr('overlay')}، ثم ارجع إلى التطبيق.</p>
+                  <SysLine k="overlay" />
+                  <button className="primary" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>اضغط هنا للسماح</button>
+                </div>
               )}
               {isNative && settings.popupOn !== false && maker === 'xiaomi' && (
-                <button className="linkbtn" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>في شاومي: السماح بـ<Sys k="bgPopup" /></button>
+                <div className="perm">
+                  <p>وفي هواتف شاومي إذن إضافي لتظهر البطاقة وأنت في تطبيق آخر: {sysAr('bgPopup')}. إن سمحت به من قبل فلا تحتاج شيئًا.</p>
+                  <SysLine k="bgPopup" />
+                  <button className="ghost" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>اضغط هنا للسماح</button>
+                </div>
               )}
               <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
             </Frame>

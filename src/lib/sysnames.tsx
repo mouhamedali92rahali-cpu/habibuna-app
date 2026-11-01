@@ -26,3 +26,9 @@ export function Sys({ k }: { k: Key }) {
   const n = NAMES[k], l = lang();
   return <>«{n.ar}»{l && <> <bdi dir="ltr" className="sysname">{n[l]}</bdi></>}</>;
 }
+/** الاسم العربي وحده (للجملة)، والاسم بلغة الهاتف في سطر مستقل تحتها (SysLine)، حتى لا تنقلب علامات الترقيم */
+export const sysAr = (k: Key) => `«${NAMES[k].ar}»`;
+export function SysLine({ k }: { k: Key }) {
+  const l = lang();
+  return l ? <bdi dir="ltr" className="sysname line">{NAMES[k][l]}</bdi> : null;
+}
