@@ -6,8 +6,10 @@ import { CardFront } from './CardView';
  * شاشة «مراجعة الأسبوع»: سؤال بأربعة خيارات، ثم صح/خطأ والبطاقة نفسها بنصها ومصدرها،
  * ثم النتيجة في النهاية. لا يُرسل شيء خارج الهاتف.
  */
-export function Quiz({ items, streak, practice, onFinish, onClose }: {
+export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }: {
   items: QuizItem[];
+  favs: string[];
+  onFav: (id: string) => void;
   streak: number;
   practice?: boolean;
   onFinish: (score: number, wrong: string[]) => void;
@@ -74,6 +76,9 @@ export function Quiz({ items, streak, practice, onFinish, onClose }: {
           <button className="primary" onClick={next}>{i + 1 < items.length ? 'السؤال التالي' : 'النتيجة'}</button>
           <p className="muted small qhint">البطاقة التي جاء منها السؤال:</p>
           <div className="qreveal"><CardFront card={it.card} /></div>
+          <button className={'qfav' + (favs.includes(it.card.id) ? ' on' : '')} onClick={() => onFav(it.card.id)} aria-pressed={favs.includes(it.card.id)}>
+            {favs.includes(it.card.id) ? '♥ محفوظة في المفضلة' : '♡ احفظها في المفضلة'}
+          </button>
         </>
       )}
     </div>

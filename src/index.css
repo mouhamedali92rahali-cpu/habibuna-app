@@ -302,3 +302,5 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 @media (prefers-color-scheme: dark){ .page.feed .offer b{color:var(--gold)} }
 
 .wquiz{margin:0;font-size:.95rem;color:var(--emerald)}
+.qfav{align-self:center;background:none;border:1.5px solid var(--line);border-radius:99px;padding:8px 18px;color:var(--emerald);font:inherit;font-size:.95rem}
+.qfav.on{border-color:#b3392f;color:#b3392f}

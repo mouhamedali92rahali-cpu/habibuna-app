@@ -10,6 +10,7 @@ import { Corner, Divider, Mihrab } from './components/Ornaments';
 import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
 import { buildQuiz, loadQuiz, QUIZ_AT, QUIZ_MIN, streak, weekKey, type Question, type QuizItem, type QuizRecord } from './lib/quiz';
 import { Quiz } from './components/Quiz';
+import { App as NativeApp } from '@capacitor/app';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -352,6 +353,25 @@ export default function App() {
     if (!r.shown) say(`يلزم أولًا السماح بـ${sysText('overlay')}.`);
   };
 
+  // زرّ الرجوع في الهاتف: يغلق النافذة المفتوحة أولًا (المراجعة، البطاقة، التصفية، الإرشاد، المعاينة)،
+  // ثم يعود من «المساعدة» إلى الإعدادات، ومن أي صفحة إلى البطاقات؛ وفي البطاقات يُصغّر التطبيق بدل إغلاقه
+  const backRef = useRef<() => void>(() => {});
+  backRef.current = () => {
+    if (quiz) setQuiz(null);
+    else if (open) setOpen(null);
+    else if (filterOpen) setFilterOpen(false);
+    else if (guide) setGuide(false);
+    else if (preview) setPreview(null);
+    else if (welcome !== 0) void NativeApp.minimizeApp();
+    else if (tab === 'settings' && sub === 'help') setSub('main');
+    else if (tab !== 'feed') setTab('feed');
+    else void NativeApp.minimizeApp();
+  };
+  useEffect(() => {
+    if (!isNative) return;
+    const h = NativeApp.addListener('backButton', () => backRef.current());
+    return () => { void h.then((x) => x.remove()); };
+  }, []);
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
   const doShare = async (c: CardData) => {
     const r = await shareCard(c);
@@ -575,7 +595,7 @@ export default function App() {
 
       {quiz && (
         <div className="modal qmodal">
-          <Quiz items={quiz} streak={qStreak} onFinish={finishQuiz} onClose={() => setQuiz(null)} />
+          <Quiz items={quiz} streak={qStreak} favs={favs} onFav={toggleFav} onFinish={finishQuiz} onClose={() => setQuiz(null)} />
         </div>
       )}
       {open && (
