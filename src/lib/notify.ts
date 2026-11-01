@@ -170,6 +170,8 @@ export function schedule(s: Settings, pick: (k: number) => CardData | null): () 
 export const WEEK = 30;
 /** إشعار قبل نفاد المواعيد بيومين: الضغط عليه يفتح التطبيق فيجدّدها */
 const KEEP_ID = 9000;
+/** إشعارات مراجعة الأسبوع: 8000 + رقم اليوم من الآن */
+const QUIZ_ID = 8000;
 
 export interface WeekSlot { id: number; at: Date; k: number; card: CardData; }
 /** مواعيد الأيام الثلاثين القادمة وبطاقة كل موعد (للإشعارات ولنوافذ البطاقة) */
@@ -205,10 +207,17 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
   const exact = await exactAllowed().catch(() => false);
 
   const list: ReturnType<typeof nativeNote>[] = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
+  // إشعار «مراجعة الأسبوع» كل أحد 11:00 (قرار المستخدم)، بدءًا من الأحد الذي يسبقه ثلاثة أيام من التثبيت على الأقل
+  const installed = Number(localStorage.getItem('firstOpen') ?? 0) || Date.now();
+  for (let d = 0; d <= WEEK; d++) {
+    const at = new Date(); at.setDate(at.getDate() + d); at.setHours(11, 0, 0, 0);
+    if (dayNumber(at) % 7 !== 3 || at.getTime() < Date.now() + 60_000 || at.getTime() - installed < 3 * 86_400_000) continue;
+    list.push({ id: QUIZ_ID + d, title: TITLE, body: 'مراجعة الأسبوع جاهزة: اختبر نفسك فيما مرّ بك من بطاقات ✦', largeBody: 'مراجعة الأسبوع جاهزة: أسئلة قصيرة عمّا مرّ بك من بطاقات هذا الأسبوع، وبعد كل جواب تظهر البطاقة نفسها ✦', channelId: CHANNEL, extra: { cardId: 'quiz' }, isExactNotification: exact, schedule: { at, allowWhileIdle: true } });
+  }
   const keep = new Date(); keep.setDate(keep.getDate() + WEEK - 2); keep.setHours(12, 30, 0, 0);
   list.push({ id: KEEP_ID, title: TITLE, body: 'اضغط هنا لتستمر بطاقاتك في الوصول ✦', largeBody: 'لم تفتح «حبيبنا» منذ مدة؛ اضغط هنا مرة واحدة لتستمر بطاقاتك في الوصول ✦', channelId: CHANNEL, extra: { cardId: '' }, isExactNotification: false, schedule: { at: keep, allowWhileIdle: true } });
   if (list.length) await LocalNotifications.schedule({ notifications: list });
-  return list.length - 1;
+  return list.filter((n) => n.id < QUIZ_ID).length;
 }
 
 /** الضغط على الإشعار يفتح البطاقة نفسها؛ يُحفظ الطلب إن وصل قبل تحميل البطاقات */

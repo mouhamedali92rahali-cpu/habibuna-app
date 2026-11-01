@@ -8,6 +8,8 @@ import { shareCard } from './lib/shareImage';
 import { CardFront, markOf } from './components/CardView';
 import { Corner, Divider, Mihrab } from './components/Ornaments';
 import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
+import { buildQuiz, loadQuiz, QUIZ_AT, QUIZ_MIN, streak, weekKey, type Question, type QuizItem, type QuizRecord } from './lib/quiz';
+import { Quiz } from './components/Quiz';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -139,6 +141,12 @@ export default function App() {
   const [bgPopup, setBgPopup] = useState<'allowed' | 'denied' | 'unknown' | null>(null);
   const [bgVisited, setBgVisited] = useState(() => load('bgPopupVisited', false));
   // عرض النافذة بعد يومين من أول فتح، مرة واحدة، لمن لم يفعّلها (قرار المستخدم: لا تُطلب أذوناتها في الترحيب)
+  // مراجعة الأسبوع (اللعبة): بنك الأسئلة، ونتائج كل أسبوع وأخطاؤه، في الهاتف وحده
+  const [bank, setBank] = useState<Question[]>([]);
+  const [quizDone, setQuizDone] = useState<Record<string, QuizRecord>>(() => load('quizDone', {}));
+  const [quizMiss, setQuizMiss] = useState<string[]>(() => load('quizMiss', []));
+  const [quizLater, setQuizLater] = useState(() => load<number>('quizLater', 0));
+  const [quiz, setQuiz] = useState<QuizItem[] | null>(null);
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
   // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
   const [updLater, setUpdLater] = useState(() => load<number>('updateLater', 0));
@@ -151,6 +159,7 @@ export default function App() {
 
   useEffect(() => {
     loadCards().then(setCards).catch(() => setErr(true));
+    loadQuiz().then(setBank).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -235,6 +244,40 @@ export default function App() {
     }).filter((g) => g.cards.length > 0);
   }, [pool, times, dayNo, intro, introCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // مراجعة الأسبوع: كل أحد من 11:00 وتبقى متاحة طوال الأسبوع حتى تُنجز.
+  // أسئلتها من بطاقات الأيام السبعة قبل الأحد وبطاقة صباح الأحد، كما وصلت صاحبها (العدّ من التثبيت)
+  const qKey = weekKey(dayNo);
+  const quizOpenNow = dayNo > qKey || nowMin >= QUIZ_AT;
+  const weekCards = useMemo(() => {
+    if (pool.length === 0) return [] as CardData[];
+    const out: CardData[] = [];
+    for (let day = qKey - 7; day <= qKey; day++) {
+      if (intro && intro.day === day) out.push(...introCards);
+      times.forEach((m, k) => { if ((day < qKey || m < QUIZ_AT) && slotOk(day, m)) out.push(cardFor(pool, day, k)); });
+    }
+    return out;
+  }, [pool, times, qKey, intro, introCards]); // eslint-disable-line react-hooks/exhaustive-deps
+  const quizReady = useMemo(() => new Set(bank.map((q) => q.card)), [bank]);
+  const weekQs = weekCards.filter((c) => quizReady.has(c.id)).length;
+  const quizAvail = quizOpenNow && !quizDone[qKey] && weekQs >= QUIZ_MIN;
+  const [quizTap, setQuizTap] = useState(false);
+  const startQuiz = useCallback(() => {
+    const missed = quizMiss.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c);
+    const items = buildQuiz(weekCards, missed, bank);
+    if (items.length >= QUIZ_MIN) setQuiz(items);
+  }, [weekCards, quizMiss, bank, byId]);
+  useEffect(() => {
+    if (!quizTap || bank.length === 0) return;
+    setQuizTap(false);
+    if (quizAvail) startQuiz(); else if (quizDone[qKey]) say('أتممت مراجعة هذا الأسبوع ✦');
+  }, [quizTap, bank, quizAvail, startQuiz, quizDone, qKey, say]);
+  const finishQuiz = (score: number, wrong: string[]) => {
+    const d = { ...quizDone, [qKey]: { score, total: quiz?.length ?? 0 } };
+    setQuizDone(d); save('quizDone', d);
+    setQuizMiss(wrong); save('quizMiss', wrong);
+  };
+  const qStreak = streak(quizDone, qKey - 7);
+
   useEffect(() => {
     if (pool.length === 0) return;
     return schedule(settings, (k) => cardFor(pool, dayNumber(new Date()), k));
@@ -274,7 +317,7 @@ export default function App() {
 
   useEffect(() => {
     if (!cards) return;
-    return listenTaps((id) => { const e = byId.get(id); if (e) setOpen(e.c); });
+    return listenTaps((id) => { if (id === 'quiz') { setQuizTap(true); return; } const e = byId.get(id); if (e) setOpen(e.c); });
   }, [cards, byId]);
 
 
@@ -331,6 +374,16 @@ export default function App() {
                 </div>
               </div>
             )}
+            {quizAvail && quizLater !== dayNo && (
+              <div className="offer quizoffer">
+                <b>مراجعة الأسبوع جاهزة ✦</b>
+                <p>أسئلة قصيرة عمّا مرّ بك من بطاقات هذا الأسبوع. بعد كل جواب تظهر البطاقة نفسها بنصّها ومصدرها.</p>
+                <div className="btns">
+                  <button className="primary" onClick={startQuiz}>ابدأ المراجعة</button>
+                  <button className="linkbtn" onClick={() => { setQuizLater(dayNo); save('quizLater', dayNo); }}>لاحقًا</button>
+                </div>
+              </div>
+            )}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
             {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} onPray={pray} />)}
             {introToday.length > 0 && (
@@ -347,6 +400,7 @@ export default function App() {
                 <small>ما تحفظه بـ ♡ تجده في «المفضلة» متى شئت.</small>
               </div>
             )}
+            {quizDone[qKey] && <p className="praycount">✦ مراجعة هذا الأسبوع: {quizDone[qKey].score} من {quizDone[qKey].total}</p>}
             {prayWeek > 0 && <p className="praycount">✦ صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</p>}
             {(feed.length > 0 || introToday.length > 0) && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
@@ -503,6 +557,11 @@ export default function App() {
         ))}
       </nav>
 
+      {quiz && (
+        <div className="modal qmodal">
+          <Quiz items={quiz} streak={qStreak} onFinish={finishQuiz} onClose={() => setQuiz(null)} />
+        </div>
+      )}
       {open && (
         <div className="modal" onClick={() => setOpen(null)}>
           <div className="sheet" onClick={(e) => e.stopPropagation()}>

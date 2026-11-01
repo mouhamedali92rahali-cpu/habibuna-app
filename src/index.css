@@ -263,3 +263,33 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .page.feed .praycount{margin:0;text-align:center;font-family:var(--font-title);font-size:1.05rem;color:var(--emerald)}
 @media (prefers-color-scheme: dark){ .page.feed .praycount{color:var(--gold)} }
 .icon.share{font-size:0;display:grid;place-items:center}
+
+/* ===== مراجعة الأسبوع (اللعبة) ===== */
+.modal.qmodal{place-items:start center;background:var(--bg,#f3ecdb);padding:0}
+.quiz{width:100%;max-width:480px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px 28px;display:flex;flex-direction:column;gap:14px;color:var(--ink)}
+.qtop{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:var(--muted)}
+.qbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.qbar i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.qcard{background:var(--paper);border:1.5px solid var(--emerald);border-radius:20px;padding:18px 16px;display:flex;flex-direction:column;gap:14px;box-shadow:inset 0 0 0 4px var(--paper),inset 0 0 0 5px color-mix(in srgb,var(--gold) 45%,transparent)}
+.qtext{margin:0;font-family:'Amiri',serif;font-size:1.3rem;line-height:1.8;font-weight:700;color:var(--ink)}
+.qopts{display:flex;flex-direction:column;gap:10px}
+.qopt{font:inherit;font-size:1.02rem;line-height:1.6;text-align:right;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.qopt:not(:disabled):active{border-color:var(--emerald)}
+.qopt.right{border-color:#2f7a45;background:color-mix(in srgb,#2f7a45 16%,var(--paper));font-weight:700}
+.qopt.right::before{content:"✓ ";color:#2f7a45}
+.qopt.wrong{border-color:#b3392f;background:color-mix(in srgb,#b3392f 14%,var(--paper))}
+.qopt.wrong::before{content:"✗ ";color:#b3392f}
+.qopt.dim{opacity:.55}
+.qverdict{margin:0;text-align:center;font-family:var(--font-title);font-size:1.15rem}
+.qverdict.ok{color:#2f7a45}.qverdict.no{color:#b3392f}
+.qreveal{display:flex;justify-content:center}
+.qhint{margin:0;text-align:center}
+.quiz>.primary{align-self:center}
+.qend{align-items:center;text-align:center}
+.qkick{font-family:var(--font-title);color:var(--gold);font-size:1.1rem}
+.qscore{font-family:'Amiri',serif;font-size:1.4rem;color:var(--emerald)}
+.qscore b{font-size:3rem;line-height:1}
+.qend p{margin:0;line-height:1.8}
+.qstreak{color:var(--gold);font-weight:700}
+.qpray{font-family:'Amiri',serif;font-size:1.15rem;color:var(--emerald)}
+@media (prefers-reduced-motion:reduce){.qbar i{transition:none}}
