@@ -147,6 +147,8 @@ export default function App() {
   const [quizMiss, setQuizMiss] = useState<string[]>(() => load('quizMiss', []));
   const [quizLater, setQuizLater] = useState(() => load<number>('quizLater', 0));
   const [quiz, setQuiz] = useState<QuizItem[] | null>(null);
+  // تجربة المراجعة من «المساعدة»: لا تُحسب نتيجتها ولا أخطاؤها
+  const [practice, setPractice] = useState(false);
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
   // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
   const [updLater, setUpdLater] = useState(() => load<number>('updateLater', 0));
@@ -264,14 +266,23 @@ export default function App() {
   const startQuiz = useCallback(() => {
     const missed = quizMiss.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c);
     const items = buildQuiz(weekCards, missed, bank);
-    if (items.length >= QUIZ_MIN) setQuiz(items);
+    if (items.length >= QUIZ_MIN) { setPractice(false); setQuiz(items); }
   }, [weekCards, quizMiss, bank, byId]);
+  const startPractice = () => {
+    // البطاقات التي وصلت صاحبها (اليوم والأيام الماضية وبطاقات البداية)، وإن لم تكفِ فمن بطاقاته القادمة
+    const seen = [...feed.map((e) => e.c), ...introToday, ...past.flatMap((g) => g.cards)];
+    const enough = seen.filter((c) => quizReady.has(c.id)).length >= QUIZ_MIN;
+    const items = buildQuiz(enough ? seen : [...seen, ...pool], [], bank);
+    if (items.length === 0) { say('لم تُحمَّل الأسئلة بعد. تحقّق من الاتصال ثم أعد المحاولة.'); return; }
+    setPractice(true); setQuiz(items);
+  };
   useEffect(() => {
     if (!quizTap || bank.length === 0) return;
     setQuizTap(false);
     if (quizAvail) startQuiz(); else if (quizDone[qKey]) say('أتممت مراجعة هذا الأسبوع ✦');
   }, [quizTap, bank, quizAvail, startQuiz, quizDone, qKey, say]);
   const finishQuiz = (score: number, wrong: string[]) => {
+    if (practice) return;
     const d = { ...quizDone, [qKey]: { score, total: quiz?.length ?? 0 } };
     setQuizDone(d); save('quizDone', d);
     setQuizMiss(wrong); save('quizMiss', wrong);
@@ -528,6 +539,10 @@ export default function App() {
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
             </Frame>
+            <Frame title="مراجعة الأسبوع">
+              <p className="muted small">تصل كل أحد الساعة 11:00: أسئلة قصيرة عمّا مرّ بك من بطاقات الأسبوع. وهنا تجربة لها متى شئت، لا تُحسب نتيجتها.</p>
+              <button className="ghost" onClick={startPractice}>جرّب المراجعة الآن</button>
+            </Frame>
             {isNative && (maker !== 'normal' || exact === false) && (
               <Frame title="إن لم تصل البطاقات">
                 {maker !== 'normal' && <button className="ghost" onClick={() => setGuide(true)}>لتصل البطاقات والتطبيق مغلق</button>}
@@ -559,7 +574,7 @@ export default function App() {
 
       {quiz && (
         <div className="modal qmodal">
-          <Quiz items={quiz} streak={qStreak} onFinish={finishQuiz} onClose={() => setQuiz(null)} />
+          <Quiz items={quiz} streak={practice ? 0 : qStreak} practice={practice} onFinish={finishQuiz} onClose={() => setQuiz(null)} />
         </div>
       )}
       {open && (
