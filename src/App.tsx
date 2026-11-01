@@ -302,9 +302,9 @@ export default function App() {
             {isNative && latestApp && newer(latestApp, __APP_VERSION__) && updLater !== dayNo && (
               <div className="offer update">
                 <b>نسخة جديدة من «حبيبنا»</b>
-                <p>حمّلها وثبّتها فوق نسختك؛ تبقى مفضلتك وإعداداتك كما هي. بعد التحميل افتح الملف واضغط <Sys k="update" />.</p>
+                <p>تنفتح صفحة التحميل: اضغط فيها «تحميل التطبيق»، ثم افتح الملف واضغط <Sys k="update" />. تبقى مفضلتك وإعداداتك كما هي.</p>
                 <div className="btns">
-                  <a className="primary" href="https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/latest/download/habibuna.apk" target="_blank" rel="noopener">تحميل التحديث</a>
+                  <a className="primary" href="https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html" target="_blank" rel="noopener">تحميل التحديث</a>
                   <button className="linkbtn" onClick={() => { setUpdLater(dayNo); save('updateLater', dayNo); }}>لاحقًا</button>
                 </div>
               </div>
