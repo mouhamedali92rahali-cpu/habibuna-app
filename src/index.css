@@ -300,3 +300,5 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 @media (prefers-reduced-motion:reduce){.qbar i{transition:none}}
 /* الوضع الداكن: عنوان البطاقات العلوية («نسخة جديدة»، «مراجعة الأسبوع») كان زمرديًّا على خلفية داكنة فلا يكاد يُقرأ */
 @media (prefers-color-scheme: dark){ .page.feed .offer b{color:var(--gold)} }
+
+.wquiz{margin:0;font-size:.95rem;color:var(--emerald)}
