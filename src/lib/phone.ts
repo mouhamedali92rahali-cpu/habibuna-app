@@ -14,6 +14,7 @@ interface PhoneSettingsPlugin {
   takeOpenCard(): Promise<{ id: string | null }>;
   takePrays(): Promise<{ days: string }>;
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
+  shareImage(o: { base64: string; text: string }): Promise<void>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 

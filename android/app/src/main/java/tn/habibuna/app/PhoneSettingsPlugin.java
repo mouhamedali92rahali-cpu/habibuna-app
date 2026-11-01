@@ -138,4 +138,32 @@ public class PhoneSettingsPlugin extends Plugin {
         r.put("state", state);
         call.resolve(r);
     }
+
+    /** مشاركة صورة البطاقة ونصها بقائمة المشاركة في أندرويد (WebView لا يدعم navigator.share) */
+    @PluginMethod
+    public void shareImage(PluginCall call) {
+        try {
+            byte[] png = android.util.Base64.decode(call.getString("base64", ""), android.util.Base64.DEFAULT);
+            java.io.File dir = new java.io.File(getContext().getCacheDir(), "share");
+            if (!dir.exists()) dir.mkdirs();
+            java.io.File f = new java.io.File(dir, "habibuna-card.png");
+            java.io.FileOutputStream o = new java.io.FileOutputStream(f);
+            o.write(png);
+            o.close();
+            Uri uri = androidx.core.content.FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", f);
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("image/png");
+            i.putExtra(Intent.EXTRA_STREAM, uri);
+            i.putExtra(Intent.EXTRA_TEXT, call.getString("text", ""));
+            i.setClipData(android.content.ClipData.newRawUri("", uri));
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent chooser = Intent.createChooser(i, "مشاركة البطاقة");
+            chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (getActivity() != null) getActivity().startActivity(chooser);
+            else { chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); getContext().startActivity(chooser); }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject(String.valueOf(e.getMessage()));
+        }
+    }
 }

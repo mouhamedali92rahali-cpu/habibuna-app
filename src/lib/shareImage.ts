@@ -1,3 +1,5 @@
+import { isNative } from './notify';
+import { PhoneSettings } from './phone';
 import type { CardData } from './types';
 
 const PALETTE: Record<string, [string, string, string]> = {
@@ -44,10 +46,16 @@ export async function cardToBlob(card: CardData): Promise<Blob | null> {
   return new Promise((res) => c.toBlob((b) => res(b), 'image/png'));
 }
 
+const toBase64 = (b: Blob) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] ?? ''); r.onerror = rej; r.readAsDataURL(b); });
+
 export async function shareCard(card: CardData) {
   // رابط صفحة التحميل في آخر النص المشارَك (اقتراح وافق عليه المستخدم): كل مشاركة دعوة للتطبيق
   const text = `${card.text}\n\n— ${card.source}\n\nحمّل تطبيق «حبيبنا»: https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html`;
   const blob = await cardToBlob(card);
+  // تطبيق الهاتف: قائمة المشاركة في أندرويد (الصورة والنص معًا)
+  if (isNative && blob) {
+    try { await PhoneSettings.shareImage({ base64: await toBase64(blob), text }); return 'native'; } catch { /* نكمل بالطرق الأخرى */ }
+  }
   if (blob) {
     const file = new File([blob], 'card.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], text }); return 'shared'; } catch { return 'cancel'; } }
