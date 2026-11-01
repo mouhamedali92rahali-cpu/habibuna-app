@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -219,13 +219,29 @@ export default function App() {
   const installDay = dayNumber(new Date(firstOpen));
   const installMin = new Date(firstOpen).getHours() * 60 + new Date(firstOpen).getMinutes();
   const slotOk = (day: number, m: number) => day > installDay || (day === installDay && m > installMin);
+  // سجلّ ما وصل فعلًا: بطاقة كل موعد تُثبَّت قبل حلوله ولا تتغيّر بعده، فلا تتبدّل بطاقات الأيام الماضية
+  // (ولا أسئلة مراجعة الأسبوع) إذا وصلت بطاقات جديدة فأُعيد خلط الترتيب، أو أُخفي باب. في الهاتف وحده.
+  const [hist, setHist] = useState<Record<string, string[]>>(() => load('cardHist', {}));
+  useEffect(() => {
+    if (pool.length === 0) return;
+    const n = new Date(), today = dayNumber(n), nm = n.getHours() * 60 + n.getMinutes();
+    const h: Record<string, string[]> = {};
+    for (const [d, v] of Object.entries(hist)) if (Number(d) >= today - 40) h[d] = [...v];
+    for (let d = today - 7; d <= today + WEEK; d++) {
+      const row = h[d] ?? [];
+      times.forEach((m, k) => { if (d > today || (d === today && m > nm) || !row[k]) row[k] = cardFor(pool, d, k).id; });
+      h[d] = row;
+    }
+    if (JSON.stringify(h) !== JSON.stringify(hist)) { setHist(h); save('cardHist', h); }
+  }, [pool, times, dayNo]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cardAt = (day: number, k: number): CardData => byId.get(hist[day]?.[k] ?? '')?.c ?? cardFor(pool, day, k);
   const feed = useMemo(() => {
     if (pool.length === 0) return [] as { c: CardData; n: number }[];
     return times
-      .map((m, k) => ({ m, k, e: byId.get(cardFor(pool, dayNo, k).id) }))
+      .map((m, k) => ({ m, k, e: byId.get(cardAt(dayNo, k).id) }))
       .filter((x) => x.e && x.m <= nowMin && slotOk(dayNo, x.m))
       .map((x) => x.e!);
-  }, [pool, times, dayNo, nowMin, byId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pool, times, dayNo, nowMin, byId, hist]); // eslint-disable-line react-hooks/exhaustive-deps
   const prayWeek = Array.from({ length: 7 }, (_, i) => prays[dayNo - i] ?? 0).reduce((a, b) => a + b, 0);
   const pray = () => { addPrays({ [dayNo]: 1 }); say('صلّى الله عليه وسلّم ✦'); };
   const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
@@ -239,10 +255,10 @@ export default function App() {
       const day = dayNo - i - 1;
       const d = new Date(now.getTime() - (i + 1) * 86_400_000);
       const label = i === 0 ? 'أمس' : d.toLocaleDateString('ar', { weekday: 'long' });
-      const cards = times.flatMap((m, k) => (slotOk(day, m) ? [cardFor(pool, day, k)] : []));
+      const cards = times.flatMap((m, k) => (slotOk(day, m) ? [cardAt(day, k)] : []));
       return { label, cards: intro && intro.day === day ? [...introCards, ...cards] : cards };
     }).filter((g) => g.cards.length > 0);
-  }, [pool, times, dayNo, intro, introCards]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pool, times, dayNo, intro, introCards, hist]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // مراجعة الأسبوع: كل أحد من 11:00 وتبقى متاحة طوال الأسبوع حتى تُنجز.
   // أسئلتها من بطاقات الأيام السبعة قبل الأحد وبطاقة صباح الأحد، كما وصلت صاحبها (العدّ من التثبيت)
@@ -253,10 +269,10 @@ export default function App() {
     const out: CardData[] = [];
     for (let day = qKey - 7; day <= qKey; day++) {
       if (intro && intro.day === day) out.push(...introCards);
-      times.forEach((m, k) => { if ((day < qKey || m < QUIZ_AT) && slotOk(day, m)) out.push(cardFor(pool, day, k)); });
+      times.forEach((m, k) => { if ((day < qKey || m < QUIZ_AT) && slotOk(day, m)) out.push(cardAt(day, k)); });
     }
     return out;
-  }, [pool, times, qKey, intro, introCards]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pool, times, qKey, intro, introCards, hist]); // eslint-disable-line react-hooks/exhaustive-deps
   const quizReady = useMemo(() => new Set(bank.map((q) => q.card)), [bank]);
   const weekQs = weekCards.filter((c) => quizReady.has(c.id)).length;
   const quizAvail = quizOpenNow && !quizDone[qKey] && weekQs >= QUIZ_MIN;
@@ -269,7 +285,7 @@ export default function App() {
   useEffect(() => {
     if (!quizTap || bank.length === 0) return;
     setQuizTap(false);
-    if (quizAvail) startQuiz(); else if (quizDone[qKey]) say('أتممت مراجعة هذا الأسبوع ✦');
+    if (quizAvail) startQuiz(); else say(quizDone[qKey] ? 'أتممت مراجعة هذا الأسبوع ✦' : 'لم تمرّ بك بطاقات كافية هذا الأسبوع؛ تأتيك المراجعة الأحد القادم بإذن الله ✦');
   }, [quizTap, bank, quizAvail, startQuiz, quizDone, qKey, say]);
   const finishQuiz = (score: number, wrong: string[]) => {
     const d = { ...quizDone, [qKey]: { score, total: quiz?.length ?? 0 } };
