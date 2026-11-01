@@ -26,18 +26,23 @@ li{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.05)
 li b{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(217,178,94,.18);color:var(--gold);display:grid;place-items:center}
 .note{color:var(--muted);font-size:.9rem;line-height:1.8}
 .note a{color:var(--gold)}
+.after{display:none;width:100%;text-align:right;background:rgba(217,178,94,.12);border:1px solid rgba(217,178,94,.45);border-radius:14px;padding:12px 14px;line-height:1.9}
+.after.on{display:block}
+.after b{color:var(--gold)}
 </style>
 </head>
 <body>
 <main>
   <img class="icon" src="logo.jpg" alt="حبيبنا صلى الله عليه وسلم">
   <p class="lead">مواقف صغيرة .. تكشف لك عظمة شخصيته<br>ثلاث بطاقات موثّقة كل يوم</p>
-  <a class="btn" href="https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/latest/download/habibuna.apk">تحميل التطبيق لأندرويد</a>
+  <a class="btn" id="dl" href="https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/latest/download/habibuna.apk">تحميل التطبيق لأندرويد</a>
+  <div class="after" id="after"><b>بدأ التحميل.</b> إن طلب الهاتف التأكيد فاختر <bdi dir="ltr">«Télécharger quand même»</bdi>. وإن لم تظهر لك <bdi dir="ltr">«Ouvrir»</bdi> بعد ثوانٍ، فافتح قائمة المتصفح <b>⋮</b> ثم <bdi dir="ltr">«Téléchargements»</bdi>، واضغط على الملف <bdi dir="ltr">habibuna.apk</bdi>.</div>
   <ol>
     <li><b>1</b><span>بعد التحميل افتح الملف. إن طلب الهاتف السماح بالتثبيت من هذا المصدر فاسمح له، فالتطبيق ليس في متجر Google Play بعد.</span></li>
     <li><b>2</b><span>ثبّت التطبيق وافتحه، وفعّل الإشعارات لتصلك البطاقات في 10:00 و15:00 و20:00.</span></li>
   </ol>
   <p class="note">مجاني، بلا حساب ولا إعلانات.<br>على الآيفون: النسخة لم تصدر بعد، ويمكنك تجربة <a href="./">نسخة الويب</a>.</p>
 </main>
+<script>document.getElementById('dl').addEventListener('click',function(){document.getElementById('after').classList.add('on');});</script>
 </body>
 </html>
