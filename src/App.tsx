@@ -135,6 +135,9 @@ export default function App() {
   const [intro, setIntro] = useState<Intro | null>(() => load<Intro | null>('introCards', null));
   // نافذة البطاقة على الشاشة: إذن «الظهور فوق التطبيقات»، ومعاينتها على الويب في إطار
   const [overlay, setOverlay] = useState<boolean | null>(null);
+  // إذن شاومي الإضافي (النسخة 3.6): يُقرأ إن أمكن (bgPopupState)، وإلا اختفت خانته بعد زيارة صفحة الإذن (bgPopupVisited)
+  const [bgPopup, setBgPopup] = useState<'allowed' | 'denied' | 'unknown' | null>(null);
+  const [bgVisited, setBgVisited] = useState(() => load('bgPopupVisited', false));
   // عرض النافذة بعد يومين من أول فتح، مرة واحدة، لمن لم يفعّلها (قرار المستخدم: لا تُطلب أذوناتها في الترحيب)
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
   // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
@@ -248,6 +251,7 @@ export default function App() {
         const on = settings.notifyOn && settings.popupOn !== false && allowed;
         return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
       }).catch(() => {});
+      PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
       PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
     };
@@ -436,11 +440,11 @@ export default function App() {
                   <button className="primary" onClick={() => void PhoneSettings.openOverlaySettings().catch(() => {})}>اضغط هنا للسماح</button>
                 </div>
               )}
-              {isNative && settings.popupOn !== false && maker === 'xiaomi' && (
+              {isNative && settings.popupOn !== false && maker === 'xiaomi' && (bgPopup === 'denied' || (bgPopup !== 'allowed' && !bgVisited)) && (
                 <div className="perm">
-                  <p>وفي هواتف شاومي إذن إضافي لتظهر البطاقة وأنت في تطبيق آخر: {sysAr('bgPopup')}. إن سمحت به من قبل فلا تحتاج شيئًا.</p>
+                  <p>وفي هواتف شاومي إذن إضافي لتظهر البطاقة وأنت في تطبيق آخر: {sysAr('bgPopup')}، ثم ارجع إلى التطبيق.</p>
                   <SysLine k="bgPopup" />
-                  <button className="ghost" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>اضغط هنا للسماح</button>
+                  <button className="ghost" onClick={() => { setBgVisited(true); save('bgPopupVisited', true); void PhoneSettings.openPopupPermissions().catch(() => {}); }}>اضغط هنا للسماح</button>
                 </div>
               )}
               <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
@@ -465,7 +469,7 @@ export default function App() {
                 }}>تجربة إشعار بعد دقيقة</button>
               )}
               {isNative && (
-                <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); setDiag(await diagnose(feed[0]?.c ?? cards[0])); }}>فحص الإشعارات</button>
+                <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); setDiag(d); }}>فحص الإشعارات</button>
               )}
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
@@ -473,6 +477,7 @@ export default function App() {
             {isNative && (maker !== 'normal' || exact === false) && (
               <Frame title="إن لم تصل البطاقات">
                 {maker !== 'normal' && <button className="ghost" onClick={() => setGuide(true)}>لتصل البطاقات والتطبيق مغلق</button>}
+                {maker === 'xiaomi' && <button className="ghost" onClick={() => void PhoneSettings.openPopupPermissions().catch(() => {})}>لا تظهر البطاقة على الشاشة؟ إذن شاومي للنوافذ</button>}
                 {exact === false && (
                   <button className="ghost" onClick={async () => { const ok = await askExact().catch(() => false); setExact(ok); say(ok ? 'ستصل البطاقات في وقتها بالضبط.' : 'ستبقى المواعيد تقريبية، وقد تتأخر البطاقة دقائق قليلة.'); }}>
                     لتصل في وقتها بالضبط: اسمح بـ<Sys k="alarms" />

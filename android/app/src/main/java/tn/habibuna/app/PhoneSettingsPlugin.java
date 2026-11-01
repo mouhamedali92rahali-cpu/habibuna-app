@@ -118,4 +118,24 @@ public class PhoneSettingsPlugin extends Plugin {
         p.edit().remove("prays").apply();
         call.resolve(r);
     }
+
+    /**
+     * إذن شاومي «عرض النوافذ المنبثقة أثناء التشغيل في الخلفية» (طريقة غير رسمية تستعملها تطبيقات كثيرة:
+     * العملية 10021 في AppOpsManager على MIUI/HyperOS). allowed / denied / unknown إن لم تنجح القراءة.
+     */
+    @PluginMethod
+    public void bgPopupState(PluginCall call) {
+        JSObject r = new JSObject();
+        String state = "unknown";
+        try {
+            if ("xiaomi".equalsIgnoreCase(Build.MANUFACTURER)) {
+                android.app.AppOpsManager ops = (android.app.AppOpsManager) getContext().getSystemService(android.content.Context.APP_OPS_SERVICE);
+                java.lang.reflect.Method m = android.app.AppOpsManager.class.getMethod("checkOpNoThrow", int.class, int.class, String.class);
+                int mode = (Integer) m.invoke(ops, 10021, android.os.Process.myUid(), getContext().getPackageName());
+                state = mode == android.app.AppOpsManager.MODE_ALLOWED ? "allowed" : "denied";
+            }
+        } catch (Throwable ignored) { }
+        r.put("state", state);
+        call.resolve(r);
+    }
 }

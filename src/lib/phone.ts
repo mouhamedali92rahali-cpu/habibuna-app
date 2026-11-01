@@ -13,6 +13,7 @@ interface PhoneSettingsPlugin {
   previewPopup(o: { json: string; cardId: string }): Promise<{ shown: boolean }>;
   takeOpenCard(): Promise<{ id: string | null }>;
   takePrays(): Promise<{ days: string }>;
+  bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 
