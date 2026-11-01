@@ -108,4 +108,14 @@ public class PhoneSettingsPlugin extends Plugin {
         p.edit().remove("openCard").apply();
         call.resolve(r);
     }
+
+    /** ضغطات «اللهم صلِّ وسلِّم» في نافذة البطاقة منذ آخر قراءة: {يوم: عدد}، ثم تُمسح (يحفظها التطبيق عنده) */
+    @PluginMethod
+    public void takePrays(PluginCall call) {
+        android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
+        JSObject r = new JSObject();
+        r.put("days", p.getString("prays", "{}"));
+        p.edit().remove("prays").apply();
+        call.resolve(r);
+    }
 }

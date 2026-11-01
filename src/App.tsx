@@ -40,12 +40,16 @@ function pickIntro(cards: CardData[]): string[] {
   return out.map((c) => c.id);
 }
 
-function CardBlock({ c, fav, onFav, onShare }: { c: CardData; fav: boolean; onFav: () => void; onShare: () => void }) {
+// «مرة» بالعدد العربي السليم: مرة واحدة، مرتين، 3–10 مرات، 11+ مرة
+const times_ = (n: number) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${n} مرات` : `${n} مرة`);
+
+function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boolean; onFav: () => void; onShare: () => void; onPray?: () => void }) {
     const [showSrc, setShowSrc] = useState(false);
     const [showSharh, setShowSharh] = useState(false);
     return (
       <article className="block">
         <CardFront card={c} />
+        {onPray && c.chapter === REMINDER && <button className="praybtn" onClick={onPray}>اللهم صلِّ وسلِّم على نبيّنا محمد</button>}
         <div className="under">
           <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
             {showSrc ? 'إخفاء مصدر الحديث' : 'إظهار مصدر الحديث'}
@@ -115,6 +119,17 @@ export default function App() {
   const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
   const donePhoneStep = () => { setPhoneStep(false); save('guideSeen', true); };
   const [sub, setSub] = useState<'main' | 'help'>('main');
+  // عدّاد الصلاة على النبي ﷺ (اقتراح وافق عليه المستخدم): {رقم اليوم: عدد} في الهاتف وحده، لا يُرسل لأحد.
+  // يُحسب من زرّ النافذة على الشاشة (يُؤخذ من الجزء الأصلي بـ takePrays) ومن الزرّ تحت بطاقة التذكير
+  const [prays, setPrays] = useState<Record<string, number>>(() => load('prays', {}));
+  const addPrays = useCallback((add: Record<string, number>) => setPrays((p) => {
+    const n = { ...p };
+    for (const [k, v] of Object.entries(add)) n[k] = (n[k] ?? 0) + v;
+    // لا نحتفظ إلا بآخر 60 يومًا
+    const keys = Object.keys(n).map(Number).sort((a, b) => b - a);
+    for (const k of keys.slice(60)) delete n[k];
+    save('prays', n); return n;
+  }), []);
   // كل صفحة تُفتح من أعلاها
   useEffect(() => { document.querySelector('main')?.scrollTo(0, 0); }, [tab, sub]);
   const [intro, setIntro] = useState<Intro | null>(() => load<Intro | null>('introCards', null));
@@ -199,6 +214,8 @@ export default function App() {
       .filter((x) => x.e && x.m <= nowMin && slotOk(dayNo, x.m))
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const prayWeek = Array.from({ length: 7 }, (_, i) => prays[dayNo - i] ?? 0).reduce((a, b) => a + b, 0);
+  const pray = () => { addPrays({ [dayNo]: 1 }); say('صلّى الله عليه وسلّم ✦'); };
   const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
   const introToday = intro && intro.day === dayNo ? introCards : [];
   const nextAt = times.find((m) => m > nowMin);
@@ -231,13 +248,14 @@ export default function App() {
         const on = settings.notifyOn && settings.popupOn !== false && allowed;
         return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
       }).catch(() => {});
+      PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
       PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
     };
     run();
     const onVis = () => { if (document.visibilityState === 'visible') run(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [pool, settings, byId]);
+  }, [pool, settings, byId, addPrays]);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -310,7 +328,7 @@ export default function App() {
               </div>
             )}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
-            {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} />)}
+            {feed.map((e) => <CardBlock key={e.c.id} c={e.c} fav={favs.includes(e.c.id)} onFav={() => toggleFav(e.c.id)} onShare={() => doShare(e.c)} onPray={pray} />)}
             {introToday.length > 0 && (
               <>
                 <h2 className="today">ثلاث بطاقات للبداية</h2>
@@ -325,6 +343,7 @@ export default function App() {
                 <small>ما تحفظه بـ ♡ تجده في «المفضلة» متى شئت.</small>
               </div>
             )}
+            {prayWeek > 0 && <p className="praycount">✦ صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</p>}
             {(feed.length > 0 || introToday.length > 0) && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
             {isNative && offer && settings.notifyOn && (offer === 'done' || (settings.popupOn === false && Date.now() - firstOpen > 2 * 86_400_000)) && (
@@ -448,7 +467,7 @@ export default function App() {
               {isNative && (
                 <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); setDiag(await diagnose(feed[0]?.c ?? cards[0])); }}>فحص الإشعارات</button>
               )}
-              {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام السبعة القادمة: {planned}</p>}
+              {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
             </Frame>
             {isNative && (maker !== 'normal' || exact === false) && (
@@ -463,7 +482,7 @@ export default function App() {
             )}
             <Frame title="كيف تعمل الإشعارات؟">
               <p>{isNative
-                ? `يُجهّز التطبيق مواعيد بطاقات الأيام السبعة القادمة، ويجدّدها كلما فتحته، فتصلك البطاقات ولو كان مغلقًا. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} إن وجدته، واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`
+                ? `يُجهّز التطبيق مواعيد بطاقات الأيام الثلاثين القادمة، ويجدّدها كلما فتحته، فتصلك البطاقات ولو كان مغلقًا. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} إن وجدته، واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`
                 : 'في المتصفح لا تصل الإشعارات إلا والتطبيق مفتوح. أما وصولها والتطبيق مغلق فيحتاج إلى نسخة الهاتف.'}</p>
               {isNative && <p className="muted small">ولتغيير صوت الإشعارات أو طريقة ظهورها: إعدادات الهاتف ← التطبيقات ← «حبيبنا» ← الإشعارات.</p>}
             </Frame>

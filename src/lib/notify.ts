@@ -166,10 +166,13 @@ export function schedule(s: Settings, pick: (k: number) => CardData | null): () 
   return () => timers.forEach((t) => clearTimeout(t));
 }
 
-export const WEEK = 7;
+/** عدد الأيام المجدولة مقدّمًا (كانت 7؛ صارت 30 حتى لا تنقطع البطاقات عمّن يقرؤها دون فتح التطبيق) */
+export const WEEK = 30;
+/** إشعار قبل نفاد المواعيد بيومين: الضغط عليه يفتح التطبيق فيجدّدها */
+const KEEP_ID = 9000;
 
 export interface WeekSlot { id: number; at: Date; k: number; card: CardData; }
-/** مواعيد الأيام السبعة القادمة وبطاقة كل موعد (للإشعارات ولنوافذ البطاقة) */
+/** مواعيد الأيام الثلاثين القادمة وبطاقة كل موعد (للإشعارات ولنوافذ البطاقة) */
 export function weekSlots(s: Settings, pool: CardData[]): WeekSlot[] {
   if (pool.length === 0) return [];
   const soon = Date.now() + 60_000, end = Date.now() + WEEK * 86_400_000;
@@ -201,9 +204,11 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
   await ensureChannel();
   const exact = await exactAllowed().catch(() => false);
 
-  const list = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
+  const list: ReturnType<typeof nativeNote>[] = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
+  const keep = new Date(); keep.setDate(keep.getDate() + WEEK - 2); keep.setHours(12, 30, 0, 0);
+  list.push({ id: KEEP_ID, title: TITLE, body: 'اضغط هنا لتستمر بطاقاتك في الوصول ✦', largeBody: 'لم تفتح «حبيبنا» منذ مدة؛ اضغط هنا مرة واحدة لتستمر بطاقاتك في الوصول ✦', channelId: CHANNEL, extra: { cardId: '' }, isExactNotification: false, schedule: { at: keep, allowWhileIdle: true } });
   if (list.length) await LocalNotifications.schedule({ notifications: list });
-  return list.length;
+  return list.length - 1;
 }
 
 /** الضغط على الإشعار يفتح البطاقة نفسها؛ يُحفظ الطلب إن وصل قبل تحميل البطاقات */
