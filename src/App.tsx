@@ -5,6 +5,7 @@ import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, W
 import { latestApp, loadCards, newer } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
+import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
 import { Corner, Divider, Mihrab } from './components/Ornaments';
 import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
@@ -205,6 +206,13 @@ export default function App() {
 
   useEffect(() => { save('favs', favs); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
+  // العدّاد المجهول: عند الفتح وعند العودة للتطبيق (مرة في اليوم على الأكثر)
+  useEffect(() => {
+    countUse();
+    const onVis = () => { if (document.visibilityState === 'visible') countUse(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
   // الإشعارات بلا زرّ إيقاف داخل التطبيق (قرار المستخدم): مفعّلة ما دام الإذن موجودًا، وتُطفأ من إعدادات الهاتف فقط
   useEffect(() => {
     const sync = () => { void hasPermission().then((g) => setSettings((s) => (s.notifyOn === g ? s : { ...s, notifyOn: g }))).catch(() => {}); };
