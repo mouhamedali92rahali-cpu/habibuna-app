@@ -326,52 +326,90 @@ def at(lat, lon):
     return round(CX + dx*KM, 1), round(CY - dy*KM, 1)
 MOSQ, QUBA, UHUD, SHUH, SAL = at(24.4670, 39.6109), at(24.4396, 39.6172), at(24.5103, 39.6139), at(24.5035, 39.6127), at(24.4750, 39.5994)
 LBL = 'font-family="Noto Naskh Arabic,Amiri,serif" text-anchor="middle"'
+BROWN = '#8a6d3b'
+def palm(x, y, s=1.0, op=1.0):
+    # نخلة صغيرة: جذع مائل قليلًا وخمس سعفات
+    fr = ''.join(f'<path d="M{x} {y-10*s} q{dx*s} {dy*s} {ex*s} {ey*s}" fill="none" stroke="{E}" stroke-width="1.1" stroke-linecap="round"/>'
+                 for dx, dy, ex, ey in ((-3, -4, -7, 0), (3, -4, 7, 0), (-2, -5, -5, -5), (2, -5, 5, -5), (0, -4, 0, -6)))
+    return f'<g opacity="{op}"><path d="M{x} {y} q{1*s} {-5*s} 0 {-10*s}" fill="none" stroke="{G}" stroke-width="1.3" stroke-linecap="round"/>{fr}</g>'
+def mosque(x, y, s=1.0, col=E):
+    # مسجد صغير: قاعدة وقبة ومئذنة
+    return (f'<rect x="{x-6*s}" y="{y-3*s}" width="{12*s}" height="{7*s}" fill="{col}"/>'
+            f'<path d="M{x-4.5*s} {y-3*s} a{4.5*s} {4.5*s} 0 0 1 {9*s} 0 Z" fill="{col}"/>'
+            f'<rect x="{x+6.5*s}" y="{y-10*s}" width="{2.2*s}" height="{14*s}" fill="{col}"/><path d="M{x+6.5*s} {y-10*s} l{1.1*s} {-2.5*s} l{1.1*s} {2.5*s} Z" fill="{col}"/>')
+def harra(x0, y0, x1, y1, seed):
+    import random
+    r = random.Random(seed); o = ''
+    for _ in range(int((x1-x0)*(y1-y0)/95)):
+        x, y = r.uniform(x0, x1), r.uniform(y0, y1)
+        o += f'<path d="M{x:.1f} {y:.1f} l{r.uniform(1.5,3):.1f} {r.uniform(-1,1):.1f}" stroke="{BROWN}" stroke-width="1.3" stroke-linecap="round" opacity=".3"/>'
+    return o
 def madina(hi):
     on = lambda k: k == hi
-    def label(x, y, t, k, size=9):
-        col = E if on(k) else '#8a7a55'
-        return f'<text x="{x}" y="{y}" {LBL} font-size="{size+ (2 if on(k) else 0)}" font-weight="{700 if on(k) else 400}" fill="{col}">{t}</text>'
-    def ring(x, y):
-        return f'<circle cx="{x}" cy="{y}" r="9" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
-    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230">{STYLE}<rect x="4" y="4" width="192" height="222" rx="14" fill="{BG}"/>'
-    o += f'<rect x="9" y="9" width="182" height="212" rx="11" fill="none" stroke="{G}" stroke-width=".8" opacity=".6"/>'
-    # جبل أحد: سلسلة طولها نحو 7.5 كم، تمتد من الغرب الجنوبي إلى الشرق الشمالي، قمّتها عند UHUD
+    def label(x, y, t, k, size=10, col=None):
+        c = col or (E if on(k) else '#7d6c47')
+        return f'<text x="{x}" y="{y}" {LBL} font-size="{size + (2.5 if on(k) else 0)}" font-weight="{700 if on(k) else 400}" fill="{c}">{t}</text>'
+    W, H = 200, 240
+    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">{STYLE}'
+    o += f'<rect x="3" y="3" width="{W-6}" height="{H-6}" rx="14" fill="{BG}"/>'
+    o += '<defs><clipPath id="mc"><rect x="9" y="9" width="182" height="222" rx="10"/></clipPath></defs><g clip-path="url(#mc)">'
+    # الحرّتان: الشرقية (واقم) والغربية (الوبرة)، حجارة بركانية سوداء تحيط بالمدينة من الجانبين
+    o += harra(146, 66, 192, 146, 1) + harra(8, 84, 46, 196, 2)
+    o += label(171, 94, 'حرّة واقم', 'x', 8.5, BROWN) + label(28, 182, 'حرّة الوبرة', 'x', 8.5, BROWN)
+    # النخيل: أكثره في الجنوب (قباء والعوالي)، وشيء حول المدينة
+    for x, y, sc in ((64, 190, .85), (98, 206, .8), (58, 160, .75), (122, 210, .8), (140, 146, .7)):
+        o += palm(x, y, sc, .55 if not on('awali') else .4)
+    # جبل أحد: سلسلة بقمم وظلال
     ux, uy = UHUD; L = 7.5*KM/2
-    ridge = (f'M{ux-L:.0f} {uy+9:.0f} C{ux-L+10:.0f} {uy-2:.0f} {ux-28:.0f} {uy+2:.0f} {ux-18:.0f} {uy-6:.0f} C{ux-10:.0f} {uy-12:.0f} {ux-2:.0f} {uy-14:.0f} {ux+4:.0f} {uy-10:.0f} '
-             f'C{ux+14:.0f} {uy-6:.0f} {ux+24:.0f} {uy-14:.0f} {ux+34:.0f} {uy-10:.0f} C{ux+44:.0f} {uy-6:.0f} {ux+L-6:.0f} {uy-12:.0f} {ux+L:.0f} {uy-4:.0f} L{ux+L:.0f} {uy+9:.0f} Z')
-    o += f'<path class="{"f" if on("uhud") else "f2"}" d="{ridge}" opacity="{1 if on("uhud") else .55}"/><path class="{"g" if on("uhud") else "gt"}" d="{ridge}"/>'
-    o += label(ux, uy - 18, 'جبل أُحد', 'uhud', 10)
+    ridge = (f'M{ux-L:.0f} {uy+10:.0f} L{ux-L+8:.0f} {uy+2:.0f} L{ux-34:.0f} {uy-2:.0f} L{ux-24:.0f} {uy-9:.0f} L{ux-14:.0f} {uy-5:.0f} L{ux-4:.0f} {uy-15:.0f} '
+             f'L{ux+8:.0f} {uy-6:.0f} L{ux+18:.0f} {uy-12:.0f} L{ux+30:.0f} {uy-4:.0f} L{ux+42:.0f} {uy-9:.0f} L{ux+L-4:.0f} {uy-1:.0f} L{ux+L:.0f} {uy+10:.0f} Z')
+    shade = ''.join(f'<path d="M{ux+dx:.0f} {uy+dy:.0f} l{-3} 10" stroke="{BROWN}" stroke-width=".9" opacity=".5"/>' for dx, dy in ((-24, -7), (-4, -13), (-1, -9), (18, -10), (21, -6), (42, -7), (-30, -1)))
+    o += f'<path d="{ridge}" fill="{F if on("uhud") else F2}" opacity="{1 if on("uhud") else .75}"/>{shade}<path d="{ridge}" fill="none" stroke="{G}" stroke-width="{2 if on("uhud") else 1.2}" stroke-linejoin="round"/>'
+    o += label(ux - 4, uy - 20, 'جبل أُحد', 'uhud', 11)
     if on('uhud'):
-        sx, sy = SHUH
-        o += f'<circle cx="{sx}" cy="{sy}" r="2.4" fill="{E}"/>' + f'<text x="{sx+30}" y="{sy+12}" {LBL} font-size="7.5" fill="#6b5a36">سيد الشهداء</text>'
-    # الخندق: خطّ تقريبي شمال المدينة، وجبل سلع خلفه من جهة المدينة
+        sx_, sy_ = SHUH
+        o += f'<circle cx="{sx_}" cy="{sy_}" r="2.6" fill="{E}"/><circle cx="{sx_}" cy="{sy_}" r="8" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
+        o += f'<text x="{sx_+38}" y="{sy_+14}" {LBL} font-size="8.5" fill="#5b4a2a">موضع شهداء أُحد</text>'
+        o += f'<path d="M{MOSQ[0]} {MOSQ[1]-14} L{sx_} {sy_+10}" stroke="{E}" stroke-width="1.2" stroke-dasharray="1.5 3"/>'
+        o += f'<text x="{(MOSQ[0]+sx_)/2+20}" y="{(MOSQ[1]+sy_)/2+3}" {LBL} font-size="9" fill="{E}" font-weight="700">نحو 4 كم</text>'
+    # جبل سلع
     sx, sy = SAL
-    o += ell(sx, sy, 7, 4.5, 'f2' if not on('khandaq') else 'f', 'gt')
-    o += label(sx - 15, sy + 3, 'سَلْع', 'sal', 8)
-    trench = f'M{sx-38:.0f} {sy-12:.0f} C{sx-14:.0f} {sy-16:.0f} {sx+20:.0f} {sy-15:.0f} {sx+50:.0f} {sy-19:.0f}'
+    o += f'<path d="M{sx-11} {sy+4} L{sx-4} {sy-5} L{sx} {sy-2} L{sx+4} {sy-7} L{sx+11} {sy+4} Z" fill="{F if on("khandaq") else F2}"/><path d="M{sx-11} {sy+4} L{sx-4} {sy-5} L{sx} {sy-2} L{sx+4} {sy-7} L{sx+11} {sy+4}" fill="none" stroke="{G}" stroke-width="1.1"/>'
+    o += label(sx - 22, sy + 4, 'سَلْع', 'khandaq', 9)
+    # الخندق: شمال المدينة بين الحرّتين
+    trench = f'M{sx-40:.0f} {sy-14:.0f} C{sx-14:.0f} {sy-18:.0f} {sx+22:.0f} {sy-17:.0f} {sx+56:.0f} {sy-22:.0f}'
     if on('khandaq'):
-        o += f'<path d="{trench}" fill="none" stroke="{E}" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"/>'
-        o += label(sx + 6, sy - 24, 'الخندق تقريبًا', 'khandaq', 9)
-    # العوالي: قرى ومزارع جنوب شرقي المدينة، أدناها على ميلين أو ثلاثة (نحو 4–6 كم)
+        o += f'<path d="{trench}" fill="none" stroke="{E}" stroke-width="3.2" stroke-dasharray="6 3" stroke-linecap="round"/>'
+        o += label(sx + 8, sy - 27, 'الخندق تقريبًا', 'khandaq', 9.5)
+    # العوالي
     ax, ay = CX + 3.6*KM, CY + 3.4*KM
-    o += f'<ellipse cx="{ax}" cy="{ay}" rx="30" ry="24" fill="{F if on("awali") else "none"}" fill-opacity=".7" stroke="{E if on("awali") else G}" stroke-width="{1.6 if on("awali") else .9}" stroke-dasharray="4 3"/>'
-    o += ''.join(f'<path class="et" d="M{ax+dx} {ay+dy} v-7 M{ax+dx-4} {ay+dy-9} q4 -3 4 2 q0 -5 4 -2" opacity="{1 if on("awali") else .45}"/>' for dx, dy in ((-14, 4), (-2, -6), (10, 6), (16, -8)))
-    o += label(ax, ay + 18, 'العوالي', 'awali', 10)
+    o += f'<ellipse cx="{ax}" cy="{ay}" rx="30" ry="22" fill="{F if on("awali") else "none"}" fill-opacity=".75" stroke="{E if on("awali") else G}" stroke-width="{1.8 if on("awali") else .9}" stroke-dasharray="4 3"/>'
+    if on('awali'):
+        for x, y in ((-14, 8), (-2, -4), (12, 8), (16, -6), (2, 12)): o += palm(ax + x, ay + y, .9)
+        o += f'<path d="M{MOSQ[0]+8} {MOSQ[1]+6} L{ax-18} {ay-12}" stroke="{E}" stroke-width="1.2" stroke-dasharray="1.5 3"/>'
+        o += f'<text x="{(MOSQ[0]+ax)/2+30}" y="{(MOSQ[1]+ay)/2-8}" {LBL} font-size="9" fill="{E}" font-weight="700">نحو 4 إلى 6 كم</text>'
+    o += label(ax, ay + 32, 'العوالي', 'awali', 10)
     # قباء
     qx, qy = QUBA
-    o += f'<path class="et" stroke-dasharray="1.5 3" d="M{MOSQ[0]} {MOSQ[1]+6} L{qx} {qy-6}"/>' if on('quba') else ''
-    o += f'<rect x="{qx-5}" y="{qy-5}" width="10" height="10" rx="1.5" class="{"f" if on("quba") else "f2"}"/><rect x="{qx-5}" y="{qy-5}" width="10" height="10" rx="1.5" class="gt"/>'
-    o += label(qx - 22, qy + 4, 'قُباء', 'quba', 10)
-    if on('quba'): o += f'<text x="{(MOSQ[0]+qx)/2+18}" y="{(MOSQ[1]+qy)/2+3}" {LBL} font-size="8" fill="{E}" font-weight="700">نحو 3 كم</text>'
-    # المسجد النبوي في المركز دائمًا
+    if on('quba'):
+        o += f'<path d="M{MOSQ[0]} {MOSQ[1]+8} C{MOSQ[0]-6} {MOSQ[1]+22} {qx-8} {qy-22} {qx} {qy-8}" fill="none" stroke="{E}" stroke-width="1.4" stroke-dasharray="1.5 3"/>'
+        o += f'<text x="{qx-24}" y="{(MOSQ[1]+qy)/2+3}" {LBL} font-size="9.5" fill="{E}" font-weight="700">نحو 3 كم</text>'
+        o += f'<circle cx="{qx}" cy="{qy}" r="11" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
+    o += mosque(qx, qy, .8 if not on('quba') else 1, E if on('quba') else G)
+    o += label(qx - 24, qy + 4, 'قُباء', 'quba', 10)
+    # المسجد النبوي
     mx, my = MOSQ
-    o += f'<rect x="{mx-6}" y="{my-6}" width="12" height="12" rx="2" fill="{E}"/><path d="M{mx+6} {my-6} v-6" stroke="{E}" stroke-width="1.6"/>'
-    o += f'<text x="{mx+36}" y="{my+4}" {LBL} font-size="8.5" fill="{E}" font-weight="700">المسجد النبوي</text>'
-    for k, (x, y) in {'quba': QUBA, 'uhud': SHUH}.items():
-        if on(k): o += ring(x, y)
-    # الشمال والمقياس
-    o += f'<path d="M24 34 l5 -14 l5 14 l-5 -4 Z" fill="{E}"/><text x="29" y="45" {LBL} font-size="8" fill="{E}">شمال</text>'
-    o += f'<path d="M22 212 h{KM} M22 209 v6 M{22+KM} 209 v6" stroke="#6b5a36" stroke-width="1.2"/><text x="{22+KM/2}" y="205" {LBL} font-size="7" fill="#6b5a36">كيلومتر</text>'
+    o += f'<circle cx="{mx}" cy="{my}" r="16" fill="#fffaf0" opacity=".55"/>' + mosque(mx, my, 1.2)
+    o += f'<text x="{mx+40}" y="{my+4}" {LBL} font-size="9.5" fill="{E}" font-weight="700">المسجد النبوي</text>'
+    o += '</g>'
+    # الإطار والشمال والمقياس والعنوان
+    o += f'<rect x="9" y="9" width="182" height="222" rx="10" fill="none" stroke="{G}" stroke-width="1.2"/>'
+    o += ''.join(f'<path d="M{x} {y+8*sy_} v{-8*sy_} h{8*sx_}" fill="none" stroke="{G}" stroke-width="1.6" transform="translate({sx_*-1} {sy_*-1})"/>'
+                 for x, y, sx_, sy_ in ((14, 14, 1, 1), (186, 14, -1, 1), (14, 226, 1, -1), (186, 226, -1, -1)))
+    o += f'<g transform="translate(28 36)"><circle r="10" fill="#fffaf0" stroke="{G}" stroke-width="1"/><path d="M0 -8 L3 0 L0 -2 L-3 0 Z" fill="{E}"/><path d="M0 8 L3 0 L0 2 L-3 0 Z" fill="{G}"/></g>'
+    o += f'<text x="28" y="57" {LBL} font-size="8" fill="{E}">شمال</text>'
+    o += f'<path d="M22 216 h{KM} M22 213 v6 M{22+KM} 213 v6" stroke="#6b5a36" stroke-width="1.2"/><text x="{22+KM/2}" y="209" {LBL} font-size="7.5" fill="#6b5a36">كيلومتر</text>'
+    o += f'<text x="{W/2+20}" y="220" {LBL} font-size="10" fill="{G}" font-weight="700">المدينة المنورة</text>'
     return o + '</svg>'
 for k in ('quba', 'uhud', 'awali', 'khandaq'):
     ART['madina-' + k] = madina(k)
