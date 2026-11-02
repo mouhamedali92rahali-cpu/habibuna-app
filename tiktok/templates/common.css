@@ -67,3 +67,9 @@ body{font-family:Tajawal,Amiri,sans-serif;color:var(--ivory);position:relative}
 .qrcap{display:flex;align-items:center;gap:14px;font:700 36px Amiri,serif;color:#0f5c4d}
 .qrcap svg{width:54px;height:54px;border-radius:14px}
 .hint{left:0;right:0;top:1330px;text-align:center;font:400 40px Tajawal;color:var(--muted)}
+
+/* الرسم الخطي للبطاقة (public/art) بعد البطاقة وشرحها */
+.artp{left:200px;right:200px;top:965px;border-radius:40px;background:#f6efdd;border:2px solid rgba(217,178,94,.7);padding:30px 40px 30px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.45);opacity:0}
+.artp svg{display:block;width:440px;height:auto;margin:0 auto}
+.artp p{font:400 42px/1.6 Naskh,Amiri,serif;color:#3b2f1a;margin-top:8px}
+.artp small{display:block;margin-top:6px;font:400 28px Tajawal;color:#7a6a4a}

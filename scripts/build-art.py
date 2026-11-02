@@ -192,6 +192,131 @@ ART['khubz'] = svg(
   + ''.join(f'<circle cx="{x}" cy="{y}" r="2" fill="{G}"/>' for x, y in ((78, 92), (94, 98), (110, 92), (86, 104), (104, 104), (96, 88)))
   + ear(146, 80, 12) + ear(156, 84, 28))
 
+# ——— الدفعة الثانية (2026-11-02) ———
+def path2(d, cls='f', line='g'):
+    return f'<path class="{cls}" d="{d}"/><path class="{line}" d="{d}"/>'
+def ell(cx, cy, rx, ry, cls='f', line='g', rot=0):
+    t = f' transform="rotate({rot} {cx} {cy})"' if rot else ''
+    return f'<ellipse class="{cls}" cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"{t}/><ellipse class="{line}" cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"{t}/>'
+def star(x, y, r=5, cls='e'):
+    return f'<path class="{cls}" d="M{x} {y-r} v{2*r} M{x-r} {y} h{2*r}"/><path class="et" d="M{x-r*.6} {y-r*.6} l{r*1.2} {r*1.2} M{x+r*.6} {y-r*.6} l{-r*1.2} {r*1.2}"/>'
+
+# 17. اللبنة: بيت حسن جميل ينقصه موضع لبنة من زاوية
+def _labina():
+    x0, x1, y0, rows, h, bw = 44, 156, 56, 8, 9.25, 16
+    out = ''
+    gap = None
+    for r in range(rows):
+        y = y0 + r*h; off = 0 if r % 2 == 0 else -bw/2
+        x = x0 + off
+        while x < x1:
+            a, b = max(x, x0), min(x + bw, x1)
+            if r == 0 and b == x1: gap = (a, y, b - a, h)
+            else:
+                fill = 'f2' if (r*5 + int(x)//bw) % 4 == 0 else 'f'
+                out += f'<rect class="{fill}" x="{a+.9:.1f}" y="{y+.9:.2f}" width="{b-a-1.8:.1f}" height="{h-1.8:.2f}" rx="1.2" stroke="{G}" stroke-width=".9"/>'
+            x += bw
+    out += path2('M88 130 V106 a12 12 0 0 1 24 0 V130 Z', 'fe', 'e')
+    out += path2('M58 86 v-11 a7 7 0 0 1 14 0 v11 Z', 'fe', 'et') + path2('M128 86 v-11 a7 7 0 0 1 14 0 v11 Z', 'fe', 'et')
+    a, y, w, hh = gap
+    out += f'<path class="g" d="M{x0} 130 V{y0} H{a} M{x1} {y0+h} V130"/><path class="e" d="M{x0-8} 131 H{x1+8}"/>'
+    out += f'<rect x="{a+1}" y="{y+1}" width="{w-2}" height="{hh-2}" fill="#fffaf0" stroke="{E}" stroke-width="1.6" stroke-dasharray="3 2"/>'
+    out += star(a + w/2, y - 13, 6)
+    return svg(out)
+ART['labina'] = _labina()
+
+# 18. الشاة
+def sheep(x, y, s=1.0, flip=1, cls='w'):
+    wool = ''.join(f'<circle class="{cls}" cx="{cx}" cy="{cy}" r="{r}"/>' for cx, cy, r in ((-14,-4,9),(-4,-9,10),(8,-8,9),(16,-1,8),(10,6,9),(-2,7,10),(-14,5,8)))
+    woolL = ''.join(f'<circle class="gt" cx="{cx}" cy="{cy}" r="{r}"/>' for cx, cy, r in ((-14,-4,9),(-4,-9,10),(8,-8,9),(16,-1,8),(10,6,9),(-2,7,10),(-14,5,8)))
+    legs = ''.join(f'<path class="g" d="M{lx} 12 v14"/>' for lx in (-12, -5, 6, 13))
+    head = (f'<ellipse class="f2" cx="20" cy="-11" rx="6" ry="2.6" transform="rotate(-25 20 -11)"/><ellipse class="gt" cx="20" cy="-11" rx="6" ry="2.6" transform="rotate(-25 20 -11)"/>'
+            f'<ellipse class="f2" cx="28" cy="-3" rx="6.5" ry="11" transform="rotate(-50 28 -3)"/><ellipse class="g" cx="28" cy="-3" rx="6.5" ry="11" transform="rotate(-50 28 -3)"/>'
+            f'<circle cx="26" cy="-7" r="1.5" fill="{E}"/>')
+    return f'<g transform="translate({x} {y}) scale({s*flip} {s})">{legs}{woolL}{wool}{head}</g>'
+ART['shah'] = svg(sheep(96, 80, 1.7) + '<path class="e" d="M40 128 C80 124 120 124 160 128"/>'
+                  '<path class="et" d="M56 126 l-3 -6 M60 126 l1 -7 M140 126 l-2 -6 M144 126 l2 -6"/>')
+
+# 19. غنمٌ بين جبلين
+ART['ghanam'] = svg(
+  path2('M26 122 C34 96 44 70 58 58 C66 52 72 58 78 66 C88 80 96 100 104 122 Z', 'f2')
+  + path2('M96 122 C106 98 118 76 130 66 C138 60 146 66 152 76 C160 90 168 106 174 122 Z', 'f2')
+  + '<path class="gt" d="M58 60 c-4 14 2 24 -4 40 M130 68 c-4 14 2 26 -4 40"/>'
+  + sheep(70, 110, .62) + sheep(98, 114, .62) + sheep(126, 110, .62) + sheep(84, 126, .62) + sheep(112, 128, .62)
+  + '<path class="e" d="M30 138 C80 134 120 134 170 138"/>')
+
+# 20. جبل أُحد: سلسلة طويلة متعدّدة القمم
+ART['uhud'] = svg(
+  path2('M26 118 C34 108 40 92 50 86 C56 82 60 90 66 80 C72 70 78 64 86 70 C92 74 94 62 102 58 C110 54 114 66 120 64 C128 62 132 72 140 76 C148 80 152 92 160 98 C166 104 170 112 174 118 Z', 'f2')
+  + '<path class="gt" d="M66 80 c2 10 -4 18 -2 30 M86 70 c-2 12 4 22 0 40 M102 58 c4 14 -2 30 4 52 M120 64 c-2 12 4 24 0 44 M140 76 c2 12 -4 20 0 34"/>'
+  + '<path class="e" d="M20 124 C70 118 130 118 180 124"/>'
+  + ''.join(f'<path class="et" d="M{x} 122 c0 -6 4 -8 6 -10 M{x+3} 122 c1 -5 -2 -8 -4 -10"/>' for x in (40, 150))
+  + '<circle class="g" cx="150" cy="36" r="8"/>')
+
+# 21. الحمار
+ART['himar'] = svg(
+  '<path class="g" d="M58 80 C50 88 48 100 52 112"/><path class="e" d="M52 110 l-4 7 M52 110 l1 8 M52 110 l4 6"/>'
+  + ''.join(f'<path class="g" d="M{x} 98 l{dx} 28"/><path class="e" d="M{x+dx-3} 127 h6"/>' for x, dx in ((68, -2), (80, 1), (108, -1), (120, 2)))
+  + ell(94, 86, 36, 17)
+  + path2('M116 76 C122 66 128 56 134 50 L150 56 C144 66 136 80 128 92 Z')
+  + '<path class="e" d="M118 72 C124 62 128 54 134 47"/>'
+  + ell(134, 34, 4.5, 15, rot=-20) + ell(146, 34, 4.5, 15, rot=18)
+  + '<path class="gt" d="M134 26 v14 M146 26 v14"/>'
+  + ell(152, 68, 10, 21, rot=-38)
+  + f'<circle cx="146" cy="56" r="2" fill="{E}"/><path class="et" d="M160 80 c2 1 3 0 4 -1"/>'
+  + '<path class="gt" d="M28 130 h144"/>')
+
+# 22. الريحان: غصن بأوراق متقابلة وسنبلة زهر
+def _rayhan():
+    out = '<path class="e" d="M100 136 C98 110 100 80 102 40"/><path class="et" d="M100 110 C110 96 124 92 134 86 M100 92 C88 80 76 76 66 72"/>'
+    for i, y in enumerate((124, 108, 92, 76, 60)):
+        s = 1 - i*0.12
+        out += ell(100 - 13*s, y, 11*s, 5.5*s, 'fe', 'et', rot=-25) + ell(103 + 13*s, y - 2, 11*s, 5.5*s, 'fe', 'et', rot=25)
+    out += ell(138, 82, 9, 4.5, 'fe', 'et', rot=-30) + ell(62, 68, 9, 4.5, 'fe', 'et', rot=30)
+    out += ''.join(f'<circle class="f" cx="{102+(2 if k%2 else -2)}" cy="{48-k*4}" r="2.6"/><circle class="gt" cx="{102+(2 if k%2 else -2)}" cy="{48-k*4}" r="2.6"/>' for k in range(5))
+    return svg(out)
+ART['rayhan'] = _rayhan()
+
+# 23. الصحفة المكسورة والطعام
+ART['sahfa'] = svg(
+  path2('M40 92 C40 116 70 126 92 124 L98 100 L86 84 L40 84 Z', 'f')
+  + path2('M110 82 L162 84 C162 110 136 124 108 126 L104 108 Z', 'f')
+  + '<path class="gt" d="M44 90 C60 96 78 96 88 92 M112 90 C130 96 146 96 158 90"/>'
+  + ''.join(f'<ellipse class="f2" cx="{x}" cy="{y}" rx="{rx}" ry="{ry}"/><ellipse class="gt" cx="{x}" cy="{y}" rx="{rx}" ry="{ry}"/>' for x, y, rx, ry in ((70, 80, 14, 5), (134, 78, 12, 4.5), (100, 134, 9, 3.5), (82, 136, 6, 2.6), (120, 138, 7, 3)))
+  + path2('M92 128 l8 4 l-4 6 Z', 'f') + '<path class="e" d="M34 142 h132"/>')
+
+# 24. طلوع الشمس
+def _shuruq():
+    import math
+    rays = ''.join(f'<path class="g" d="M{100+40*math.cos(a):.1f} {108-40*math.sin(a):.1f} L{100+56*math.cos(a):.1f} {108-56*math.sin(a):.1f}"/>'
+                   for a in [math.radians(d) for d in range(15, 170, 22)])
+    return svg('<path class="f" d="M68 108 a32 32 0 0 1 64 0 Z"/><path class="g" d="M68 108 a32 32 0 0 1 64 0"/>' + rays
+               + '<path class="e" d="M32 108 H168"/><path class="et" d="M48 118 H152 M66 127 H134"/>')
+ART['shuruq'] = _shuruq()
+
+# 25. قدحٌ من لبن
+ART['qadah'] = svg(
+  path2('M62 64 H138 C138 98 124 118 100 120 C76 118 62 98 62 64 Z', 'f2')
+  + '<ellipse class="w" cx="100" cy="64" rx="38" ry="9"/><ellipse class="g" cx="100" cy="64" rx="38" ry="9"/>'
+  + '<path class="gt" d="M68 82 C88 88 112 88 132 82 M74 100 C90 106 110 106 126 100"/>'
+  + path2('M88 120 h24 l4 10 h-32 Z', 'f2') + '<path class="e" d="M50 132 h100"/>')
+
+# 26. الدرع (حلقات الحديد) وصاعٌ من شعير
+def _dir():
+    body = ('M70 34 C76 30 84 30 88 32 C92 38 104 38 108 32 C112 30 120 30 126 34 L148 58 L136 70 L126 56 '
+            'L126 136 L104 136 L98 124 L92 136 L70 136 L70 56 L60 70 L48 58 Z')
+    rings = ''.join(f'<circle cx="{x}" cy="{y}" r="2.5" fill="none" stroke="#8c7a52" stroke-width="1"/>'
+                    for y in range(30, 140, 4) for x in range(44 + ((y//4) % 2)*2, 152, 5))
+    return svg(f'<defs><clipPath id="d"><path d="{body}"/></clipPath></defs>'
+               f'<path fill="#e3dccb" d="{body}"/><g clip-path="url(#d)">{rings}</g>'
+               f'<path fill="none" stroke="#6f6550" stroke-width="2.2" stroke-linejoin="round" d="{body}"/>'
+               f'<path class="g" d="M88 32 C92 42 104 42 108 32 M70 56 L126 56 M70 130 H126"/>'
+               + cup(158, 110, 1.1)
+               + ''.join(f'<ellipse class="f2" cx="{x}" cy="{y}" rx="2.6" ry="1.5" transform="rotate({r} {x} {y})"/><ellipse class="gt" cx="{x}" cy="{y}" rx="2.6" ry="1.5" transform="rotate({r} {x} {y})"/>'
+                         for x, y in ((148, 108), (154, 105), (160, 104), (166, 105), (170, 108), (151, 112), (158, 110), (165, 111), (157, 101), (163, 100)) for r in [ (x*7) % 60 - 30 ])
+               + '<path class="e" d="M34 140 h138"/>')
+ART['dir'] = _dir()
+
 # البطاقة ← الرسم والسطر تحته (يصف الشيء، ولا يدّعي أنه عين ما كان له ﷺ)
 MAP = {
   'W11': ('miswak', 'السِّواك: عودٌ من شجر الأراك تُنظَّف به الأسنان'),
@@ -217,6 +342,21 @@ MAP = {
   'X24': ('naqa', 'الجمل'),
   'R07': ('tair', 'طائرٌ يرفرف فوق فرخيه'),
   'V24': ('khubz', 'خبز الشعير'),
+  # الدفعة الثانية
+  'U10': ('labina', 'بيتٌ حسنٌ جميل، ينقصه موضع لبنة واحدة في زاويته'),
+  'R02': ('ghanam', 'غنمٌ تملأ ما بين جبلين'),
+  'C47': ('uhud', 'جبل أُحد، شمال المدينة المنورة'),
+  'X13': ('himar', 'الحمار'),
+  'E04': ('rayhan', 'الريحان: نبتةٌ طيبة الرائحة'),
+  'C23': ('sahfa', 'صحفةٌ مكسورة: الصحفة إناءٌ واسع للطعام'),
+  'B03': ('shuruq', 'طلوع الشمس'),
+  'X21': ('qadah', 'قدحٌ من لبن'),
+  'C44': ('dir', 'درعٌ من حلقات الحديد، وصاعٌ من شعير'),
+  'B19': ('shah', 'الشاة'),
+  'C41': ('shah', 'الشاة'),
+  'R06': ('naqa', 'الجمل'),
+  'O03': ('naqa', 'البعير'),
+  'W04': ('naqa', 'البعير'),
 }
 out_dir = os.path.join(root, 'public/art'); os.makedirs(out_dir, exist_ok=True)
 for k, v in ART.items():

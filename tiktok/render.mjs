@@ -19,7 +19,16 @@ let url = 'file://' + resolve(src);
 if (src.endsWith('.json')) {
   const spec = JSON.parse(readFileSync(src, 'utf8'));
   const cards = Object.fromEntries(JSON.parse(readFileSync(join(here, '../public/cards.json'), 'utf8')).cards.map(c => [c.id, c]));
-  for (const it of spec.items || []) { it.card = cards[it.id]; if (!it.card) throw new Error('بطاقة غير موجودة: ' + it.id); }
+  // رسم البطاقة الخطي (public/art.json) يظهر بعد البطاقة وشرحها إن وُجد؛ "art": false في عنصر الفيديو يلغيه
+  const arts = JSON.parse(readFileSync(join(here, '../public/art.json'), 'utf8')).cards;
+  for (const it of spec.items || []) {
+    it.card = cards[it.id]; if (!it.card) throw new Error('بطاقة غير موجودة: ' + it.id);
+    const a = arts[it.id];
+    // معرّفات القناع والقصّ فريدة لكل عنصر، حتى لا يتعارض رسمان في صفحة واحدة
+    const k = spec.items.indexOf(it);
+    if (a && it.art !== false) it.art = { svg: readFileSync(join(here, '../public/art', a.art + '.svg'), 'utf8').replace(/id="(\w+)"/g, `id="$1${k}"`).replace(/url\(#(\w+)\)/g, `url(#$1${k})`), caption: a.caption };
+    else delete it.art;
+  }
   await page.addInitScript(d => { window.DATA = d; }, spec);
   url = 'file://' + join(here, 'templates', spec.template + '.html');
 }

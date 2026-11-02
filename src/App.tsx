@@ -384,8 +384,9 @@ export default function App() {
     return () => { void h.then((x) => x.remove()); };
   }, []);
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
+  const arts = useArt();
   const doShare = async (c: CardData) => {
-    const r = await shareCard(c);
+    const r = await shareCard(c, arts[c.id]);
     say(r === 'downloaded' ? 'تم حفظ صورة البطاقة' : r === 'copied' ? 'تم نسخ النص' : r === 'shared' ? 'تمت المشاركة' : '');
   };
   const toggleChapter = (ch: string) => setHidden((h) => (h.includes(ch) ? h.filter((x) => x !== ch) : [...h, ch]));

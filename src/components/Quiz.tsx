@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { QuizItem } from '../lib/quiz';
 import { CardFront } from './CardView';
+import { useArt } from '../lib/art';
 
 /**
  * شاشة «مراجعة الأسبوع»: سؤال بأربعة خيارات، ثم صح/خطأ والبطاقة نفسها بنصها ومصدرها،
@@ -23,6 +24,7 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
   const root = useRef<HTMLDivElement>(null);
   const toTop = () => root.current?.parentElement?.scrollTo({ top: 0 });
   const it = items[i];
+  const arts = useArt();
 
   const choose = (o: string) => {
     if (picked) return;
@@ -76,6 +78,12 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
           <button className="primary" onClick={next}>{i + 1 < items.length ? 'السؤال التالي' : 'النتيجة'}</button>
           <p className="muted small qhint">البطاقة التي جاء منها السؤال:</p>
           <div className="qreveal"><CardFront card={it.card} /></div>
+          {arts[it.card.id] && (
+            <figure className="hadith artbox qart">
+              <img src={arts[it.card.id].src} alt={arts[it.card.id].caption} onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
+              <figcaption>{arts[it.card.id].caption}</figcaption>
+            </figure>
+          )}
           <button className={'qfav' + (favs.includes(it.card.id) ? ' on' : '')} onClick={() => onFav(it.card.id)} aria-pressed={favs.includes(it.card.id)}>
             {favs.includes(it.card.id) ? '♥ محفوظة في المفضلة' : '♡ احفظها في المفضلة'}
           </button>

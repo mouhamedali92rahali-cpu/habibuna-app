@@ -103,7 +103,10 @@ function cardScene(it, step) {
   const T = 1.85 + d, textEnd = T + n * .2 + .3, readEnd = textEnd + (it.hold || 2.6);
   const withSharh = !!(it.sharhTitle && c.sharh);
   const sharhN = withSharh ? c.sharh.text.split(' ').length : 0;
-  const P = readEnd, sharhStart = P + 1.0, dur = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
+  const P = readEnd, sharhStart = P + 1.0, sharhEnd = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
+  // الرسم الخطي بعد الشرح (أو بعد البطاقة إن لم يكن شرح)، نحو 4.5 ثوانٍ
+  const withArt = !!it.art, artStart = sharhEnd + (withSharh ? .2 : .6);
+  const dur = withArt ? artStart + 4.6 : sharhEnd;
   return scene(dur, (el, s) => {
     const ch = chrome(el, s, { step, title: it.label });
     const flip = h(`<div class="flip abs" style="left:110px;top:560px;width:860px;height:760px"><div class="back">${MIHRAB}</div><div class="face">${cardFace(c)}</div></div>`);
@@ -121,13 +124,19 @@ function cardScene(it, step) {
       el.appendChild(panel); pt = panel.querySelector('p');
       sfx(s.start + P + .1, 'whoosh', .5); sfx(s.start + sharhStart, 'pop', .8);
     }
+    let artEl = null;
+    if (withArt) {
+      artEl = h(`<div class="artp abs">${it.art.svg}<p>${it.art.caption}</p><small>رسمٌ تقريبي للتوضيح</small></div>`);
+      el.appendChild(artEl);
+      sfx(s.start + artStart, 'pop', .7);
+    }
     sfx(s.start + 1.3 + d, 'pop');
     return lt => {
       ch(lt);
       // الصعود ثم القلب من الظهر إلى الوجه
       const up = back(seg(lt, .7 + d, .55)), rot = 180 * (1 - eo(seg(lt, 1.1 + d, .7)));
       bk.style.transform = `rotateY(${rot - 180}deg)`; face.style.transform = `rotateY(${rot}deg)`;
-      const shrink = withSharh ? eo(seg(lt, P, .8)) : 0;
+      const shrink = withSharh ? eo(seg(lt, P, .8)) : withArt ? eo(seg(lt, artStart - .4, .8)) : 0;
       css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink) * fit})`, transformOrigin: '50% 0%' });
       revealWords(tx, lt, T, .2, { dy: 14, blur: 6 });
       if (withSharh) {
@@ -138,6 +147,14 @@ function cardScene(it, step) {
         revealWords(panel.querySelector('h3'), lt, sharhStart, .12, { dy: 20 });
         revealWords(pt, lt, sharhStart + .5, .08, { dy: 10, blur: 4 });
         panel.querySelector('small').style.opacity = eo(seg(lt, sharhStart + .6 + sharhN * .08, .5)) * .9;
+        if (withArt) panel.style.opacity = String(Number(panel.style.opacity) * (1 - seg(lt, artStart - .3, .4)));
+      }
+      if (withArt) {
+        if (su && !withSharh) css(su, { opacity: 1 - seg(lt, artStart - .4, .4) });
+        const q = back(seg(lt, artStart, .6));
+        css(artEl, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 80}px) scale(${.94 + .06 * clamp(q)})` });
+        artEl.querySelector('p').style.opacity = String(eo(seg(lt, artStart + .5, .5)));
+        artEl.querySelector('small').style.opacity = String(eo(seg(lt, artStart + .8, .5)) * .8);
       }
     };
   });
