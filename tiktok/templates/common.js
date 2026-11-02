@@ -19,9 +19,10 @@ const MARK = { 'الملامح والشكل': '◈', 'حياته اليومية'
 // الأقواس والأرقام بخط Naskh: Tajawal المحمَّل بلا أرقام ولا أقواس، فتؤخذ من Amiri الذي يقلب الأقواس في النص العربي
 const bidiNums = s => s.replace(/\([^()]*\d[^()]*\)/g, x => `<span style="font-family:Naskh,sans-serif">${x}</span>`);
 
-// نص بكلمة مُبرزة بين [ ] (و _ مسافة داخلها) → كلمات منفصلة تظهر واحدة واحدة
+// نص بكلمة مُبرزة بين [ ] (و _ مسافة داخلها) → كلمات منفصلة تظهر واحدة واحدة؛ و« | » كسر سطر يختار موضعه كاتب الفيديو
 function words(text) {
   return text.split(' ').map(w => {
+    if (w === '|') return '<br>';
     const m = w.match(/^\[(.+)\]([؟?!.،:]*)$/), acc = !!m;  // علامة الترقيم بعد ] تبقى خارج الإبراز
     w = (acc ? m[1] : w).replace(/_/g, ' ').replace('ﷺ', '<span class="saw">ﷺ</span>');
     return `<span class="w${acc ? ' acc' : ''}">${acc ? `<span style="position:relative">${w}<i class="ul"></i></span>${m[2]}` : w}</span>`;
@@ -77,7 +78,8 @@ function chrome(el, s, { step, title, sub, subStart = .7, subStep = .27 }) {
   }
   const ti = h(`<div class="title abs">${words(title)}</div>`); el.appendChild(ti);
   // العنوان الطويل يصغر ليبقى في سطر؛ فإن صار أصغر من 90px انقسم سطرين بخط 96px (كأسئلة الهوك الطويلة)
-  if (ti.scrollWidth > 1000) {
+  if (title.includes(' | ')) css(ti, { fontSize: '96px', whiteSpace: 'normal', left: '60px', right: '60px', lineHeight: '1.45' });
+  else if (ti.scrollWidth > 1000) {
     const fs = Math.floor(108 * 1000 / ti.scrollWidth);
     if (fs >= 90) ti.style.fontSize = fs + 'px';
     else css(ti, { fontSize: '96px', whiteSpace: 'normal', left: '60px', right: '60px', lineHeight: '1.45' });

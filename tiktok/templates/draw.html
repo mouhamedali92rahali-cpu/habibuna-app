@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>قالب «يُرسم أمامك»</title>
+<!-- قالب «يُرسم أمامك»: سؤال الهوك، ثم رسم البطاقة الخطي (public/art) يُرسم خطًّا خطًّا ثم يتلوّن، ثم سطره،
+     ثم البطاقة (وشرحها إن طُلب sharhTitle)، ثم كود التحميل.
+     البيانات: {topic, hook, items:[{id, label, sharhTitle?}], drawDur?} — الرسم يُرفق آليًّا من render.mjs -->
+<link rel="stylesheet" href="common.css">
+<style>
+.board{left:110px;right:110px;top:560px;border-radius:48px;background:#f6efdd;border:2px solid rgba(217,178,94,.7);padding:40px 40px 34px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+.board svg{display:block;width:100%;height:auto}
+.board p{font:400 46px/1.6 Naskh,Amiri,serif;color:#3b2f1a;margin-top:6px}
+.board small{display:block;margin-top:4px;font:400 30px Tajawal;color:#7a6a4a}
+</style>
+</head>
+<body>
+<div id="bg" class="abs"></div>
+<div id="pat" class="abs"></div>
+<div id="root"></div>
+<div id="vig" class="abs"></div>
+<script src="common.js"></script>
+<script>
+const D = window.DATA;
+const it = D.items[0];
+if (!it.art) throw new Error('البطاقة بلا رسم: ' + it.id);
+const DRAW = D.drawDur || 6.5;              // مدة رسم الخطوط
+const hookEnd = .12 + D.hook.split(' ').length * TITLE_STEP + .3;
+const S0 = hookEnd + .5;                     // يبدأ الرسم بعد اكتمال السؤال
+const FILL0 = S0 + DRAW - .6, FILL = 1.4;    // ثم تتلوّن الأشكال
+const CAP = FILL0 + FILL + .2;
+
+// 1) السؤال، ثم الرسم يُرسم أمام المشاهد
+scene(CAP + 3.6, (el, s) => {
+  const ch = chrome(el, s, { step: D.topic, title: D.hook });
+  const board = h(`<div class="board abs">${it.art.svg}<p>${it.art.caption}</p><small>رسمٌ تقريبي للتوضيح</small></div>`);
+  el.appendChild(board);
+  const extra = Math.max(0, ch.titleEl.offsetHeight - 150);   // العنوان المقسوم سطرين يدفع اللوحة إلى الأسفل
+  if (extra) board.style.top = (560 + extra) + 'px';
+  const svg = board.querySelector('svg');
+  const inDefs = e => !!e.closest('defs,mask,clipPath');
+  const shapes = [...svg.querySelectorAll('path,circle,ellipse,rect,line,polyline,polygon')].filter(e => !inDefs(e));
+  const bgc = shapes.shift();                // الدائرة العاجية خلف الرسم تظهر مع اللوحة
+  // الخطوط بترتيبها في الملف، ولكل خط وقت بقدر طوله (مع حدّ أدنى)، والتعبئة تُخفى حتى مرحلة التلوين
+  const strokes = [], fills = [];
+  for (const e of shapes) {
+    const cs = getComputedStyle(e);
+    const st = cs.stroke && cs.stroke !== 'none' && parseFloat(cs.strokeWidth) > 0;
+    const fl = cs.fill && cs.fill !== 'none' && cs.fill !== 'rgba(0, 0, 0, 0)';
+    if (st) { let L = 0; try { L = e.getTotalLength(); } catch { L = 0; } if (L > 0) strokes.push({ e, L, w: Math.max(L, 40) }); }
+    if (fl) fills.push({ e, op: cs.fillOpacity, o: e.getAttribute('opacity') });
+  }
+  const total = strokes.reduce((a, b) => a + b.w, 0);
+  let acc = 0;
+  for (const k of strokes) { k.a = acc / total * DRAW; acc += k.w; k.d = k.w / total * DRAW; k.e.style.strokeDasharray = k.L + ' ' + k.L; }
+  // نقرة خافتة جدًّا مع بداية كل جزء كبير من الرسم (لا مع الحلقات الصغيرة)
+  strokes.filter(k => k.L > 120).forEach((k, i) => { if (i % 2 === 0) sfx(s.start + S0 + k.a, 'tick', .35); });
+  sfx(s.start + FILL0 + .2, 'pop', .6); sfx(s.start + CAP, 'pop', .5);
+  const cap = board.querySelector('p'), sm = board.querySelector('small');
+  return lt => {
+    ch(lt);
+    const q = back(seg(lt, S0 - .7, .6));
+    css(board, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 80}px) scale(${.95 + .05 * clamp(q)})` });
+    const t = lt - S0;
+    for (const k of strokes) {
+      const p = clamp((t - k.a) / Math.max(k.d, .12));
+      k.e.style.strokeDashoffset = String(k.L * (1 - eo(p)));
+      k.e.style.visibility = p > 0 ? '' : 'hidden';
+    }
+    const f = eo(seg(lt, FILL0, FILL));
+    for (const k of fills) k.e.style.fillOpacity = String(f * (k.op ? parseFloat(k.op) : 1));
+    cap.style.opacity = String(eo(seg(lt, CAP, .5)));
+    sm.style.opacity = String(eo(seg(lt, CAP + .4, .5)) * .8);
+  };
+});
+
+// 2) البطاقة (بلا تكرار الرسم بعدها)
+cardScene(Object.assign({}, it, { art: null }), D.topic);
+
+qrScene();
+finish();
+</script>
+</body>
+</html>
