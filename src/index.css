@@ -317,13 +317,15 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 
 /* تكبير الصورة على الشاشة كلها (Zoom.tsx): خلفية عاجية دائمًا لأن الرسوم على العاجي */
 .artbox img,.qart img,.qpic{cursor:zoom-in}
-.zoom{position:fixed;inset:0;z-index:80;background:#f6efdd;display:flex;flex-direction:column}
-.zbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #d9c79a;background:#fbf6ea}
-.zbar span{flex:1;font-size:.92rem;color:#3b2f1a;line-height:1.5;text-align:center}
-.zbar button{background:none;border:1.5px solid #c9a24b;color:#0f5c4d;border-radius:10px;min-width:40px;height:40px;font-size:1.3rem;font-weight:700}
-.zbar button:disabled{opacity:.35}
-.zbtns{display:flex;gap:6px}
+.zoom{position:fixed;inset:0;z-index:80;background:#f6efdd;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
 .zbox{flex:1;overflow:auto;display:flex;touch-action:pan-x pan-y}
 .zbox img{display:block;max-width:none;height:auto;margin:auto;flex:none}
-.zhint{text-align:center;font-size:.8rem;color:#7a6a4a;padding:6px 0 12px;margin:0}
+.zbar{border-top:1px solid #d9c79a;background:#fbf6ea;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
+.zcap{margin:0 0 8px;text-align:center;font-family:"Noto Naskh Arabic",serif;font-size:1rem;line-height:1.6;color:#3b2f1a}
+.zrow{display:flex;align-items:center;gap:8px}
+.zbar button{background:none;border:1.5px solid #c9a24b;color:#0f5c4d;border-radius:10px;min-width:44px;height:44px;font-size:1.3rem;font-weight:700}
+.zbar .zclose{font-size:.95rem;padding:0 12px}
+.zbar button:disabled{opacity:.35}
+.zbtns{display:flex;gap:6px}
+.zhint{flex:1;text-align:center;font-size:.78rem;color:#7a6a4a}
 .offer.news b b{color:inherit}
