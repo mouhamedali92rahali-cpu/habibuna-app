@@ -416,12 +416,98 @@ def madina(hi):
     return o + '</svg>'
 for k in ('quba', 'uhud', 'awali', 'khandaq'):
     ART['madina-' + k] = madina(k)
+# ——— خريطتا الحجاز ومكة (2026-11-02) ———
+# الكعبة 21.4225,39.8262 · المدينة 24.4670,39.6109 (340 كم خطًّا مستقيمًا، ونحو 450 كم بالطريق) · عرفة 21.3549,39.9841 (makkahlive)
+# التنعيم شمال مكة نحو 7.5 كم (هيئة تطوير مكة) · الحديبية (الشميسي) غربها 20–24 كم · وادي حنين (الشرائع) شمال شرقها 24–30 كم · الطائف 21.2703,40.4158
+def proj(lat0, lon0, k, cx, cy):
+    def f(lat, lon):
+        return round(cx + (lon - lon0) * 111.3 * math.cos(math.radians(lat0)) * k, 1), round(cy - (lat - lat0) * 110.6 * k, 1)
+    return f
+def kaaba(x, y, s=1.0):
+    return (f'<path d="M{x-6*s} {y-2*s} l{6*s} {-3*s} l{6*s} {3*s} v{8*s} l{-6*s} {3*s} l{-6*s} {-3*s} Z" fill="#1e1a16"/>'
+            f'<path d="M{x-6*s} {y-2*s} l{6*s} {3*s} l{6*s} {-3*s} M{x} {y+1*s} v{8*s}" stroke="#3a332b" stroke-width=".8" fill="none"/>'
+            f'<path d="M{x-6*s} {y+.5*s} l{6*s} {3*s} l{6*s} {-3*s}" stroke="{G}" stroke-width="1.3" fill="none"/>')
+def mframe(title, W=200, H=240):
+    o = f'<rect x="9" y="9" width="182" height="222" rx="10" fill="none" stroke="{G}" stroke-width="1.2"/>'
+    o += ''.join(f'<path d="M{x} {y+8*sy_} v{-8*sy_} h{8*sx_}" fill="none" stroke="{G}" stroke-width="1.6" transform="translate({-sx_} {-sy_})"/>'
+                 for x, y, sx_, sy_ in ((14, 14, 1, 1), (186, 14, -1, 1), (14, 226, 1, -1), (186, 226, -1, -1)))
+    o += f'<g transform="translate(28 36)"><circle r="10" fill="#fffaf0" stroke="{G}" stroke-width="1"/><path d="M0 -8 L3 0 L0 -2 L-3 0 Z" fill="{E}"/><path d="M0 8 L3 0 L0 2 L-3 0 Z" fill="{G}"/></g>'
+    o += f'<text x="28" y="57" {LBL} font-size="8" fill="{E}">شمال</text>'
+    o += f'<text x="{W/2}" y="222" {LBL} font-size="10" fill="{G}" font-weight="700">{title}</text>'
+    return o
+def T(x, y, t, size=10, col=None, bold=False):
+    return f'<text x="{x}" y="{y}" {LBL} font-size="{size}" font-weight="{700 if bold else 400}" fill="{col or "#7d6c47"}">{t}</text>'
+def mountains(pts, op=.6):
+    return ''.join(f'<path d="M{x-7} {y+4} L{x-2} {y-4} L{x+1} {y-1} L{x+4} {y-6} L{x+9} {y+4}" fill="{F2}" opacity="{op}" stroke="{G}" stroke-width=".8"/>' for x, y in pts)
+
+def hijaz():
+    P = proj(21.4225, 39.8262, .44, 118, 188)
+    MK, MD, TF = P(21.4225, 39.8262), P(24.4670, 39.6109), P(21.2703, 40.4158)
+    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">{STYLE}<rect x="3" y="3" width="194" height="234" rx="14" fill="{BG}"/>'
+    o += '<defs><clipPath id="hc"><rect x="9" y="9" width="182" height="222" rx="10"/></clipPath></defs><g clip-path="url(#hc)">'
+    # البحر الأحمر غربًا: الساحل تقريبي بين ينبع (24.09,38.06) وجدة (21.54,39.17) والليث
+    c = [P(25.3, 37.2), P(24.09, 38.06), P(23.2, 38.6), P(22.4, 39.05), P(21.54, 39.17), P(20.9, 39.4), P(20.0, 40.0)]
+    coast = 'M' + ' L'.join(f'{x} {y}' for x, y in c)
+    o += f'<path d="{coast} L-20 300 L-20 -20 Z" fill="#cfe0d6" opacity=".8"/><path d="{coast}" fill="none" stroke="{E}" stroke-width="1.2" opacity=".7"/>'
+    o += ''.join(f'<path d="M{x} {y} q3 -3 6 0 t6 0" fill="none" stroke="{E}" stroke-width=".8" opacity=".5"/>' for x, y in ((20, 120), (30, 150), (22, 180), (44, 196), (16, 92)))
+    o += T(30, 136, 'البحر', 9, E) + T(30, 147, 'الأحمر', 9, E)
+    o += mountains([(120, 70), (134, 98), (150, 126), (142, 150), (158, 168), (128, 120)], .5)
+    # الطريق: خطّ مستقيم منقّط مع المسافتين
+    o += f'<path d="M{MD[0]} {MD[1]+8} L{MK[0]} {MK[1]-10}" stroke="{E}" stroke-width="1.6" stroke-dasharray="2 4" stroke-linecap="round"/>'
+    mid = ((MD[0]+MK[0])/2, (MD[1]+MK[1])/2)
+    o += T(mid[0]+34, mid[1]-4, 'نحو 340 كم', 10, E, True) + T(mid[0]+34, mid[1]+9, 'خطًّا مستقيمًا', 7.5, '#5b4a2a') + T(mid[0]+34, mid[1]+20, 'ونحو 450 كم بالطريق', 7.5, '#5b4a2a')
+    o += f'<circle cx="{MD[0]}" cy="{MD[1]}" r="14" fill="#fffaf0" opacity=".6"/>' + mosque(MD[0], MD[1], 1.1) + T(MD[0]+48, MD[1]+4, 'المدينة المنورة', 10, E, True)
+    o += f'<circle cx="{MK[0]}" cy="{MK[1]}" r="14" fill="#fffaf0" opacity=".6"/>' + kaaba(MK[0], MK[1], 1.2) + T(MK[0]-30, MK[1]+4, 'مكة', 11, E, True)
+    o += f'<circle cx="{TF[0]}" cy="{TF[1]}" r="2.4" fill="{G}"/>' + T(TF[0]+2, TF[1]+12, 'الطائف', 8.5)
+    o += '</g>' + mframe('') + T(140, 222, 'الحجاز', 10, G, True) + '</svg>'
+    return o
+
+def makka(hi):
+    on = lambda k: k == hi
+    K = 2.3
+    P = proj(21.4225, 39.8262, K, 84, 118)
+    MK, AR = P(21.4225, 39.8262), P(21.3549, 39.9841)
+    # التنعيم نحو 7.5 كم شمالًا، الحديبية نحو 22 كم غربًا، حنين نحو 27 كم شمال شرق؛ والطائف (نحو 63 كم جنوب شرق) خارج الإطار بسهم
+    TN = (MK[0] - 1.2*K, MK[1] - 7.4*K)
+    HD = (MK[0] - 22*K, MK[1] - 1.5*K)
+    HN = (MK[0] + 22*K, MK[1] - 15*K)
+    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">{STYLE}<rect x="3" y="3" width="194" height="234" rx="14" fill="{BG}"/>'
+    o += '<defs><clipPath id="kc"><rect x="9" y="9" width="182" height="222" rx="10"/></clipPath></defs><g clip-path="url(#kc)">'
+    o += mountains([(56, 70), (150, 66), (128, 172), (170, 120), (44, 168), (96, 190), (160, 196), (100, 64)], .45)
+    def place(pt, name, k, ldx, ldy, dist=None, ddy=12):
+        r = ''
+        if on(k):
+            r += f'<path d="M{MK[0]} {MK[1]} L{pt[0]} {pt[1]}" stroke="{E}" stroke-width="1.3" stroke-dasharray="1.5 3"/>'
+            r += f'<circle cx="{pt[0]}" cy="{pt[1]}" r="8" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
+        r += f'<circle cx="{pt[0]}" cy="{pt[1]}" r="{3 if on(k) else 2.4}" fill="{E if on(k) else G}"/>'
+        r += T(pt[0]+ldx, pt[1]+ldy, name, 11.5 if on(k) else 9.5, E if on(k) else '#7d6c47', on(k))
+        if on(k) and dist: r += T(pt[0]+ldx, pt[1]+ldy+ddy, dist, 8.5, E, True)
+        return r
+    o += place(TN, 'التنعيم', 'tanim', 0, -12, 'نحو 7 كم', -10)
+    o += place(HD, 'الحديبية', 'tanim', 0, 16, 'نحو 22 كم')
+    o += place(HN, 'وادي حُنين', 'hunayn', 0, -12, 'نحو 25 إلى 30 كم', -11)
+    o += f'<circle cx="{AR[0]}" cy="{AR[1]}" r="2" fill="{G}"/>' + T(AR[0]+2, AR[1]+12, 'عرفة', 8.5)
+    # الطائف خارج الإطار: سهم على الحافة في اتجاهها
+    o += f'<path d="M{MK[0]+70} {MK[1]+22} L{MK[0]+96} {MK[1]+29}" stroke="{G}" stroke-width="1.2" stroke-dasharray="3 3"/><path d="M{MK[0]+96} {MK[1]+29} l-6 -4 l1 6 Z" fill="{G}"/>'
+    o += T(MK[0]+84, MK[1]+44, 'إلى الطائف', 8.5) + T(MK[0]+84, MK[1]+55, 'نحو 65 كم', 7.5, '#6b5a36')
+    o += f'<circle cx="{MK[0]}" cy="{MK[1]}" r="10" fill="#fffaf0" opacity=".6"/>' + kaaba(MK[0], MK[1], 1.0) + T(MK[0]-2, MK[1]+21, 'مكة', 11, E, True)
+    o += f'<path d="M22 204 h{10*K} M22 201 v6 M{22+10*K} 201 v6" stroke="#6b5a36" stroke-width="1.2"/>' + T(22+5*K+6, 197, 'عشرة كيلومترات', 7, '#6b5a36')
+    o += '</g>' + mframe('ما حول مكة') + '</svg>'
+    return o
+ART['hijaz'] = hijaz()
+ART['makka-hunayn'] = makka('hunayn')
+ART['makka-tanim'] = makka('tanim')
+
 MAPS = {
   'C07': ('madina-quba', 'مسجد قُباء: جنوب المسجد النبوي، على نحو 3 كم'),
   'W07': ('madina-awali', 'عوالي المدينة: قرى ومزارع في جنوبها الشرقي، أدناها على ميلين أو ثلاثة؛ نحو 4 إلى 6 كم'),
   'C47': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم، وطوله نحو 7 كم'),
   'U20': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم، وعند سفحه شهداء أُحد'),
   'C37': ('madina-khandaq', 'موضع الخندق تقريبًا: شمال المدينة، وجبل سَلْع خلف المسلمين'),
+  'O07': ('hijaz', 'مكة والمدينة: بينهما نحو 340 كم خطًّا مستقيمًا، ونحو 450 كم بالطريق'),
+  'O08': ('hijaz', 'مكة والمدينة: بينهما نحو 340 كم خطًّا مستقيمًا، ونحو 450 كم بالطريق'),
+  'R01': ('makka-hunayn', 'وادي حُنين: بين مكة والطائف، شمال شرق مكة على نحو 25 إلى 30 كم'),
+  'O01': ('makka-tanim', 'التنعيم: شمال مكة على نحو 7 كم، والحديبية غربها على نحو 22 كم'),
 }
 
 # البطاقة ← الرسم والسطر تحته (يصف الشيء، ولا يدّعي أنه عين ما كان له ﷺ)

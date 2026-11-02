@@ -11,7 +11,8 @@ import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
 import { buildQuiz, loadQuiz, QUIZ_AT, QUIZ_MIN, streak, weekKey, type Question, type QuizItem, type QuizRecord } from './lib/quiz';
 import { Quiz } from './components/Quiz';
 import { App as NativeApp } from '@capacitor/app';
-import { useArt, useMaps } from './lib/art';
+import { useArt, useMaps, openZoom, type ZoomReq } from './lib/art';
+import { Zoom } from './components/Zoom';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -72,16 +73,16 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
         </div>
         {showArt && art && (
           <figure className="hadith artbox">
-            <img src={art.src} alt={art.caption} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(art.fallback)) i.src = art.fallback; }} />
+            <img src={art.src} alt={art.caption} onClick={() => openZoom(art)} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(art.fallback)) i.src = art.fallback; }} />
             <figcaption>{art.caption}</figcaption>
-            <div className="muted small">رسمٌ تقريبي للتوضيح</div>
+            <div className="muted small">رسمٌ تقريبي للتوضيح · المسه لتكبيره</div>
           </figure>
         )}
         {showMap && map && (
           <figure className="hadith artbox mapbox">
-            <img src={map.src} alt={map.caption} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(map.fallback)) i.src = map.fallback; }} />
+            <img src={map.src} alt={map.caption} onClick={() => openZoom(map)} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(map.fallback)) i.src = map.fallback; }} />
             <figcaption>{map.caption}</figcaption>
-            <div className="muted small">خريطة تقريبية؛ المسافات خطٌّ مستقيم</div>
+            <div className="muted small">خريطة تقريبية؛ المسافات خطٌّ مستقيم · المسها لتكبيرها</div>
           </figure>
         )}
         {showSharh && c.sharh && (
@@ -378,7 +379,8 @@ export default function App() {
   // ثم يعود من «المساعدة» إلى الإعدادات، ومن أي صفحة إلى البطاقات؛ وفي البطاقات يُصغّر التطبيق بدل إغلاقه
   const backRef = useRef<() => void>(() => {});
   backRef.current = () => {
-    if (quiz) setQuiz(null);
+    if (zoom) setZoom(null);
+    else if (quiz) setQuiz(null);
     else if (open) setOpen(null);
     else if (filterOpen) setFilterOpen(false);
     else if (guide) setGuide(false);
@@ -395,6 +397,14 @@ export default function App() {
   }, []);
   const toggleFav = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
   const arts = useArt();
+  // تكبير الصورة (openZoom من أي مكان)، وتنبيه «جديد» مرة واحدة لمن حدّث التطبيق (لا للمثبّت حديثًا)
+  const [zoom, setZoom] = useState<ZoomReq | null>(null);
+  useEffect(() => {
+    const h = (e: Event) => setZoom((e as CustomEvent<ZoomReq>).detail);
+    window.addEventListener('hb-zoom', h);
+    return () => window.removeEventListener('hb-zoom', h);
+  }, []);
+  const [artNews, setArtNews] = useState(() => !isNew && !load('artNews', false));
   const doShare = async (c: CardData) => {
     const r = await shareCard(c, arts[c.id]);
     say(r === 'downloaded' ? 'تم حفظ صورة البطاقة' : r === 'copied' ? 'تم نسخ النص' : r === 'shared' ? 'تمت المشاركة' : '');
@@ -430,6 +440,13 @@ export default function App() {
                   <a className="primary" href="https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html" target="_blank" rel="noopener">تحميل التحديث</a>
                   <button className="linkbtn" onClick={() => { setUpdLater(dayNo); save('updateLater', dayNo); }}>لاحقًا</button>
                 </div>
+              </div>
+            )}
+            {artNews && (
+              <div className="offer news">
+                <b>جديد في «حبيبنا» ✦</b>
+                <p>تحت بعض البطاقات زرّ <b>«صورة»</b> لرسمٍ توضيحي لما ورد فيها، وزرّ <b>«خريطة»</b> للأماكن في المدينة ومكة. والمس الصورة لتكبيرها.</p>
+                <div className="btns"><button className="primary" onClick={() => { setArtNews(false); save('artNews', true); }}>حسنًا</button></div>
               </div>
             )}
             {quizAvail && quizLater !== dayNo && (
@@ -615,6 +632,7 @@ export default function App() {
         ))}
       </nav>
 
+      {zoom && <Zoom z={zoom} onClose={() => setZoom(null)} />}
       {quiz && (
         <div className="modal qmodal">
           <Quiz items={quiz} streak={qStreak} favs={favs} onFav={toggleFav} onFinish={finishQuiz} onClose={() => setQuiz(null)} />

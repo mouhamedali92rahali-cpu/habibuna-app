@@ -58,3 +58,7 @@ function useLoaded(): Loaded {
 export const useArt = () => useLoaded().arts;
 /** خرائط المدينة التقريبية لبطاقات الأماكن (قباء، العوالي، أُحد، الخندق) */
 export const useMaps = () => useLoaded().maps;
+
+/** تكبير الصورة: يفتح نافذة على الشاشة كلها (Zoom.tsx في App) */
+export interface ZoomReq { src: string; fallback: string; caption: string; }
+export const openZoom = (z: ZoomReq) => window.dispatchEvent(new CustomEvent<ZoomReq>('hb-zoom', { detail: z }));

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { QuizItem } from '../lib/quiz';
 import { CardFront } from './CardView';
-import { useArt } from '../lib/art';
+import { useArt, openZoom } from '../lib/art';
 
 /**
  * شاشة «مراجعة الأسبوع»: سؤال بأربعة خيارات، ثم صح/خطأ والبطاقة نفسها بنصها ومصدرها،
@@ -64,7 +64,7 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
       <div className="qcard">
         {it.pic && arts[it.card.id] && (
           // الرسم وحده بلا سطره (قد يكشف السطرُ الجواب)
-          <img className="qpic" src={arts[it.card.id].src} alt="" onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
+          <img className="qpic" src={arts[it.card.id].src} alt="" onClick={() => openZoom({ ...arts[it.card.id], caption: '' })} onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
         )}
         <p className="qtext">{it.q}</p>
         <div className="qopts" role="group" aria-label="الخيارات">
@@ -84,7 +84,7 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
           <div className="qreveal"><CardFront card={it.card} /></div>
           {arts[it.card.id] && !it.pic && (
             <figure className="hadith artbox qart">
-              <img src={arts[it.card.id].src} alt={arts[it.card.id].caption} onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
+              <img src={arts[it.card.id].src} alt={arts[it.card.id].caption} onClick={() => openZoom(arts[it.card.id])} onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
               <figcaption>{arts[it.card.id].caption}</figcaption>
             </figure>
           )}
