@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160"><style>
+.g{fill:none;stroke:#b8923f;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.gt{fill:none;stroke:#b8923f;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.e{fill:none;stroke:#0f5c4d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.et{fill:none;stroke:#0f5c4d;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.f{fill:#ecdcae}.f2{fill:#d9bf7f}.fe{fill:#cfe0d6}.w{fill:#fffaf0}.ink{fill:#7a5a22}
+</style><circle cx="100" cy="80" r="72" fill="#efe4c6"/><defs><mask id="m"><rect width="200" height="160" fill="#fff"/><circle cx="110" cy="70" r="41" fill="#000"/></mask><clipPath id="o"><circle cx="96" cy="80" r="44"/></clipPath></defs><circle class="f" cx="96" cy="80" r="44" mask="url(#m)"/><circle class="g" cx="96" cy="80" r="44" mask="url(#m)"/><circle class="g" cx="110" cy="70" r="41" clip-path="url(#o)"/><path class="e" d="M146 35 v10 M141 40 h10"/><path class="e" d="M158 65 v10 M153 70 h10"/><path class="e" d="M140 107 v10 M135 112 h10"/><path class="gt" d="M40 136 C80 130 120 130 160 136"/></svg>

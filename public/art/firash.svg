@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160"><style>
+.g{fill:none;stroke:#b8923f;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.gt{fill:none;stroke:#b8923f;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.e{fill:none;stroke:#0f5c4d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.et{fill:none;stroke:#0f5c4d;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.f{fill:#ecdcae}.f2{fill:#d9bf7f}.fe{fill:#cfe0d6}.w{fill:#fffaf0}.ink{fill:#7a5a22}
+</style><circle cx="100" cy="80" r="72" fill="#efe4c6"/><path class="f2" d="M38 76 C40 62 160 62 162 76 C166 92 164 108 160 116 C120 124 80 124 40 116 C36 108 34 92 38 76Z"/><path class="g" d="M38 76 C40 62 160 62 162 76 C166 92 164 108 160 116 C120 124 80 124 40 116 C36 108 34 92 38 76Z"/><path class="gt" d="M46 78 C80 72 120 72 154 78" stroke-dasharray="3 5"/><path class="gt" d="M46 112 C80 118 120 118 154 112" stroke-dasharray="3 5"/><path class="e" d="M160 78 c8 -4 12 -2 14 2 M161 84 c9 0 12 4 12 8 M160 90 c8 4 9 8 8 12"/><path class="et" d="M164 76 c4 -6 8 -6 10 -4 M162 82 c6 -3 10 -1 12 1"/></svg>
