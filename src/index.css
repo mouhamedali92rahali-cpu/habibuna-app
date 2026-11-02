@@ -157,6 +157,7 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .artbox img{display:block;width:100%;max-width:300px;height:auto;margin:0 auto}
 .artbox figcaption{font-family:"Noto Naskh Arabic",serif;font-size:1.02rem;margin-top:.3rem}
 .artbox .muted{color:#7a6a4a}
+.mapbox img{max-width:340px}
 
 .diag{direction:rtl;text-align:right;white-space:pre-wrap;font:12px/1.7 Tajawal,sans-serif;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0}
 .linkbtn{background:none;border:0;color:var(--emerald);text-decoration:underline;font:inherit;font-size:.88rem;padding:4px 0;cursor:pointer}
@@ -296,6 +297,7 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .qreveal{display:flex;justify-content:center}
 .qart{align-self:stretch;margin:0}
 .qart img{max-width:220px}
+.qpic{display:block;width:100%;max-width:220px;height:auto;margin:0 auto 6px}
 .qhint{margin:0;text-align:center}
 .quiz>.primary{align-self:center}
 .qend{align-items:center;text-align:center}

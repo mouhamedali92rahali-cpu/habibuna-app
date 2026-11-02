@@ -11,7 +11,7 @@ import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
 import { buildQuiz, loadQuiz, QUIZ_AT, QUIZ_MIN, streak, weekKey, type Question, type QuizItem, type QuizRecord } from './lib/quiz';
 import { Quiz } from './components/Quiz';
 import { App as NativeApp } from '@capacitor/app';
-import { useArt } from './lib/art';
+import { useArt, useMaps } from './lib/art';
 
 type Tab = 'feed' | 'favs' | 'settings';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -51,7 +51,9 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
     const [showSrc, setShowSrc] = useState(false);
     const [showSharh, setShowSharh] = useState(false);
     const [showArt, setShowArt] = useState(false);
+    const [showMap, setShowMap] = useState(false);
     const art = useArt()[c.id];
+    const map = useMaps()[c.id];
     return (
       <article className="block">
         <CardFront card={c} />
@@ -62,6 +64,7 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
           </button>
           {c.sharh && <button className={'srcbtn sm' + (showSharh ? ' on' : '')} onClick={() => setShowSharh((v) => !v)} aria-expanded={showSharh}>شرح موجز</button>}
           {art && <button className={'srcbtn sm' + (showArt ? ' on' : '')} onClick={() => setShowArt((v) => !v)} aria-expanded={showArt}>صورة</button>}
+          {map && <button className={'srcbtn sm' + (showMap ? ' on' : '')} onClick={() => setShowMap((v) => !v)} aria-expanded={showMap}>خريطة</button>}
           <div className="mini">
             <button className={'icon' + (fav ? ' on' : '')} onClick={() => onFav()} aria-label="مفضلة">{fav ? '♥' : '♡'}</button>
             <button className="icon share" onClick={() => onShare()} aria-label="مشاركة"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg></button>
@@ -72,6 +75,13 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
             <img src={art.src} alt={art.caption} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(art.fallback)) i.src = art.fallback; }} />
             <figcaption>{art.caption}</figcaption>
             <div className="muted small">رسمٌ تقريبي للتوضيح</div>
+          </figure>
+        )}
+        {showMap && map && (
+          <figure className="hadith artbox mapbox">
+            <img src={map.src} alt={map.caption} onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(map.fallback)) i.src = map.fallback; }} />
+            <figcaption>{map.caption}</figcaption>
+            <div className="muted small">خريطة تقريبية؛ المسافات خطٌّ مستقيم</div>
           </figure>
         )}
         {showSharh && c.sharh && (

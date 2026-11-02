@@ -62,6 +62,10 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
       </div>
       <div className="qbar" aria-hidden="true"><i style={{ width: `${(100 * (i + (picked ? 1 : 0))) / items.length}%` }} /></div>
       <div className="qcard">
+        {it.pic && arts[it.card.id] && (
+          // الرسم وحده بلا سطره (قد يكشف السطرُ الجواب)
+          <img className="qpic" src={arts[it.card.id].src} alt="" onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
+        )}
         <p className="qtext">{it.q}</p>
         <div className="qopts" role="group" aria-label="الخيارات">
           {it.options.map((o) => {
@@ -78,7 +82,7 @@ export function Quiz({ items, streak, practice, favs, onFav, onFinish, onClose }
           <button className="primary" onClick={next}>{i + 1 < items.length ? 'السؤال التالي' : 'النتيجة'}</button>
           <p className="muted small qhint">البطاقة التي جاء منها السؤال:</p>
           <div className="qreveal"><CardFront card={it.card} /></div>
-          {arts[it.card.id] && (
+          {arts[it.card.id] && !it.pic && (
             <figure className="hadith artbox qart">
               <img src={arts[it.card.id].src} alt={arts[it.card.id].caption} onError={(e) => { const a = arts[it.card.id]; const im = e.currentTarget; if (!im.src.endsWith(a.fallback)) im.src = a.fallback; }} />
               <figcaption>{arts[it.card.id].caption}</figcaption>

@@ -317,6 +317,72 @@ def _dir():
                + '<path class="e" d="M34 140 h138"/>')
 ART['dir'] = _dir()
 
+# ——— خريطة المدينة (2026-11-02): المواضع من إحداثيات حقيقية، والمقياس 16px لكل كيلومتر ———
+# المسجد النبوي 24.4670,39.6109 · قباء 24.4396,39.6172 · قمة أحد 24.5103,39.6139 · سيد الشهداء 24.5035,39.6127 · سلع 24.4750,39.5994 (ويكيبيديا)
+import math
+KM = 16; CX, CY = 96, 118
+def at(lat, lon):
+    dy = (lat - 24.4670) * 110.6; dx = (lon - 39.6109) * 111.3 * math.cos(math.radians(24.47))
+    return round(CX + dx*KM, 1), round(CY - dy*KM, 1)
+MOSQ, QUBA, UHUD, SHUH, SAL = at(24.4670, 39.6109), at(24.4396, 39.6172), at(24.5103, 39.6139), at(24.5035, 39.6127), at(24.4750, 39.5994)
+LBL = 'font-family="Noto Naskh Arabic,Amiri,serif" text-anchor="middle"'
+def madina(hi):
+    on = lambda k: k == hi
+    def label(x, y, t, k, size=9):
+        col = E if on(k) else '#8a7a55'
+        return f'<text x="{x}" y="{y}" {LBL} font-size="{size+ (2 if on(k) else 0)}" font-weight="{700 if on(k) else 400}" fill="{col}">{t}</text>'
+    def ring(x, y):
+        return f'<circle cx="{x}" cy="{y}" r="9" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
+    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230">{STYLE}<rect x="4" y="4" width="192" height="222" rx="14" fill="{BG}"/>'
+    o += f'<rect x="9" y="9" width="182" height="212" rx="11" fill="none" stroke="{G}" stroke-width=".8" opacity=".6"/>'
+    # جبل أحد: سلسلة طولها نحو 7.5 كم، تمتد من الغرب الجنوبي إلى الشرق الشمالي، قمّتها عند UHUD
+    ux, uy = UHUD; L = 7.5*KM/2
+    ridge = (f'M{ux-L:.0f} {uy+9:.0f} C{ux-L+10:.0f} {uy-2:.0f} {ux-28:.0f} {uy+2:.0f} {ux-18:.0f} {uy-6:.0f} C{ux-10:.0f} {uy-12:.0f} {ux-2:.0f} {uy-14:.0f} {ux+4:.0f} {uy-10:.0f} '
+             f'C{ux+14:.0f} {uy-6:.0f} {ux+24:.0f} {uy-14:.0f} {ux+34:.0f} {uy-10:.0f} C{ux+44:.0f} {uy-6:.0f} {ux+L-6:.0f} {uy-12:.0f} {ux+L:.0f} {uy-4:.0f} L{ux+L:.0f} {uy+9:.0f} Z')
+    o += f'<path class="{"f" if on("uhud") else "f2"}" d="{ridge}" opacity="{1 if on("uhud") else .55}"/><path class="{"g" if on("uhud") else "gt"}" d="{ridge}"/>'
+    o += label(ux, uy - 18, 'جبل أُحد', 'uhud', 10)
+    if on('uhud'):
+        sx, sy = SHUH
+        o += f'<circle cx="{sx}" cy="{sy}" r="2.4" fill="{E}"/>' + f'<text x="{sx+30}" y="{sy+12}" {LBL} font-size="7.5" fill="#6b5a36">سيد الشهداء</text>'
+    # الخندق: خطّ تقريبي شمال المدينة، وجبل سلع خلفه من جهة المدينة
+    sx, sy = SAL
+    o += ell(sx, sy, 7, 4.5, 'f2' if not on('khandaq') else 'f', 'gt')
+    o += label(sx - 15, sy + 3, 'سَلْع', 'sal', 8)
+    trench = f'M{sx-38:.0f} {sy-12:.0f} C{sx-14:.0f} {sy-16:.0f} {sx+20:.0f} {sy-15:.0f} {sx+50:.0f} {sy-19:.0f}'
+    if on('khandaq'):
+        o += f'<path d="{trench}" fill="none" stroke="{E}" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"/>'
+        o += label(sx + 6, sy - 24, 'الخندق تقريبًا', 'khandaq', 9)
+    # العوالي: قرى ومزارع جنوب شرقي المدينة، أدناها على ميلين أو ثلاثة (نحو 4–6 كم)
+    ax, ay = CX + 3.6*KM, CY + 3.4*KM
+    o += f'<ellipse cx="{ax}" cy="{ay}" rx="30" ry="24" fill="{F if on("awali") else "none"}" fill-opacity=".7" stroke="{E if on("awali") else G}" stroke-width="{1.6 if on("awali") else .9}" stroke-dasharray="4 3"/>'
+    o += ''.join(f'<path class="et" d="M{ax+dx} {ay+dy} v-7 M{ax+dx-4} {ay+dy-9} q4 -3 4 2 q0 -5 4 -2" opacity="{1 if on("awali") else .45}"/>' for dx, dy in ((-14, 4), (-2, -6), (10, 6), (16, -8)))
+    o += label(ax, ay + 18, 'العوالي', 'awali', 10)
+    # قباء
+    qx, qy = QUBA
+    o += f'<path class="et" stroke-dasharray="1.5 3" d="M{MOSQ[0]} {MOSQ[1]+6} L{qx} {qy-6}"/>' if on('quba') else ''
+    o += f'<rect x="{qx-5}" y="{qy-5}" width="10" height="10" rx="1.5" class="{"f" if on("quba") else "f2"}"/><rect x="{qx-5}" y="{qy-5}" width="10" height="10" rx="1.5" class="gt"/>'
+    o += label(qx - 22, qy + 4, 'قُباء', 'quba', 10)
+    if on('quba'): o += f'<text x="{(MOSQ[0]+qx)/2+18}" y="{(MOSQ[1]+qy)/2+3}" {LBL} font-size="8" fill="{E}" font-weight="700">نحو 3 كم</text>'
+    # المسجد النبوي في المركز دائمًا
+    mx, my = MOSQ
+    o += f'<rect x="{mx-6}" y="{my-6}" width="12" height="12" rx="2" fill="{E}"/><path d="M{mx+6} {my-6} v-6" stroke="{E}" stroke-width="1.6"/>'
+    o += f'<text x="{mx+36}" y="{my+4}" {LBL} font-size="8.5" fill="{E}" font-weight="700">المسجد النبوي</text>'
+    for k, (x, y) in {'quba': QUBA, 'uhud': SHUH}.items():
+        if on(k): o += ring(x, y)
+    # الشمال والمقياس
+    o += f'<path d="M24 34 l5 -14 l5 14 l-5 -4 Z" fill="{E}"/><text x="29" y="45" {LBL} font-size="8" fill="{E}">شمال</text>'
+    o += f'<path d="M22 212 h{KM} M22 209 v6 M{22+KM} 209 v6" stroke="#6b5a36" stroke-width="1.2"/><text x="{22+KM/2}" y="205" {LBL} font-size="7" fill="#6b5a36">كيلومتر</text>'
+    return o + '</svg>'
+for k in ('quba', 'uhud', 'awali', 'khandaq'):
+    ART['madina-' + k] = madina(k)
+MAPS = {
+  'C07': ('madina-quba', 'مسجد قُباء: جنوب المسجد النبوي، على نحو 3 كم'),
+  'W07': ('madina-awali', 'عوالي المدينة: قرى ومزارع في جنوبها الشرقي، أدناها على ميلين أو ثلاثة؛ نحو 4 إلى 6 كم'),
+  'C47': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم، وطوله نحو 7 كم'),
+  'U20': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم، وعند سفحه شهداء أُحد'),
+  'C37': ('madina-khandaq', 'موضع الخندق تقريبًا: شمال المدينة، وجبل سَلْع خلف المسلمين'),
+}
+
 # البطاقة ← الرسم والسطر تحته (يصف الشيء، ولا يدّعي أنه عين ما كان له ﷺ)
 MAP = {
   'W11': ('miswak', 'السِّواك: عودٌ من شجر الأراك تُنظَّف به الأسنان'),
@@ -362,6 +428,7 @@ out_dir = os.path.join(root, 'public/art'); os.makedirs(out_dir, exist_ok=True)
 for k, v in ART.items():
     open(os.path.join(out_dir, k + '.svg'), 'w').write(v)
 import time
-json.dump({'version': int(time.time()), 'cards': {c: {'art': a, 'caption': t} for c, (a, t) in MAP.items()}},
+json.dump({'version': int(time.time()), 'cards': {c: {'art': a, 'caption': t} for c, (a, t) in MAP.items()},
+           'maps': {c: {'art': a, 'caption': t} for c, (a, t) in MAPS.items()}},
           open(os.path.join(root, 'public/art.json'), 'w'), ensure_ascii=False, indent=0)
 print(len(ART), 'drawings,', len(MAP), 'cards')

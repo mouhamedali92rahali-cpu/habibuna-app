@@ -4,7 +4,9 @@ import { load, save } from './store';
 
 /** رسوم البطاقات الخطية (scripts/build-art.py): تظهر خلف زرّ «صورة» لا على وجه البطاقة */
 export interface Art { src: string; fallback: string; caption: string; }
-interface ArtFile { version: number; cards: Record<string, { art: string; caption: string }>; }
+type Entry = { art: string; caption: string };
+interface ArtFile { version: number; cards: Record<string, Entry>; maps?: Record<string, Entry>; }
+interface Loaded { arts: Record<string, Art>; maps: Record<string, Art>; }
 
 const BASE = 'https://mouhamedali92rahali-cpu.github.io/habibuna-app/';
 const get = async (url: string, ms: number): Promise<ArtFile> => {
@@ -20,7 +22,7 @@ const get = async (url: string, ms: number): Promise<ArtFile> => {
 };
 
 /** مثل البطاقات والأسئلة: المرفق والمحفوظ والمنشور، ويُؤخذ الأحدث. إن كان الأحدث من الموقع تُحمَّل الرسوم منه (فتصل الرسوم الجديدة بلا تحديث)، ومع انقطاع الشبكة يُرجع إلى المرفق */
-async function loadArt(): Promise<Record<string, Art>> {
+async function loadArt(): Promise<Loaded> {
   const bundled = await get('art.json', 15000).catch(() => null);
   let best = bundled, web = false;
   if (isNative) {
@@ -30,22 +32,29 @@ async function loadArt(): Promise<Record<string, Art>> {
     const top = remote ?? cached;
     if (top && (!bundled || top.version > bundled.version)) { best = top; web = true; }
   }
-  const out: Record<string, Art> = {};
-  for (const [id, a] of Object.entries(best?.cards ?? {})) {
-    const local = `art/${a.art}.svg`;
-    out[id] = { src: web ? `${BASE}${local}?v=${best!.version}` : local, fallback: local, caption: a.caption };
-  }
-  return out;
+  const conv = (src?: Record<string, Entry>) => {
+    const out: Record<string, Art> = {};
+    for (const [id, a] of Object.entries(src ?? {})) {
+      const local = `art/${a.art}.svg`;
+      out[id] = { src: web ? `${BASE}${local}?v=${best!.version}` : local, fallback: local, caption: a.caption };
+    }
+    return out;
+  };
+  return { arts: conv(best?.cards), maps: conv(best?.maps) };
 }
 
-let shared: Promise<Record<string, Art>> | null = null;
-export function useArt(): Record<string, Art> {
-  const [m, setM] = useState<Record<string, Art>>({});
+let shared: Promise<Loaded> | null = null;
+function useLoaded(): Loaded {
+  const [m, setM] = useState<Loaded>({ arts: {}, maps: {} });
   useEffect(() => {
-    shared ??= loadArt().catch(() => ({}));
+    shared ??= loadArt().catch(() => ({ arts: {}, maps: {} }));
     let live = true;
     shared.then((x) => { if (live) setM(x); });
     return () => { live = false; };
   }, []);
   return m;
 }
+/** الرسوم الخطية للبطاقات */
+export const useArt = () => useLoaded().arts;
+/** خرائط المدينة التقريبية لبطاقات الأماكن (قباء، العوالي، أُحد، الخندق) */
+export const useMaps = () => useLoaded().maps;
