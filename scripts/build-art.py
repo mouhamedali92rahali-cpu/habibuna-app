@@ -325,7 +325,7 @@ def at(lat, lon):
     dy = (lat - 24.4670) * 110.6; dx = (lon - 39.6109) * 111.3 * math.cos(math.radians(24.47))
     return round(CX + dx*KM, 1), round(CY - dy*KM, 1)
 MOSQ, QUBA, UHUD, SHUH, SAL = at(24.4670, 39.6109), at(24.4396, 39.6172), at(24.5103, 39.6139), at(24.5035, 39.6127), at(24.4750, 39.5994)
-LBL = 'font-family="Noto Naskh Arabic,Amiri,serif" text-anchor="middle"'
+LBL = 'font-family="Noto Naskh Arabic,Amiri,serif" text-anchor="middle" paint-order="stroke" stroke="#efe4c6" stroke-width="3" stroke-linejoin="round"'
 BROWN = '#8a6d3b'
 def palm(x, y, s=1.0, op=1.0):
     # نخلة صغيرة: جذع مائل قليلًا وخمس سعفات
@@ -337,12 +337,14 @@ def mosque(x, y, s=1.0, col=E):
     return (f'<rect x="{x-6*s}" y="{y-3*s}" width="{12*s}" height="{7*s}" fill="{col}"/>'
             f'<path d="M{x-4.5*s} {y-3*s} a{4.5*s} {4.5*s} 0 0 1 {9*s} 0 Z" fill="{col}"/>'
             f'<rect x="{x+6.5*s}" y="{y-10*s}" width="{2.2*s}" height="{14*s}" fill="{col}"/><path d="M{x+6.5*s} {y-10*s} l{1.1*s} {-2.5*s} l{1.1*s} {2.5*s} Z" fill="{col}"/>')
-def harra(x0, y0, x1, y1, seed):
+def harra(x0, y0, x1, y1, seed, n=None):
+    # الحرّة: أرض حجارتها سوداء بركانية؛ ظلّ داكن خفيف وحجارة صغيرة مستديرة متفاوتة
     import random
-    r = random.Random(seed); o = ''
-    for _ in range(int((x1-x0)*(y1-y0)/95)):
-        x, y = r.uniform(x0, x1), r.uniform(y0, y1)
-        o += f'<path d="M{x:.1f} {y:.1f} l{r.uniform(1.5,3):.1f} {r.uniform(-1,1):.1f}" stroke="{BROWN}" stroke-width="1.3" stroke-linecap="round" opacity=".3"/>'
+    r = random.Random(seed)
+    o = f'<rect x="{x0}" y="{y0}" width="{x1-x0}" height="{y1-y0}" rx="14" fill="#5a4a36" opacity=".10"/>'
+    for _ in range(n or int((x1-x0)*(y1-y0)/70)):
+        x, y = r.uniform(x0+2, x1-2), r.uniform(y0+2, y1-2)
+        o += f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="{r.uniform(1.1,2.2):.1f}" ry="{r.uniform(.8,1.5):.1f}" fill="#4a3d2c" opacity="{r.uniform(.35,.6):.2f}"/>'
     return o
 def madina(hi):
     on = lambda k: k == hi
@@ -409,7 +411,8 @@ def madina(hi):
     o += f'<g transform="translate(28 36)"><circle r="10" fill="#fffaf0" stroke="{G}" stroke-width="1"/><path d="M0 -8 L3 0 L0 -2 L-3 0 Z" fill="{E}"/><path d="M0 8 L3 0 L0 2 L-3 0 Z" fill="{G}"/></g>'
     o += f'<text x="28" y="57" {LBL} font-size="8" fill="{E}">شمال</text>'
     o += f'<path d="M22 216 h{KM} M22 213 v6 M{22+KM} 213 v6" stroke="#6b5a36" stroke-width="1.2"/><text x="{22+KM/2}" y="209" {LBL} font-size="7.5" fill="#6b5a36">كيلومتر</text>'
-    o += f'<text x="{W/2+20}" y="220" {LBL} font-size="10" fill="{G}" font-weight="700">المدينة المنورة</text>'
+    o += f'<text x="{W/2+20}" y="214" {LBL} font-size="10" fill="{G}" font-weight="700">المدينة المنورة</text>'
+    o += harra(150, 219, 162, 227, 9, 5) + f'<text x="94" y="226" {LBL} font-size="6.5" fill="#5b4a2a">الحرّة: أرض حجارتها سوداء بركانية</text>'
     return o + '</svg>'
 for k in ('quba', 'uhud', 'awali', 'khandaq'):
     ART['madina-' + k] = madina(k)
