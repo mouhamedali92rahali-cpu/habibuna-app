@@ -578,3 +578,24 @@ json.dump({'version': int(time.time()), 'cards': {c: {'art': a, 'caption': t} fo
            'maps': {c: {'art': a, 'caption': t} for c, (a, t) in MAPS.items()}},
           open(os.path.join(root, 'public/art.json'), 'w'), ensure_ascii=False, indent=0)
 print(len(ART), 'drawings,', len(MAP), 'cards')
+
+# علامة «pic» في cards.json لكل بطاقة لها رسم أو خريطة: بها يأتي «يوم الصورة» كل ثلاثة أيام (cardFor في notify.ts)
+# دون انتظار تحميل art.json، فلا يختلف الإشعار عن البطاقة في التطبيق. يُرفع version فقط إن تغيّر شيء.
+pics = set(MAP) | set(MAPS)
+for path in ('public/cards.json', 'data/cards.json'):
+    full = os.path.join(root, path)
+    d = json.load(open(full))
+    changed = False
+    for c in d['cards']:
+        want = c['id'] in pics
+        if bool(c.get('pic')) != want:
+            changed = True
+            if want: c['pic'] = True
+            else: c.pop('pic', None)
+    if changed:
+        if path.startswith('public'): bump = d['version'] + 1
+        d['version'] = bump
+        out = json.dumps(d, ensure_ascii=False, indent=1)
+        out = out.replace('{\n "version": %d,\n "app": "%s",' % (d['version'], d['app']), '{\n "version": %d, "app": "%s",' % (d['version'], d['app']), 1)
+        open(full, 'w').write(out)
+        print(path, 'pic marks updated, version', d['version'])

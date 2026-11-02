@@ -142,7 +142,11 @@ export function cardFor(pool: CardData[], day: number, k: number): CardData {
   const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER);
   const duaDay = DUA_DAYS.indexOf(day % 7);
   if (k === 1 && duaDay >= 0 && duas.length) return duas[(Math.floor(day / 7) * DUA_DAYS.length + duaDay) % duas.length];
-  const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua);
+  // «يوم الصورة» كل ثلاثة أيام (طلب المستخدم): بطاقة لها رسم أو خريطة في موعد الظهر،
+  // وفي يومي الأدعية (الظهر للدعاء) تنتقل إلى الصباح. وتُستثنى من بقية الأيام فلا تتكرّر
+  const pics = pool.filter((c) => c.pic && c.chapter !== REMINDER && !c.dua);
+  if (day % 3 === 0 && pics.length && k === (duaDay >= 0 ? 0 : 1)) return pics[Math.floor(day / 3) % pics.length];
+  const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua && !c.pic);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
   if (feat.length === 0 || rest.length === 0) return body[(day * PER_DAY + k) % body.length];
