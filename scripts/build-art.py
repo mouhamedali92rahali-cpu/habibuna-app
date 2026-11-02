@@ -1,5 +1,5 @@
 """رسوم «حبيبنا» الخطية: كل رسم SVG مستقل (ذهبي وزمردي على دائرة عاجية)، يُكتب في public/art/<name>.svg،
-وتُكتب الخريطة {رقم البطاقة: {art, caption}} في public/art.json. التشغيل: python3 scripts/build-art.py"""
+وتُكتب الخريطة {version, cards: {رقم البطاقة: {art, caption}}} في public/art.json. التشغيل: python3 scripts/build-art.py"""
 import json, os
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 G, E, F, F2, BG, INK = '#b8923f', '#0f5c4d', '#ecdcae', '#d9bf7f', '#efe4c6', '#7a5a22'
@@ -72,20 +72,65 @@ ART['honey'] = svg(
   '<path class="gt" d="M66 100 h56"/>'
   + ''.join(f'<path class="g" d="M{x} {y} l7 -4 l7 4 v8 l-7 4 l-7 -4 Z"/>' for x, y in ((130, 48), (144, 48), (137, 60), (151, 60), (144, 72)))
   + '<path class="f2" d="M140 86 c-4 6 -4 10 0 10 c4 0 4 -4 0 -10Z"/><path class="gt" d="M140 86 c-4 6 -4 10 0 10 c4 0 4 -4 0 -10Z"/>')
-# 7. الحصير: حصير من خوص مطويّ الطرف
-weave = ''.join(f'<path class="gt" d="M{48+i*12} 70 l-14 50"/>' for i in range(9)) + ''.join(f'<path class="gt" d="M{36+i*12} 70 l14 50"/>' for i in range(9))
-ART['hasir'] = svg(
-  '<path class="f" d="M36 70 h112 l12 50 h-128 Z"/>' + weave +
-  '<path class="g" d="M36 70 h112 l12 50 h-128 Z"/>'
-  '<path class="f2" d="M36 70 c-10 -2 -14 -16 -2 -20 h112 c12 4 8 18 2 20 Z"/><path class="g" d="M36 70 c-10 -2 -14 -16 -2 -20 h112 c12 4 8 18 2 20"/>'
-  '<path class="gt" d="M40 58 h104 M42 64 h102"/><path class="e" d="M30 120 h136"/>')
-# 8. فراش من أَدَم حشوه ليف
-ART['firash'] = svg(
-  '<path class="f2" d="M38 76 C40 62 160 62 162 76 C166 92 164 108 160 116 C120 124 80 124 40 116 C36 108 34 92 38 76Z"/>'
-  '<path class="g" d="M38 76 C40 62 160 62 162 76 C166 92 164 108 160 116 C120 124 80 124 40 116 C36 108 34 92 38 76Z"/>'
-  '<path class="gt" d="M46 78 C80 72 120 72 154 78" stroke-dasharray="3 5"/><path class="gt" d="M46 112 C80 118 120 118 154 112" stroke-dasharray="3 5"/>'
-  '<path class="e" d="M160 78 c8 -4 12 -2 14 2 M161 84 c9 0 12 4 12 8 M160 90 c8 4 9 8 8 12"/>'
-  '<path class="et" d="M164 76 c4 -6 8 -6 10 -4 M162 82 c6 -3 10 -1 12 1"/>')
+# 7. الحصير: حصير من خوص النخل منسوج نسجًا متقاطعًا، مبسوط في منظور وطرفه ملفوف، وبجانبه سعفة
+def _hasir():
+    # شبكة النسج بين حافتين: قريبة (y=124) وبعيدة (y=70)، والطرف الأيمن ملفوف
+    xl0, xl1, xr0, xr1, yb, yt = 24, 46, 136, 128, 124, 72
+    n, m = 8, 6
+    lerp = lambda a, b, t: a + (b - a) * t
+    def pt(u, v):  # u عبر العرض 0..1، v من القريب 0 إلى البعيد 1
+        y = lerp(yb, yt, v); xl = lerp(xl0, xl1, v); xr = lerp(xr0, xr1, v)
+        return lerp(xl, xr, u), y
+    cells = ''
+    for i in range(n):
+        for j in range(m):
+            q = [pt(i/n, j/m), pt((i+1)/n, j/m), pt((i+1)/n, (j+1)/m), pt(i/n, (j+1)/m)]
+            cls = 'f2' if (i + j) % 2 else 'f'
+            cells += f'<path class="{cls}" d="M' + ' L'.join(f'{x:.1f} {y:.1f}' for x, y in q) + 'Z"/>'
+    lines = ''.join(f'<path class="gt" d="M{pt(i/n,0)[0]:.1f} {yb} L{pt(i/n,1)[0]:.1f} {yt}"/>' for i in range(1, n))
+    lines += ''.join(f'<path class="gt" d="M{pt(0,j/m)[0]:.1f} {pt(0,j/m)[1]:.1f} L{pt(1,j/m)[0]:.1f} {pt(1,j/m)[1]:.1f}"/>' for j in range(1, m))
+    edge = f'<path class="g" d="M{xl0} {yb} L{xl1} {yt} L{xr1} {yt} L{xr0} {yb} Z"/>'
+    fringe = ''.join(f'<path class="gt" d="M{pt(i/n+0.06,0)[0]:.1f} {yb} l-1 6"/>' for i in range(n))
+    # اللفّة: أسطوانة عند الطرف الأيمن
+    roll = (f'<path class="f2" d="M{xr1} {yt-6} L{xr0+6} {yb-2} c4 8 18 8 20 -2 L{xr1+16} {yt-8} c-2 -8 -14 -8 -16 2Z"/>'
+            f'<path class="g" d="M{xr1} {yt-6} L{xr0+6} {yb-2} M{xr1+16} {yt-8} L{xr0+26} {yb-4}"/>'
+            f'<ellipse class="f" cx="{xr0+16}" cy="{yb-3}" rx="10" ry="7" transform="rotate(-10 {xr0+16} {yb-3})"/>'
+            f'<ellipse class="g" cx="{xr0+16}" cy="{yb-3}" rx="10" ry="7" transform="rotate(-10 {xr0+16} {yb-3})"/>'
+            f'<path class="gt" d="M{xr0+16} {yb-3} m-6 0 a6 4 -10 1 1 6 4 a3.5 2.5 -10 1 1 -2 -3"/>'
+            + ''.join(f'<path class="gt" d="M{xr1+3+k*3.2:.1f} {yt-5-k*0.4:.1f} L{xr0+9+k*3.2:.1f} {yb-1-k*0.4:.1f}"/>' for k in range(1, 4)))
+    # سعفة نخل في الأعلى: أصل الخوص
+    frond = ('<path class="e" d="M40 52 C70 40 110 36 150 44"/>'
+             + ''.join(f'<path class="et" d="M{48+i*12} {49-i*1.3:.1f} l{-5+i*0.3:.1f} -11 M{48+i*12} {49-i*1.3:.1f} l{-4+i*0.3:.1f} 10"/>' for i in range(9)))
+    return svg(frond + cells + lines + edge + fringe + roll)
+ART['hasir'] = _hasir()
+# 8. فراش من أَدَم حشوه ليف: فراش جلدي في منظور، بخياطة على حوافه، وفتقٌ في طرفه يظهر منه الليف، وحزمة ليف بجانبه
+def _firash():
+    import random
+    rnd = random.Random(7)
+    # فراش منتفخ: وجه علوي مقوّس وجانب أمامي، والحواف مدوّرة
+    top = 'M30 86 C34 72 52 62 66 60 L156 60 C168 60 174 66 172 74 C164 82 156 86 146 88 L44 92 C36 92 30 90 30 86Z'
+    front = 'M30 86 C30 90 36 92 44 92 L146 88 C156 86 164 82 172 74 L172 92 C172 102 164 110 152 112 L46 116 C36 116 30 110 30 104 Z'
+    stitch = ('<path class="et" stroke-dasharray="2.5 3.5" d="M38 89 L146 85 C155 83 163 79 168 73"/>'
+              '<path class="et" stroke-dasharray="2.5 3.5" d="M38 112 L150 108 C160 106 166 100 168 92"/>')
+    # غرز تثبيت الحشو على الوجه العلوي
+    tufts = ''.join(f'<path class="gt" d="M{x-3} {y} l3 1.5 l3 -1.5"/>' for x, y in ((70, 70), (100, 69), (130, 68), (85, 79), (115, 78), (145, 76)))
+    # الليف: خيوط بنية متشابكة
+    def fibers(cx, cy, w, h, k, lw=1.1):
+        out = ''
+        for _ in range(k):
+            x0 = cx + rnd.uniform(-w, w); y0 = cy + rnd.uniform(-h, h)
+            dx = rnd.uniform(8, 18) * rnd.choice((-1, 1)); dy = rnd.uniform(-6, 6)
+            out += (f'<path fill="none" stroke="{INK}" stroke-width="{lw}" stroke-linecap="round" '
+                    f'd="M{x0:.1f} {y0:.1f} q{dx/2+rnd.uniform(-5,5):.1f} {dy/2+rnd.uniform(-6,6):.1f} {dx:.1f} {dy:.1f}"/>')
+        return out
+    # فتقٌ في زاوية الفراش الأمامية اليسرى يخرج منه الليف
+    gap = '<path class="ink" opacity=".6" d="M34 98 c6 -4 14 -2 18 4 c-6 6 -14 6 -18 -4Z"/>'
+    spill = fibers(40, 101, 8, 4, 16)
+    bundle = (fibers(70, 130, 18, 5, 34, 1.2)
+              + '<path class="g" d="M68 122 q4 8 0 16"/>')  # حزمة ليف مربوطة
+    return svg(f'<path class="f" d="{top}"/><path class="f2" d="{front}"/>'
+               f'<path class="g" d="{top}"/><path class="g" d="{front}"/>' + stitch + tufts + gap + spill + bundle)
+ART['firash'] = _firash()
 # 9. المُدّ والصاع: أربعة أمداد = صاع
 cup = lambda x, y, s=1: (f'<path class="f" d="M{x-14*s} {y} h{28*s} c0 {12*s} -{5*s} {18*s} -{14*s} {18*s} c-{9*s} 0 -{14*s} -{6*s} -{14*s} -{18*s}Z"/>'
                          f'<path class="g" d="M{x-14*s} {y} h{28*s} c0 {12*s} -{5*s} {18*s} -{14*s} {18*s} c-{9*s} 0 -{14*s} -{6*s} -{14*s} -{18*s}Z"/>'
@@ -176,5 +221,7 @@ MAP = {
 out_dir = os.path.join(root, 'public/art'); os.makedirs(out_dir, exist_ok=True)
 for k, v in ART.items():
     open(os.path.join(out_dir, k + '.svg'), 'w').write(v)
-json.dump({c: {'art': a, 'caption': t} for c, (a, t) in MAP.items()}, open(os.path.join(root, 'public/art.json'), 'w'), ensure_ascii=False, indent=0)
+import time
+json.dump({'version': int(time.time()), 'cards': {c: {'art': a, 'caption': t} for c, (a, t) in MAP.items()}},
+          open(os.path.join(root, 'public/art.json'), 'w'), ensure_ascii=False, indent=0)
 print(len(ART), 'drawings,', len(MAP), 'cards')
