@@ -133,28 +133,55 @@ export const PER_DAY = 3;
  * بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق.
  * الأولى من الملامح والحياة اليومية يومًا بعد يوم، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
  */
+type Slot = 'rem' | 'dua' | 'pic' | 'feat' | 'rest';
+/** نوع الموعد k من يوم ما. الأنواع تتكرّر كل 42 يومًا (2 × 3 × 7) */
+function slotType(day: number, k: number, has: { dua: boolean; pic: boolean; split: boolean }): Slot {
+  if (k === 2) return 'rem';
+  const duaDay = DUA_DAYS.includes(day % 7);
+  // بطاقات الأدعية متباعدة (قرار المستخدم): يومي الاثنين والخميس في موعد الظهر
+  if (k === 1 && duaDay && has.dua) return 'dua';
+  // «يوم الصورة» كل ثلاثة أيام (طلب المستخدم): الظهر، وفي يومي الأدعية الصباح
+  if (day % 3 === 0 && has.pic && k === (duaDay && has.dua ? 0 : 1)) return 'pic';
+  // بطاقة الملامح والحياة اليومية صباحًا يومًا بعد يوم (قرار المستخدم)
+  if (has.split && k === 0 && day % 2 === 0) return 'feat';
+  return 'rest';
+}
+const PERIOD = 42;
+const posCache = new Map<string, { per: Record<Slot, number>; before: Record<Slot, number>[] }>();
+/**
+ * ترتيب الموعد بين مواعيد نوعه منذ اليوم 0: كل نوع يتقدّم بما يستعمله فعلًا من مواعيد،
+ * فلا تُتخطّى بطاقةٌ حين يأخذ الدعاءُ أو الصورةُ موعدها (كانت بعض البطاقات تنتظر أكثر من سنة).
+ */
+function slotIndex(day: number, k: number, has: { dua: boolean; pic: boolean; split: boolean }): number {
+  const key = `${+has.dua}${+has.pic}${+has.split}`;
+  let t = posCache.get(key);
+  if (!t) {
+    const zero = (): Record<Slot, number> => ({ rem: 0, dua: 0, pic: 0, feat: 0, rest: 0 });
+    const run = zero(); const before: Record<Slot, number>[] = [];
+    for (let i = 0; i < PERIOD * PER_DAY; i++) { before.push({ ...run }); run[slotType(Math.floor(i / PER_DAY), i % PER_DAY, has)]++; }
+    t = { per: run, before }; posCache.set(key, t);
+  }
+  const type = slotType(day, k, has);
+  const d = ((day % PERIOD) + PERIOD) % PERIOD;
+  return Math.floor(day / PERIOD) * t.per[type] + t.before[d * PER_DAY + k][type];
+}
+
 export function cardFor(pool: CardData[], day: number, k: number): CardData {
   // يوم 0 (1970/1/1) خميس، فالجمعة حين day % 7 === 1: تذكير الجمعة، وفي غيرها تتبدّل بقية التذكيرات
   const friday = day % 7 === 1;
   const reminders = pool.filter((c) => c.chapter === REMINDER && !!c.friday === friday);
   if (k === 2 && reminders.length) return reminders[day % reminders.length];
-  // بطاقات الأدعية متباعدة (قرار المستخدم): مرتين في الأسبوع فقط، يومي الاثنين والخميس في موعد الظهر
   const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER);
-  const duaDay = DUA_DAYS.indexOf(day % 7);
-  if (k === 1 && duaDay >= 0 && duas.length) return duas[(Math.floor(day / 7) * DUA_DAYS.length + duaDay) % duas.length];
-  // «يوم الصورة» كل ثلاثة أيام (طلب المستخدم): بطاقة لها رسم أو خريطة في موعد الظهر،
-  // وفي يومي الأدعية (الظهر للدعاء) تنتقل إلى الصباح. وتُستثنى من بقية الأيام فلا تتكرّر
   const pics = pool.filter((c) => c.pic && c.chapter !== REMINDER && !c.dua);
-  if (day % 3 === 0 && pics.length && k === (duaDay >= 0 ? 0 : 1)) return pics[Math.floor(day / 3) % pics.length];
   const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua && !c.pic);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
-  if (feat.length === 0 || rest.length === 0) return body[(day * PER_DAY + k) % body.length];
-  // بطاقة الملامح والحياة اليومية يومًا بعد يوم (قرار المستخدم) لتبطئ تكرارها:
-  // في كل يومين ثلاث بطاقات من بقية الأبواب، فيُستهلك البابان بالتوازي تقريبًا
-  const pair = Math.floor(day / 2);
-  if (day % 2 === 0) return k === 0 ? feat[pair % feat.length] : rest[(pair * 3) % rest.length];
-  return rest[(pair * 3 + 1 + k) % rest.length];
+  const has = { dua: duas.length > 0, pic: pics.length > 0, split: feat.length > 0 && rest.length > 0 };
+  const type = slotType(day, k, has);
+  const i = slotIndex(day, k, has);
+  const list = type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
+  if (list.length === 0) return (body.length ? body : pool)[(day * PER_DAY + k) % (body.length || pool.length)];
+  return list[i % list.length];
 }
 
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */
