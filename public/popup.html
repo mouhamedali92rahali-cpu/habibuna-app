@@ -128,7 +128,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
-  if (reminder) $('more').style.display = 'none';
+  if (reminder && !c.sharh) $('more').style.display = 'none'; // التذكير بلا شرح لا يحتاج الرابط
   var send = function (what) {
     if (window.parent !== window) window.parent.postMessage({ habibunaPopup: what }, '*');
     else location.href = 'habibuna://' + what;
