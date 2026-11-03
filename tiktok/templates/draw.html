@@ -37,6 +37,9 @@ scene(CAP + 3.6, (el, s) => {
   el.appendChild(board);
   const extra = Math.max(0, ch.titleEl.offsetHeight - 150);   // العنوان المقسوم سطرين يدفع اللوحة إلى الأسفل
   if (extra) board.style.top = (560 + extra) + 'px';
+  // واللوحة لا تغطي شعار القناة أسفل الشاشة (top 1560): تصغر إن لزم
+  const room = 1535 - (560 + extra);
+  if (board.offsetHeight > room) board.style.zoom = String(room / board.offsetHeight);
   const svg = board.querySelector('svg');
   const inDefs = e => !!e.closest('defs,mask,clipPath');
   const shapes = [...svg.querySelectorAll('path,circle,ellipse,rect,line,polyline,polygon')].filter(e => !inDefs(e));
