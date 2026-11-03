@@ -4995,5 +4995,40 @@
   "narr": "عبد الله بن مسعود",
   "book": "tirmidhi",
   "flag": ""
+ },
+ {
+  "id": "Q06",
+  "status": "صُحّحت (الإصدار 36)",
+  "why": "مراجعة الألفاظ 2026-11-03 (https://claude.ai/artifact/3ypQhPifYcC8pxJcQbU65j)",
+  "old": "احمرّت عينه",
+  "new": "احمرّت عيناه"
+ },
+ {
+  "id": "A09",
+  "status": "صُحّحت (الإصدار 36)",
+  "why": "مراجعة الألفاظ 2026-11-03 (https://claude.ai/artifact/3ypQhPifYcC8pxJcQbU65j)",
+  "old": "«اللهم أهِلّه علينا",
+  "new": "«اللهم أَهْلِلْهُ علينا"
+ },
+ {
+  "id": "F02",
+  "status": "صُحّحت (الإصدار 36)",
+  "why": "مراجعة الألفاظ 2026-11-03 (https://claude.ai/artifact/3ypQhPifYcC8pxJcQbU65j)",
+  "old": "وحواريّي الزبير",
+  "new": "وحَوارِيَّ الزبيرُ"
+ },
+ {
+  "id": "U03",
+  "status": "صُحّحت (الإصدار 36)",
+  "why": "مراجعة الألفاظ 2026-11-03 (https://claude.ai/artifact/3ypQhPifYcC8pxJcQbU65j)",
+  "old": "فرَطُكم (سابقكم) على",
+  "new": "فرَطُكم على"
+ },
+ {
+  "id": "D21",
+  "status": "صُحّحت (الإصدار 36)",
+  "why": "مراجعة الألفاظ 2026-11-03 (https://claude.ai/artifact/3ypQhPifYcC8pxJcQbU65j)",
+  "old": "من أحسن الناس خلقًا،",
+  "new": "من أحسن الناس خُلُقًا،"
  }
 ]
