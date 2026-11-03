@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, testLater, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -608,26 +608,13 @@ export default function App() {
             <button className="backbtn" onClick={() => setSub('main')}>› الإعدادات</button>
             <h1><span>✦</span> المساعدة <span>✦</span></h1>
             <Frame title="تجربة الإشعارات">
-              <button className="ghost" onClick={async () => {
+              {!isNative && (<button className="ghost" onClick={async () => {
                 if (!(await askPermission())) { say(isNative ? 'فعّل الإشعارات أولًا من إعدادات الهاتف.' : 'فعّل الإشعارات أولًا في المتصفح.'); return; }
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي.');
-              }}>إشعار تجريبي الآن</button>
+              }}>إشعار تجريبي الآن</button>)}
               {isNative && (
-                <button className="ghost" onClick={async () => {
-                  if (!(await askPermission().catch(() => false))) { say('فعّل الإشعارات أولًا من إعدادات الهاتف.'); return; }
-                  say((await testLater(cardFor(pool, dayNo + 1, 0) ?? cards[0])) ?? 'سيصلك إشعار بعد دقيقة. ارجع إلى الشاشة الرئيسية، ولا تغلق التطبيق من قائمة التطبيقات الأخيرة.');
-                }}>تجربة إشعار بعد دقيقة</button>
-              )}
-              {isNative && settings.popupOn !== false && (
-                <button className="ghost" onClick={async () => {
-                  if (overlay === false) { say(`يلزم أولًا السماح بـ${sysText('overlay')}.`); return; }
-                  const c = cardFor(pool, dayNo + 1, 1) ?? cards[0];
-                  await PhoneSettings.testPopup({ json: popupJson(c, 1, byId.get(c.id)?.n ?? 0), cardId: c.id }).catch(() => {});
-                  say('ستظهر النافذة بعد دقيقة. وإن كان فيديو أو صوت يعمل، أو كنت في مكالمة، تتأخّر عشر دقائق؛ وفي «عدم الإزعاج» لا تظهر.');
-                }}>تجربة النافذة بعد دقيقة</button>
-              )}
-              {isNative && (
-                <button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); const ps = await PhoneSettings.popupState().catch(() => null); if (ps) d.push(`حالة الهاتف الآن للنافذة: ${ps.inCall ? 'مكالمة (تتأخّر)' : ps.media ? 'فيديو أو صوت يعمل (تتأخّر)' : ps.dnd ? '«عدم الإزعاج» (لا تظهر)' : 'لا مانع'}`); setDiag(d); }}>فحص الإشعارات</button>
+                <><button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); const ps = await PhoneSettings.popupState().catch(() => null); if (ps) d.push(`حالة الهاتف الآن للنافذة: ${ps.inCall ? 'مكالمة (تتأخّر)' : ps.media ? 'فيديو أو صوت يعمل (تتأخّر)' : ps.dnd ? '«عدم الإزعاج» (لا تظهر)' : 'لا مانع'}`); if (settings.popupOn !== false && overlay !== false) { const c = cardFor(pool, dayNo + 1, 1) ?? cards[0]; await PhoneSettings.testPopup({ json: popupJson(c, 1, byId.get(c.id)?.n ?? 0), cardId: c.id }).catch(() => {}); d.push('نافذة تجريبية: بعد دقيقة'); } setDiag(d); }}>فحص الإشعارات</button>
+                <p className="muted small">يرسل إشعارًا الآن وآخر بعد دقيقة، ونافذة البطاقة بعد دقيقة إن كانت مفعّلة، ثم يعرض حالة هاتفك.</p></>
               )}
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}
