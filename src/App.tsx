@@ -47,6 +47,9 @@ function pickIntro(cards: CardData[]): string[] {
 }
 
 // «مرة» بالعدد العربي السليم: مرة واحدة، مرتين، 3–10 مرات، 11+ مرة
+/** درجات حجم خط البطاقات ونصّ الحديث والشرح */
+const FZ = [0.9, 1, 1.12, 1.25, 1.4];
+const stepFz = (v: number | undefined, d: number) => { const i = FZ.indexOf(v ?? 1); return FZ[Math.min(FZ.length - 1, Math.max(0, (i < 0 ? 1 : i) + d))]; };
 const times_ = (n: number) => (n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : n <= 10 ? `${n} مرات` : `${n} مرة`);
 
 function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boolean; onFav: () => void; onShare: () => void; onPray?: () => void }) {
@@ -206,6 +209,7 @@ export default function App() {
 
   useEffect(() => { save('favs', favs); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
+  useEffect(() => { document.documentElement.style.setProperty('--fz', String(settings.fontScale ?? 1)); }, [settings.fontScale]);
   // العدّاد المجهول: عند الفتح وعند العودة للتطبيق (مرة في اليوم على الأكثر)
   useEffect(() => {
     countUse();
@@ -550,18 +554,27 @@ export default function App() {
             <h1><span>✦</span> الإعدادات <span>✦</span></h1>
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
               <Frame title="خطوة خاصة بهاتفك" className="hl">
-                <p>{maker === 'xiaomi' ? 'هواتف شاومي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
+                <p>{maker === 'xiaomi' ? 'هواتف شاومي' : maker === 'huawei' ? 'هواتف هواوي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
+                {maker === 'huawei' ? <HuaweiSteps /> : (
                 <ul className="steps">
                   <li><Sys k="battery" /> ← <Sys k="noRestrict" /></li>
                   <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
-                </ul>
+                </ul>)}
                 <div className="safe"><p>لن يعمل التطبيق في الخلفية ولن يستهلك بطاريتك؛ فقط تبقى مواعيد البطاقات محفوظة.</p></div>
-                <button className="primary" onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
+                <button className="primary" onClick={() => void (maker === 'huawei' ? PhoneSettings.openAutostart() : PhoneSettings.openAppSettings()).catch(() => {})}>افتح إعدادات الهاتف</button>
                 <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن ✦ وصلِّ عليه ﷺ' : 'تم'}</button>
               </Frame>
             )}
             <Frame title="مواعيد البطاقات">
               <div className="times">{slots().map((m, k) => <span key={m}><b>{fmt(m)}</b><small>{['صباحًا', 'ظهرًا', 'مساءً'][k]}</small></span>)}</div>
+            </Frame>
+            <Frame title="حجم الخط">
+              <div className="fzrow">
+                <button className="ghost" dir="ltr" aria-label="تصغير الخط" disabled={(settings.fontScale ?? 1) <= FZ[0]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, -1) })}>A−</button>
+                <output>{Math.round((settings.fontScale ?? 1) * 100)}٪</output>
+                <button className="ghost" dir="ltr" aria-label="تكبير الخط" disabled={(settings.fontScale ?? 1) >= FZ[FZ.length - 1]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, 1) })}>A+</button>
+              </div>
+              <p className="fzdemo">كان رسول الله ﷺ من أحسن الناس خُلُقًا.</p>
             </Frame>
             <Frame title="البطاقة على شاشتك">
               {isNative ? (
@@ -697,12 +710,13 @@ export default function App() {
           <div className="sheet guide" onClick={(e) => e.stopPropagation()}>
             <h2>لتصلك البطاقات والتطبيق مغلق</h2>
             <p className="muted small">يكفي أن تغيّر مرةً واحدة في إعدادات «حبيبنا»:</p>
+            {maker === 'huawei' ? <HuaweiSteps /> : (
             <ul className="steps">
               <li><Sys k="battery" /> ← <Sys k="noRestrict" /></li>
               <li><Sys k="autostart" /> ← فعّله إن وجدته</li>
-            </ul>
-            {maker === 'xiaomi' && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
-            <button className={maker === 'xiaomi' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
+            </ul>)}
+            {(maker === 'xiaomi' || maker === 'huawei') && <button className="primary" onClick={() => void PhoneSettings.openAutostart().catch(() => {})}>فتح <Sys k="autostart" /></button>}
+            <button className={maker === 'xiaomi' || maker === 'huawei' ? 'ghost' : 'primary'} onClick={() => void PhoneSettings.openAppSettings().catch(() => {})}>افتح إعدادات الهاتف</button>
             <p className="muted small">ثم جرّب «تجربة إشعار بعد دقيقة» وأغلق التطبيق.</p>
             <button className="ghost" onClick={() => setGuide(false)}>تم</button>
           </div>
@@ -730,5 +744,16 @@ export default function App() {
       {previewSrc && <iframe className="popframe" title="معاينة البطاقة" src={previewSrc} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
+  );
+}
+
+/** خطوات هواوي التي نجحت مع صديق المستخدم (2026-11-02) */
+function HuaweiSteps() {
+  return (
+    <ul className="steps">
+      <li><Sys k="hwBattery" /> ← <Sys k="hwLaunch" /> ← «حبيبنا»</li>
+      <li>أوقف <Sys k="hwAuto" /></li>
+      <li>فعّل الخيارات الثلاثة: <Sys k="hwOptions" /></li>
+    </ul>
   );
 }

@@ -4,8 +4,13 @@
 // و«Superposition sur d'autres applis» من أدلة Pixel ومنتدى شاومي، و«Alarmes et rappels» من وثائق Android.
 // battery وnoRestrict مؤكّدة من لقطة هاتف المستخدم (Xiaomi 15، HyperOS، 2026-10-30): «Puissance» ثم «Pas de restriction» بالمفرد.
 // bgPopup مؤكّد من لقطة «Autres autorisations» في هاتف المستخدم. autostart غير موجود في HyperOS الحديث (هاتفه)، ويبقى للهواتف الأقدم.
-type Key = 'autostart' | 'battery' | 'noRestrict' | 'overlay' | 'bgPopup' | 'alarms' | 'allow' | 'update';
+type Key = 'hwBattery' | 'hwLaunch' | 'hwAuto' | 'hwOptions' | 'autostart' | 'battery' | 'noRestrict' | 'overlay' | 'bgPopup' | 'alarms' | 'allow' | 'update';
 const NAMES: Record<Key, { ar: string; fr: string; en: string }> = {
+  // هواوي (EMUI): «Lancement d'applications» مؤكّد من صديق المستخدم (2026-11-02)؛ البقية من أسماء EMUI المعروفة، تُصحَّح من لقطة هاتفه إن وصلت
+  hwBattery: { ar: 'البطارية', fr: 'Batterie', en: 'Battery' },
+  hwLaunch: { ar: 'تشغيل التطبيقات', fr: "Lancement d'applications", en: 'App launch' },
+  hwAuto: { ar: 'الإدارة التلقائية', fr: 'Gérer automatiquement', en: 'Manage automatically' },
+  hwOptions: { ar: 'التشغيل التلقائي، والتشغيل الثانوي، والتشغيل في الخلفية', fr: 'Lancement automatique · Lancement secondaire · Exécuter en arrière-plan', en: 'Auto-launch · Secondary launch · Run in background' },
   autostart: { ar: 'التشغيل التلقائي', fr: 'Démarrage automatique', en: 'Autostart' },
   battery: { ar: 'توفير البطارية', fr: 'Puissance › Économiseur de batterie', en: 'Battery saver' },
   noRestrict: { ar: 'بلا قيود', fr: 'Pas de restriction', en: 'No restrictions' },

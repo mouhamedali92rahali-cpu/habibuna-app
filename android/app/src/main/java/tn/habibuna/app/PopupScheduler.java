@@ -61,6 +61,42 @@ public final class PopupScheduler {
         return PendingIntent.getBroadcast(ctx, BASE + id, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
+    /** مكالمة جارية أو رنين، هاتفية أو عبر الإنترنت (واتساب، مكالمة فيديو…)؛ لا يحتاج أي إذن */
+    public static boolean inCall(Context ctx) {
+        try {
+            android.media.AudioManager a = (android.media.AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+            int m = a.getMode();
+            return m == android.media.AudioManager.MODE_IN_CALL || m == android.media.AudioManager.MODE_IN_COMMUNICATION
+                || m == android.media.AudioManager.MODE_RINGTONE;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** وضع «عدم الإزعاج» (أو النوم/التركيز) مفعّل */
+    public static boolean doNotDisturb(Context ctx) {
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            int f = nm.getCurrentInterruptionFilter();
+            return f != android.app.NotificationManager.INTERRUPTION_FILTER_ALL && f != android.app.NotificationManager.INTERRUPTION_FILTER_UNKNOWN;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** إعادة المحاولة بعد 10 دقائق (3 مرات على الأكثر)؛ لا تُحفظ بعد إعادة تشغيل الهاتف */
+    public static void retryLater(Context ctx, Intent from) {
+        int tries = from.getIntExtra("tries", 0);
+        if (tries >= 3) return;
+        Intent i = new Intent(ctx, PopupReceiver.class);
+        i.putExtra(CardPopupActivity.EXTRA_JSON, from.getStringExtra(CardPopupActivity.EXTRA_JSON));
+        i.putExtra(CardPopupActivity.EXTRA_CARD_ID, from.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
+        i.putExtra("tries", tries + 1);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 1, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
+    }
+
     /** يفتح نافذة البطاقة الآن، إن سمح المستخدم بالظهور فوق التطبيقات */
     public static boolean show(Context ctx, String json, String cardId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(ctx)) return false;

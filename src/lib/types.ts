@@ -4,4 +4,4 @@ export interface CardData { id: string; chapter: string; title: string; text: st
   weak?: boolean; shifa?: boolean;
   /** للبطاقة رسم أو خريطة (build-art.py): تأتي في «يوم الصورة» كل ثلاثة أيام */
   pic?: boolean; }
-export interface Settings { perDay: number; from: string; to: string; notifyOn: boolean; popupOn?: boolean; }
+export interface Settings { perDay: number; from: string; to: string; notifyOn: boolean; popupOn?: boolean; fontScale?: number; }

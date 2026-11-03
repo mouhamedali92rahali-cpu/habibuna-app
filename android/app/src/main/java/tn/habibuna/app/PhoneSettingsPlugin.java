@@ -36,17 +36,25 @@ public class PhoneSettingsPlugin extends Plugin {
     /** صفحة «التشغيل التلقائي» في شاومي إن وُجدت، وإلا صفحة إعدادات التطبيق */
     @PluginMethod
     public void openAutostart(PluginCall call) {
-        try {
-            Intent i = new Intent();
-            i.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getContext().startActivity(i);
-            JSObject r = new JSObject();
-            r.put("opened", "autostart");
-            call.resolve(r);
-        } catch (Exception e) {
-            openAppSettings(call);
+        // شاومي، ثم «تشغيل التطبيقات» في هواوي (EMUI 9 وما بعده، ثم الأقدم)
+        String[][] screens = {
+            {"com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"},
+            {"com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"},
+            {"com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"},
+        };
+        for (String[] c : screens) {
+            try {
+                Intent i = new Intent();
+                i.setComponent(new ComponentName(c[0], c[1]));
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(i);
+                JSObject r = new JSObject();
+                r.put("opened", "autostart");
+                call.resolve(r);
+                return;
+            } catch (Exception ignored) {}
         }
+        openAppSettings(call);
     }
 
     /** هل سمح المستخدم بـ«الظهور فوق التطبيقات الأخرى»؟ (شرط نافذة البطاقة) */

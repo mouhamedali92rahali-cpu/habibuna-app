@@ -13,6 +13,13 @@ public class PopupReceiver extends BroadcastReceiver {
             PopupScheduler.restore(ctx);
             return;
         }
+        // المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ: نؤجّل النافذة 10 دقائق، ثلاث مرات على الأكثر
+        if (PopupScheduler.inCall(ctx)) {
+            PopupScheduler.retryLater(ctx, intent);
+            return;
+        }
+        // وضع «عدم الإزعاج» أو «النوم»: لا نافذة، ويبقى الإشعار العادي بحسب إعدادات الهاتف
+        if (PopupScheduler.doNotDisturb(ctx)) return;
         try {
             PopupScheduler.show(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
         } catch (Exception ignored) {

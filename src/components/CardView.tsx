@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { CardData } from '../lib/types';
 import { Corner, Divider, Mihrab } from './Ornaments';
 
@@ -10,9 +11,31 @@ const MARK: Record<string, string> = {
 };
 export const markOf = (chapter: string) => MARK[chapter] ?? '✦';
 
+/** حجم الخط المختار (--fz)، وإن لم يتّسع له إطار البطاقة يصغر في هذه البطاقة وحدها حتى يتّسع، ولا يقلّ عن الحجم الأصلي */
+function useFitText() {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const inner = el?.querySelector<HTMLElement>('.inner');
+    if (!el || !inner) return;
+    const fit = () => {
+      let v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz')) || 1;
+      el.style.setProperty('--fz', String(v));
+      while (v > 1 && inner.scrollHeight > inner.clientHeight + 1) {
+        v = Math.max(1, Math.round((v - 0.04) * 100) / 100);
+        el.style.setProperty('--fz', String(v));
+      }
+    };
+    fit();
+    void document.fonts?.ready.then(fit);
+  });
+  return ref;
+}
+
 export function CardFront({ card }: { card: CardData }) {
+  const ref = useFitText();
   return (
-    <div className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
+    <div ref={ref} className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
       <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
       <div className="inner">
         <div className="kicker">{card.chapter === 'الصلاة عليه' ? 'تذكير' : 'من مواقف النبي ﷺ'}</div>
