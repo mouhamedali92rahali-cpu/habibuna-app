@@ -108,7 +108,7 @@ function cardScene(it, step) {
   const P = readEnd, sharhStart = P + 1.0, sharhEnd = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
   // الرسم الخطي بعد الشرح (أو بعد البطاقة إن لم يكن شرح)، نحو 4.5 ثوانٍ
   const withArt = !!it.art, artStart = sharhEnd + (withSharh ? .2 : .6);
-  const dur = withArt ? artStart + 4.6 : sharhEnd;
+  const dur = withArt ? artStart + (it.artHold || 4.6) : sharhEnd; // artHold: مدة بقاء الرسم (لتقصير الفيديو الطويل)
   return scene(dur, (el, s) => {
     const ch = chrome(el, s, { step, title: it.label });
     const flip = h(`<div class="flip abs" style="left:110px;top:560px;width:860px;height:760px"><div class="back">${MIHRAB}</div><div class="face">${cardFace(c)}</div></div>`);
