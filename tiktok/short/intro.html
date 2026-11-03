@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حبيبنا — تعريف قصير</title>
+<!-- فيديو تعريفي قصير (أقل من 15 ثانية، طلب المستخدم 2026-11-03): الفكرة ← بطاقة حقيقية بمصدرها ← التحميل.
+     نص البطاقة W25 ومصدرها ودرجتها منقولة من public/cards.json حرفيًّا. -->
+<link rel="stylesheet" href="../templates/common.css">
+<style>
+.mini{width:300px;height:450px;border-radius:32px;padding:15px;background:var(--frame);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.mini .in{width:100%;height:100%;border-radius:20px;background:#f7f1e2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--cg) 55%,transparent) inset}
+.mini .t{font:700 70px Naskh,serif;direction:ltr;color:var(--tc)}
+.mini .g{font:400 34px Amiri,serif}
+.mini .l{width:60%;height:10px;border-radius:5px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.mini .l.s{width:42%}
+.ok{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#2f8f6b;vertical-align:middle;margin-inline-start:12px}
+.chips{display:flex;gap:16px;justify-content:center}
+.chips span{padding:10px 26px;border-radius:99px;border:2px solid rgba(217,178,94,.45);font:700 32px Tajawal;color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="bg" class="abs"></div>
+<div id="pat" class="abs"></div>
+<div id="root"></div>
+<div id="vig" class="abs"></div>
+<script src="../templates/common.js"></script>
+<script>
+const CHECK = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+const CARD = { theme: 'ivory', chapter: 'حياته اليومية', title: 'الحلواء والعسل', text: 'كان رسول الله ﷺ يحبّ الحلواء والعسل.', source: 'البخاري (5431، 5599)', grade: 'صحيح — البخاري' };
+
+// 1) الفكرة: ثلاث بطاقات في اليوم
+scene(3.9, (el, s) => {
+  const ch = chrome(el, s, { title: 'تعرّف على [نبيّك] ﷺ', sub: '[3_بطاقات] قصيرة كل يوم', subStart: 1.3, subStep: .24 });
+  const data = [['emerald', '20:00', 'مساء الخير'], ['navy', '15:00', 'وقفة قصيرة'], ['ivory', '10:00', 'صباح النور']];
+  const minis = data.map(([cls, t, g]) => {
+    const m = h(`<div class="mini abs ${cls}"><div class="in"><div class="t">${t}</div><div class="g">${g}</div><div class="l"></div><div class="l s"></div></div></div>`);
+    el.appendChild(m); return m;
+  });
+  [.55, .72, .89].forEach((t, i) => sfx(s.start + t, 'pop', .8 + i * .1));
+  return lt => {
+    ch(lt);
+    minis.forEach((m, i) => {
+      const p = back(seg(lt, .5 + i * .17, .5)), f = eo(seg(lt, .55 + i * .17, .8)), k = i - 1;
+      css(m, { left: (540 - 150 + k * 240 * f) + 'px', top: (600 + Math.abs(k) * 40 * f + (1 - p) * 500) + 'px', opacity: clamp(p * 1.4),
+        transform: `rotate(${k * 12 * f + Math.sin(lt * 1.3 + i) * 1.5}deg) scale(${.9 + .1 * p})`, zIndex: i === 1 ? 3 : 1 });
+    });
+  };
+});
+
+// 2) بطاقة حقيقية بمصدرها ودرجتها
+scene(5.1, (el, s) => {
+  const ch = chrome(el, s, { title: 'موثّقة [بمصدرها]', sub: 'كل بطاقة معها [مصدرها] ودرجتها', subStart: 2.3, subStep: .24 });
+  const card = h(`<div class="abs" style="left:110px;top:560px;width:860px">${cardFace(CARD)}</div>`); el.appendChild(card);
+  const tx = card.querySelector('.ctext'), src = card.querySelector('.src');
+  const gr = card.querySelector('.grade'); gr.insertAdjacentHTML('beforeend', `<span class="ok">${CHECK}</span>`);
+  const ok = gr.querySelector('.ok');
+  sfx(s.start + .35, 'pop'); sfx(s.start + 2.75, 'check');
+  return lt => {
+    ch(lt);
+    const p = back(seg(lt, .3, .6));
+    css(card, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 120}px) scale(${.94 + .06 * p})` });
+    revealWords(tx, lt, .8, .2, { dy: 14, blur: 6 });
+    const q = eo(seg(lt, 2.1, .5));
+    css(src, { opacity: .35 + .65 * q, transform: `scale(${1 + .06 * q * (1 - seg(lt, 3.2, .6))})` });
+    const k = back(seg(lt, 2.7, .35)); css(ok, { transform: `scale(${k})`, opacity: clamp(k * 2) });
+  };
+});
+
+// 3) التحميل: الاسم والكود والمزايا
+scene(4.6, (el, s) => {
+  const ti = h(`<div class="title abs" style="top:250px">${words('حمّل [حبيبنا] ﷺ')}</div>`); el.appendChild(ti);
+  const box = h(`<div class="qr abs" style="top:470px"><img src="../templates/qr.svg"><div class="qrcap">${ICON}<span>حبيبنا ﷺ — أندرويد</span></div></div>`); el.appendChild(box);
+  const chips = h(`<div class="chips abs" style="left:0;right:0;top:1290px"><span>مجاني</span><span>بلا حساب</span><span>بلا إعلانات</span></div>`); el.appendChild(chips);
+  const hint = h(`<div class="hint abs" style="top:1420px">أو الرابط في البايو</div>`); el.appendChild(hint);
+  const cs = [...chips.children];
+  sfx(s.start + .25, 'pop'); [1.0, 1.15, 1.3].forEach(t => sfx(s.start + t, 'check', .45));
+  return lt => {
+    revealWords(ti, lt, .05, .12, { dy: 40, blur: 10 });
+    const p = back(seg(lt, .15, .5)); css(box, { opacity: clamp(p * 1.5), transform: `translateX(-50%) scale(${.88 + .12 * p})` });
+    cs.forEach((c, i) => { const k = back(seg(lt, 1.0 + i * .15, .4)); css(c, { opacity: clamp(k * 1.5), transform: `scale(${.7 + .3 * k})` }); });
+    css(hint, { opacity: eo(seg(lt, 1.6, .4)) * .85 });
+  };
+});
+
+finish();
+</script>
+</body>
+</html>
