@@ -672,7 +672,7 @@ export default function App() {
                     <li><b>{fmt(times[1])}</b><span>موقف من مواقفه وأخلاقه</span></li>
                     <li><b>{fmt(times[2])}</b><span>تذكير بالصلاة عليه ﷺ</span></li>
                   </ul>
-                  <p className="wquiz">وكل أحد مراجعة قصيرة لما مرّ بك من بطاقات الأسبوع ✦</p>
+                  <p className="wquiz">وكل ثلاثة أيام بطاقة برسمٍ توضيحي أو خريطة،<br />وكل أحد مراجعة قصيرة لما مرّ بك من بطاقات الأسبوع ✦</p>
                   <button className="primary" onClick={() => (settings.notifyOn ? closeWelcome(true) : setWelcome(2))}>{settings.notifyOn ? 'ابدأ' : 'التالي'}</button>
                 </>
               ) : (
