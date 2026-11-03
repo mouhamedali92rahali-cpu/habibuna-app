@@ -73,6 +73,15 @@ public final class PopupScheduler {
         }
     }
 
+    /** فيديو أو صوت يعمل الآن (يوتيوب، قرآن، موسيقى…)؛ لا يحتاج أي إذن */
+    public static boolean mediaPlaying(Context ctx) {
+        try {
+            return ((android.media.AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE)).isMusicActive();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** وضع «عدم الإزعاج» (أو النوم/التركيز) مفعّل */
     public static boolean doNotDisturb(Context ctx) {
         try {

@@ -13,8 +13,9 @@ public class PopupReceiver extends BroadcastReceiver {
             PopupScheduler.restore(ctx);
             return;
         }
-        // المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ: نؤجّل النافذة 10 دقائق، ثلاث مرات على الأكثر
-        if (PopupScheduler.inCall(ctx)) {
+        // المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ أو يشغّل فيديو/صوتًا: نؤجّل النافذة 10 دقائق، ثلاث مرات على الأكثر
+        // (الإشعار العادي مجدول وحده في LocalNotifications، فلا يتأثّر بشيء من هذا)
+        if (PopupScheduler.inCall(ctx) || PopupScheduler.mediaPlaying(ctx)) {
             PopupScheduler.retryLater(ctx, intent);
             return;
         }
