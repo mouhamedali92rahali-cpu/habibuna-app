@@ -9,7 +9,7 @@ def raw(book,pid):
       r=subprocess.run(['curl','-s','--max-time','40','-o',f,f'https://shamela.ws/book/{book}/{pid}'])
       if os.path.exists(f) and os.path.getsize(f)>1000: break
       time.sleep(2*(k+1))
-  return open(f,encoding='utf8').read()
+  return open(f,encoding='utf8',errors='replace').read()
 def page(book,pid):
   t=raw(book,pid)
   part=re.search(r'id="fld_part_top" value="([^"]*)"',t); pg=re.search(r'id="fld_goto_top" value="([^"]*)"',t)
