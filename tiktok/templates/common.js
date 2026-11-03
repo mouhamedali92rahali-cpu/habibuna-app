@@ -24,7 +24,8 @@ function words(text) {
   return text.split(' ').map(w => {
     if (w === '|') return '<br>';
     const m = w.match(/^\[(.+)\]([؟?!.،:]*)$/), acc = !!m;  // علامة الترقيم بعد ] تبقى خارج الإبراز
-    w = (acc ? m[1] : w).replace(/_/g, ' ').replace('ﷺ', '<span class="saw">ﷺ</span>');
+    w = (acc ? m[1] : w).replace(/_/g, ' ').replace('ﷺ', '<span class="saw">ﷺ</span>')
+      .replace(/[()]/g, '<span class="par">$&</span>'); // الأقواس من خط النظام: Naskh المحمَّل بلا أقواس، وAmiri يقلبها
     return `<span class="w${acc ? ' acc' : ''}">${acc ? `<span style="position:relative">${w}<i class="ul"></i></span>${m[2]}` : w}</span>`;
   }).join(' ');
 }
