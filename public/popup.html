@@ -142,6 +142,24 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('pray').onclick = function () { leave('pray', true); };
   $('x').onclick = function () { leave('close'); };
   $('more').onclick = function () { send('open'); };
+  // نص البطاقة قد يُصحَّح بعد جدولة النافذة (تُجدول لثلاثين يومًا): نأخذ أحدث نص من الموقع إن أمكن، وإلا بقي المحفوظ
+  if (c.id && window.fetch) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    if (ctl) setTimeout(function () { ctl.abort(); }, 5000);
+    fetch('https://mouhamedali92rahali-cpu.github.io/habibuna-app/cards.json', { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var n = (j.cards || []).filter(function (x) { return x.id === c.id; })[0];
+        if (!n) return;
+        if (n.text && n.text !== c.text) $('text').textContent = n.text;
+        if (n.source) $('source').textContent = 'المصدر: ' + n.source;
+        if (n.grade) $('grade').textContent = n.grade;
+        $('grade').classList.toggle('weak', !!n.weak);
+        if (!reminder && n.title) $('title').textContent = n.title;
+        if (reminder && n.sharh) $('more').style.display = '';
+      })
+      .catch(function () {});
+  }
 })();
 </script>
 </body>

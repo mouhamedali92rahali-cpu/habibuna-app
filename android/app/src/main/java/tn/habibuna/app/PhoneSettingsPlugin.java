@@ -107,6 +107,22 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve(r);
     }
 
+    @PluginMethod
+    public void testPopup(PluginCall call) {
+        PopupScheduler.testSoon(getContext(), call.getString("json", "{}"), call.getString("cardId", ""));
+        call.resolve();
+    }
+
+    /** حالة الهاتف الآن كما تراها النافذة في موعدها (لسطر «فحص الإشعارات») */
+    @PluginMethod
+    public void popupState(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("inCall", PopupScheduler.inCall(getContext()));
+        r.put("media", PopupScheduler.mediaPlaying(getContext()));
+        r.put("dnd", PopupScheduler.doNotDisturb(getContext()));
+        call.resolve(r);
+    }
+
     /** البطاقة التي طلب المستخدم فتحها من النافذة (تُقرأ مرة واحدة) */
     @PluginMethod
     public void takeOpenCard(PluginCall call) {

@@ -106,6 +106,13 @@ public final class PopupScheduler {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
     }
 
+    /** «تجربة النافذة بعد دقيقة»: تمرّ بـ PopupReceiver كالموعد الحقيقي (فتُؤجَّل في المكالمة والفيديو، ولا تظهر في «عدم الإزعاج») */
+    public static void testSoon(Context ctx, String json, String cardId) {
+        PendingIntent pi = intent(ctx, -2, json, cardId);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 60_000L, pi);
+    }
+
     /** يفتح نافذة البطاقة الآن، إن سمح المستخدم بالظهور فوق التطبيقات */
     public static boolean show(Context ctx, String json, String cardId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(ctx)) return false;

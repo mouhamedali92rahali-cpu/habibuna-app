@@ -11,6 +11,8 @@ interface PhoneSettingsPlugin {
   openPopupPermissions(): Promise<void>;
   schedulePopups(o: { items: { id: number; at: number; json: string; cardId: string }[] }): Promise<void>;
   previewPopup(o: { json: string; cardId: string }): Promise<{ shown: boolean }>;
+  testPopup(o: { json: string; cardId: string }): Promise<void>;
+  popupState(): Promise<{ inCall: boolean; media: boolean; dnd: boolean }>;
   takeOpenCard(): Promise<{ id: string | null }>;
   takePrays(): Promise<{ days: string }>;
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
