@@ -117,6 +117,30 @@ public final class PopupScheduler {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
     }
 
+    /** الفقاعة التي أُخفيت دون أن تُفتح تعود بعد ساعة، مرتين على الأكثر، ولا تعود بعد العاشرة ليلًا
+     *  ولا إن جاءت بعدها بطاقة أخرى (اقتراح المستخدم 2026-11-04) */
+    public static final int BUBBLE_BACK_MAX = 2;
+
+    public static void bubbleBack(Context ctx, String json, String cardId, int n) {
+        if (n > BUBBLE_BACK_MAX) return;
+        long at = System.currentTimeMillis() + 60 * 60 * 1000L;
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTimeInMillis(at);
+        if (c.get(java.util.Calendar.HOUR_OF_DAY) >= 22) return;
+        Intent i = new Intent(ctx, PopupReceiver.class);
+        i.putExtra(CardPopupActivity.EXTRA_JSON, json);
+        i.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
+        i.putExtra("back", n);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 3, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        ((AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE)).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+    }
+
+    public static void cancelBubbleBack(Context ctx) {
+        Intent i = new Intent(ctx, PopupReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 3, i, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+        if (pi != null) { ((AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE)).cancel(pi); pi.cancel(); }
+    }
+
     /** طريقة ظهور البطاقة على الشاشة (اختيار المستخدم): full نافذة في موعدها، bubble فقاعة صغيرة.
      *  («حين تفتح هاتفك» unlock حُذف في 3.22 بقرار المستخدم؛ من اختاره يعود إلى النافذة الكاملة) */
     public static String mode(Context ctx) {

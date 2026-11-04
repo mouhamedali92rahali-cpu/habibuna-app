@@ -35,13 +35,24 @@ public class BubbleService extends Service {
 
     private static View bubble, trash;
     private static String json, cardId;
+    private static int back; // كم مرة عادت هذه الفقاعة بعد إخفائها
+
+    /** آخر بطاقة ظهرت فقاعتُها (تُحفظ لأن عودة الفقاعة بعد ساعة قد تجد التطبيق قد أُغلق) */
+    public static String lastCard(Context ctx) {
+        return ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).getString("bubbleCard", "");
+    }
+
+    public static boolean show(Context ctx, String cardJson, String id) { return show(ctx, cardJson, id, 0); }
 
     /** يُظهر الفقاعة الآن (أو يبدّل بطاقتها إن كانت ظاهرة)، ثم يشغّل الخدمة التي تُبقيها */
-    public static boolean show(Context ctx, String cardJson, String id) {
+    public static boolean show(Context ctx, String cardJson, String id, int backCount) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(ctx)) return false;
         Context app = ctx.getApplicationContext();
         json = cardJson;
         cardId = id;
+        back = backCount;
+        if (backCount == 0) PopupScheduler.cancelBubbleBack(app); // بطاقة جديدة: لا تعود القديمة
+        app.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).edit().putString("bubbleCard", id == null ? "" : id).apply();
         if (bubble == null) addBubble(app);
         // أندرويد 14+ يسمح بتشغيل الخدمة الأمامية من الخلفية لتطبيق له نافذة ظاهرة فوق التطبيقات؛ لذلك تُضاف الفقاعة أولًا
         try {
@@ -134,7 +145,12 @@ public class BubbleService extends Service {
                         if (!moved) { open(app); return true; }
                         // تُركت فوق هدف الإخفاء (أسفل الشاشة في الوسط) ← تختفي
                         int cx = p.x + size / 2, cy = p.y + size / 2;
-                        if (cy > tp.y - dp(app, 40) && Math.abs(cx - dm.widthPixels / 2) < dp(app, 90)) { dismiss(app); return true; }
+                        if (cy > tp.y - dp(app, 40) && Math.abs(cx - dm.widthPixels / 2) < dp(app, 90)) {
+                            String j = json, id = cardId; int n = back + 1;
+                            dismiss(app);
+                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n); // تعود بعد ساعة
+                            return true;
+                        }
                         // وإلا تلتصق بأقرب حافّة
                         p.x = cx < dm.widthPixels / 2 ? dp(app, 8) : dm.widthPixels - size - dp(app, 8);
                         try { wm.updateViewLayout(v, p); } catch (Exception ignored) {}
@@ -154,6 +170,7 @@ public class BubbleService extends Service {
     private static void open(Context app) {
         String j = json, id = cardId;
         dismiss(app);
+        PopupScheduler.cancelBubbleBack(app); // قُرئت: لا تعود
         if (j != null) PopupScheduler.show(app, j, id);
     }
 
@@ -178,7 +195,7 @@ public class BubbleService extends Service {
         Notification.Builder nb = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
         Notification n = nb.setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("بطاقة من «حبيبنا» تنتظرك ✦")
-            .setContentText("المس الفقاعة لتقرأها، أو اسحبها إلى أسفل الشاشة لإخفائها")
+            .setContentText("المس الفقاعة لتقرأها؛ وإن أخفيتها دون قراءتها عادت بعد ساعة")
             .setContentIntent(pi)
             .setOngoing(true)
             .build();
