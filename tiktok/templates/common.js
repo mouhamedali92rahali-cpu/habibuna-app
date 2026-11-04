@@ -191,8 +191,8 @@ function finish() {
       if (!on) return;
       s.update(lt);
       const last = s === scenes[scenes.length - 1];
-      const o = last ? seg(lt, s.dur - .45, .45) : ei(seg(lt, s.dur - .3, .3));
-      const i = s.start > 0 ? eo(seg(lt, 0, .25)) : 1;
+      const o = last ? seg(lt, s.dur - .45, .45) : ei(seg(lt, s.dur - (window.EXIT || .3), window.EXIT || .3));
+      const i = s.start > 0 ? eo(seg(lt, 0, window.ENTER || .25)) : 1;
       css(s.el, { opacity: i * (1 - o), transform: `translateY(${(1 - i) * 30 - o * 70}px)`, filter: o > 0 ? `blur(${o * 12}px)` : 'none' });
     });
   };

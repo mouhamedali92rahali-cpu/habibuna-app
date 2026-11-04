@@ -132,9 +132,20 @@ const FEED = `<div class="feed"><div class="bar"></div>${'<div class="post"><div
 const BUBBLE = `<div class="bubble abs"><img src="${LOGO}"></div>`;
 const M01 = CARDS.M01, Y04 = CARDS.Y04;
 
+
+// إبطاء مشهد كامل بمعامل k (طلب المستخدم: إيقاع أهدأ لمن لا يعرف التطبيق): المدة والحركة والمؤثرات معًا
+window.EXIT = .5; window.ENTER = .45;
+function slow(k, dur, build) {
+  return scene(dur * k, (el, s) => {
+    const n0 = SFX.length, upd = build(el, s);
+    for (let i = n0; i < SFX.length; i++) SFX[i].t = +(s.start + (SFX[i].t - s.start) * k).toFixed(3);
+    return lt => upd(lt / k);
+  });
+}
+
 // 1) الهوك: الفقاعة على طرف تطبيق آخر ← لمسة ← نافذة البطاقة
-scene(3.6, (el, s) => {
-  const ch = chrome(el, s, { title: 'ما الجديد في [حبيبنا] ﷺ؟', sub: 'كل ما فيه في [أربعين] ثانية', subStart: 1.6, subStep: .2 });
+slow(1.15, 3.6, (el, s) => {
+  const ch = chrome(el, s, { title: 'ما الجديد في [حبيبنا] ﷺ؟', sub: 'كل ما فيه في أقل من [دقيقة]', subStart: 1.6, subStep: .2 });
   el.querySelector('.title').style.top = '250px';
   el.querySelector('.sub').style.top = '1440px';
   const ph = h(`<div class="phone abs" style="left:270px;top:420px"><div class="screen">${FEED}${BUBBLE}<div class="tap abs"></div>${popupHTML(M01, 0)}</div></div>`);
@@ -155,8 +166,37 @@ scene(3.6, (el, s) => {
   };
 });
 
-// 2) موثّقة: بطاقة حقيقية ثم زرّا المصدر والشرح، والشرح من النووي
-scene(5.4, (el, s) => {
+// 2) ثلاثة مواعيد في يومك: قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
+slow(1.2, 4.4, (el, s) => {
+  const ch = chrome(el, s, { title: '[3] مواعيد في يومك', sub: 'بطاقة قصيرة في كل موعد', subStart: 2.6, subStep: .2 });
+  // نقاط القوس (من اليمين إلى اليسار كاتجاه القراءة): الصباح ثم وسط النهار ثم المساء
+  const W = 900, H = 480, cx = 450, cy = 440, R = 380;
+  const pt = a => [cx + R * Math.cos(a), cy - R * Math.sin(a)];
+  const A = [Math.PI * .16, Math.PI * .5, Math.PI * .84];
+  const lab = [['10:00', 'صباح النور'], ['15:00', 'وقفة قصيرة مع الحبيب ﷺ'], ['20:00', 'مساء الخير']];
+  const sky = h(`<div class="abs" style="left:90px;top:540px;width:${W}px;height:${H + 260}px"></div>`); el.appendChild(sky);
+  sky.innerHTML = `<svg class="abs" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="left:0;top:0;overflow:visible">
+    <path id="arc" d="M ${cx + R} ${cy} A ${R} ${R} 0 0 0 ${cx - R} ${cy}" fill="none" stroke="#d9b25e" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 16"/>
+    <line x1="20" y1="${cy}" x2="${W - 20}" y2="${cy}" stroke="rgba(243,231,196,.25)" stroke-width="3"/></svg>`;
+  const dots = A.map((a, i) => { const [x, y] = pt(a); const d = h(`<div class="abs" style="left:${x - 26}px;top:${y - 26}px;width:52px;height:52px;border-radius:50%;background:#13221e;border:4px solid #d9b25e"></div>`); sky.appendChild(d); return d; });
+  const tags = A.map((a, i) => { const [x, y] = pt(a); const t = h(`<div class="abs" style="left:${x - 150}px;top:${cy + 50}px;width:300px;text-align:center"><div style="font:700 76px Naskh,serif;direction:ltr;color:#f3e7c4">${lab[i][0]}</div><div style="font:400 42px/1.45 Amiri,serif;color:#d9b25e">${lab[i][1].replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`); sky.appendChild(t); return t; });
+  const orb = h(`<div class="abs" style="width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;display:grid;place-items:center"></div>`); sky.appendChild(orb);
+  const T = [.7, 1.45, 2.2];
+  T.forEach(t => sfx(s.start + t, 'pop', .8));
+  return lt => {
+    ch(lt);
+    css(sky, { opacity: eo(seg(lt, .1, .4)) });
+    // الشمس تسير على القوس من الصباح إلى المساء، وتصير قمرًا في آخره
+    const u = eo(seg(lt, .45, 1.9)), a = A[0] + (A[2] - A[0]) * u, [x, y] = pt(a), night = seg(lt, 1.9, .4);
+    css(orb, { left: x + 'px', top: y + 'px', background: night > .5 ? 'transparent' : 'radial-gradient(circle,#ffe39a 40%,#e7c97a 60%,rgba(231,201,122,0) 72%)', color: '#f3e7c4' });
+    orb.innerHTML = night > .5 ? MOON.replace('width="38" height="38"', 'width="80" height="80"') : '';
+    dots.forEach((d, i) => { const on = eo(seg(lt, T[i], .3)); css(d, { background: on > .5 ? '#d9b25e' : '#13221e', boxShadow: `0 0 ${40 * on}px rgba(217,178,94,${.8 * on})`, transform: `scale(${1 + .25 * on * (1 - seg(lt, T[i] + .3, .4))})` }); });
+    tags.forEach((t, i) => { const q = back(seg(lt, T[i], .45)); css(t, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 30}px)` }); });
+  };
+});
+
+// 3) موثّقة: بطاقة حقيقية ثم زرّا المصدر والشرح، والشرح من النووي
+slow(1.3, 6.4, (el, s) => {
   const ch = chrome(el, s, { title: 'موثّقة [بمصدرها]', sub: 'وشرحٌ موجز من كتب العلماء', subStart: 2.9, subStep: .2 });
   const card = h(`<div class="abs" style="left:110px;top:520px;width:860px">${cardFace(Y04)}</div>`); el.appendChild(card);
   const btns = h(`<div class="btns abs" style="left:0;right:0"><div class="sb">إظهار مصدر الحديث</div><div class="sb">شرح موجز</div></div>`); el.appendChild(btns);
@@ -176,8 +216,8 @@ scene(5.4, (el, s) => {
   };
 });
 
-// 3) على شاشتك كما تحب (جديد): نافذة كاملة / فقاعة صغيرة / حين تفتح هاتفك
-scene(6.2, (el, s) => {
+// 4) على شاشتك كما تحب (جديد): نافذة كاملة / فقاعة صغيرة / حين تفتح هاتفك
+slow(1.2, 6.2, (el, s) => {
   const ch = chrome(el, s, { title: 'على شاشتك [كما] تحب', sub: 'ولا تقاطعك في [مكالمة] أو وأنت تشاهد فيديو', subStart: 3.7, subStep: .2 });
   css(el.querySelector('.sub'), { fontSize: '44px', top: '1300px' });
   const ti = el.querySelector('.title'); ti.insertAdjacentHTML('beforeend', '<span class="newtag">جديد</span>');
@@ -206,37 +246,8 @@ scene(6.2, (el, s) => {
   };
 });
 
-// 4) ثلاثة مواعيد في يومك: قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
-scene(4.4, (el, s) => {
-  const ch = chrome(el, s, { title: '[3] مواعيد في يومك', sub: 'بطاقة قصيرة في كل موعد', subStart: 2.6, subStep: .2 });
-  // نقاط القوس (من اليمين إلى اليسار كاتجاه القراءة): الصباح ثم وسط النهار ثم المساء
-  const W = 900, H = 480, cx = 450, cy = 440, R = 380;
-  const pt = a => [cx + R * Math.cos(a), cy - R * Math.sin(a)];
-  const A = [Math.PI * .16, Math.PI * .5, Math.PI * .84];
-  const lab = [['10:00', 'صباح النور'], ['15:00', 'وقفة قصيرة مع الحبيب ﷺ'], ['20:00', 'مساء الخير']];
-  const sky = h(`<div class="abs" style="left:90px;top:540px;width:${W}px;height:${H + 260}px"></div>`); el.appendChild(sky);
-  sky.innerHTML = `<svg class="abs" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="left:0;top:0;overflow:visible">
-    <path id="arc" d="M ${cx + R} ${cy} A ${R} ${R} 0 0 0 ${cx - R} ${cy}" fill="none" stroke="#d9b25e" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 16"/>
-    <line x1="20" y1="${cy}" x2="${W - 20}" y2="${cy}" stroke="rgba(243,231,196,.25)" stroke-width="3"/></svg>`;
-  const dots = A.map((a, i) => { const [x, y] = pt(a); const d = h(`<div class="abs" style="left:${x - 26}px;top:${y - 26}px;width:52px;height:52px;border-radius:50%;background:#13221e;border:4px solid #d9b25e"></div>`); sky.appendChild(d); return d; });
-  const tags = A.map((a, i) => { const [x, y] = pt(a); const t = h(`<div class="abs" style="left:${x - 150}px;top:${cy + 50}px;width:300px;text-align:center"><div style="font:700 76px Naskh,serif;direction:ltr;color:#f3e7c4">${lab[i][0]}</div><div style="font:400 42px/1.45 Amiri,serif;color:#d9b25e">${lab[i][1].replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`); sky.appendChild(t); return t; });
-  const orb = h(`<div class="abs" style="width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;display:grid;place-items:center"></div>`); sky.appendChild(orb);
-  const T = [.7, 1.45, 2.2];
-  T.forEach(t => sfx(s.start + t, 'pop', .8));
-  return lt => {
-    ch(lt);
-    css(sky, { opacity: eo(seg(lt, .1, .4)) });
-    // الشمس تسير على القوس من الصباح إلى المساء، وتصير قمرًا في آخره
-    const u = eo(seg(lt, .45, 1.9)), a = A[0] + (A[2] - A[0]) * u, [x, y] = pt(a), night = seg(lt, 1.9, .4);
-    css(orb, { left: x + 'px', top: y + 'px', background: night > .5 ? 'transparent' : 'radial-gradient(circle,#ffe39a 40%,#e7c97a 60%,rgba(231,201,122,0) 72%)', color: '#f3e7c4' });
-    orb.innerHTML = night > .5 ? MOON.replace('width="38" height="38"', 'width="80" height="80"') : '';
-    dots.forEach((d, i) => { const on = eo(seg(lt, T[i], .3)); css(d, { background: on > .5 ? '#d9b25e' : '#13221e', boxShadow: `0 0 ${40 * on}px rgba(217,178,94,${.8 * on})`, transform: `scale(${1 + .25 * on * (1 - seg(lt, T[i] + .3, .4))})` }); });
-    tags.forEach((t, i) => { const q = back(seg(lt, T[i], .45)); css(t, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 30}px)` }); });
-  };
-});
-
 // 5) كل ثلاثة أيام رسم أو خريطة: الرسم يُرسم خطًّا خطًّا ثم لمحة من خريطة المدينة
-scene(5.2, (el, s) => {
+slow(1.15, 5.2, (el, s) => {
   const ch = chrome(el, s, { title: 'كل [3] أيام رسم أو خريطة', sub: 'لتتخيّل ما ورد في الحديث', subStart: 3.3, subStep: .2 });
   const a = F.art, mp = F.map;
   const board = h(`<div class="board abs" style="top:520px">${a.svg}<p>${a.caption}</p><small>رسمٌ تقريبي للتوضيح</small></div>`); el.appendChild(board);
@@ -266,7 +277,7 @@ scene(5.2, (el, s) => {
 });
 
 // 6) مراجعة الأحد: سؤال حقيقي بأربعة خيارات، واختيار الصحيح
-scene(5.0, (el, s) => {
+slow(1.2, 5.0, (el, s) => {
   const ch = chrome(el, s, { title: 'مراجعة [الأحد]', sub: 'أسئلة قصيرة مما مرّ بك في أسبوعك', subStart: 3.0, subStep: .2 });
   const opts = [QUIZ.w[1], QUIZ.a, QUIZ.w[2], QUIZ.w[0]];
   const qz = h(`<div class="quiz abs" style="top:500px"><div class="qtop"><span>مراجعة الأسبوع</span><span>3 / 7</span></div><div class="qbar"><i></i></div>
@@ -286,7 +297,7 @@ scene(5.0, (el, s) => {
 });
 
 // 7) الصلاة على النبي ﷺ: الزرّ الذهبي وسطر العدّاد
-scene(3.4, (el, s) => {
+slow(1.15, 3.4, (el, s) => {
   const ch = chrome(el, s, { title: '[صلِّ] عليه ﷺ' });
   const btn = h(`<div class="praybtn abs" style="top:760px">اللهم صلِّ وسلِّم على نبيّنا محمد</div>`); el.appendChild(btn);
   const ring = h(`<div class="ring abs"></div>`); el.appendChild(ring);
@@ -303,7 +314,7 @@ scene(3.4, (el, s) => {
 });
 
 // 8) حجم الخط (جديد): A− / A+ والنص يكبر
-scene(3.4, (el, s) => {
+slow(1.15, 3.4, (el, s) => {
   const ch = chrome(el, s, { title: 'كبّر [الخط] كما يريحك' });
   const ti = el.querySelector('.title'); ti.insertAdjacentHTML('beforeend', '<span class="newtag">جديد</span>');
   const tag = ti.querySelector('.newtag');
@@ -324,7 +335,7 @@ scene(3.4, (el, s) => {
 });
 
 // 9) الختام: مجاني · بلا حساب · بلا إعلانات
-scene(2.4, (el, s) => {
+slow(1.2, 2.4, (el, s) => {
   const ti = h(`<div class="title abs" style="top:300px">${words('[حبيبنا] ﷺ')}</div>`); el.appendChild(ti);
   const lg = h(`<div class="applogo abs" style="left:390px;top:540px"><img src="${LOGO}"></div>`); el.appendChild(lg);
   const chips = h(`<div class="chips abs" style="left:0;right:0;top:960px"><span>مجاني</span><span>بلا حساب</span><span>بلا إعلانات</span></div>`); el.appendChild(chips);
