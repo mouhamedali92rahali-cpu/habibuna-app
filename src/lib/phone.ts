@@ -13,7 +13,7 @@ interface PhoneSettingsPlugin {
   previewPopup(o: { json: string; cardId: string }): Promise<{ shown: boolean }>;
   testPopup(o: { json: string; cardId: string }): Promise<void>;
   setPopupMode(o: { mode: string }): Promise<void>;
-  popupState(): Promise<{ inCall: boolean; media: boolean; dnd: boolean }>;
+  popupState(): Promise<{ inCall: boolean; media: boolean; dnd: boolean; ringing?: boolean; bubble?: boolean }>;
   takeOpenCard(): Promise<{ id: string | null }>;
   takePrays(): Promise<{ days: string }>;
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;

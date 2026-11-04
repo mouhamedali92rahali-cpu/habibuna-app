@@ -107,7 +107,7 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve(r);
     }
 
-    /** طريقة ظهور البطاقة (full / bubble / unlock)، تُحفظ أصليًّا لتقرأها PopupReceiver في الموعد */
+    /** طريقة ظهور البطاقة (full / bubble)، تُحفظ أصليًّا لتقرأها PopupReceiver في الموعد */
     @PluginMethod
     public void setPopupMode(PluginCall call) {
         PopupScheduler.setMode(getContext(), call.getString("mode", "full"));
@@ -127,6 +127,8 @@ public class PhoneSettingsPlugin extends Plugin {
         JSObject r = new JSObject();
         r.put("inCall", PopupScheduler.inCall(getContext()));
         r.put("media", PopupScheduler.mediaPlaying(getContext()));
+        r.put("ringing", PopupScheduler.ringing(getContext()));
+        r.put("bubble", "bubble".equals(PopupScheduler.mode(getContext())));
         r.put("dnd", PopupScheduler.doNotDisturb(getContext()));
         call.resolve(r);
     }

@@ -73,6 +73,15 @@ public final class PopupScheduler {
         }
     }
 
+    /** الهاتف يرنّ الآن (مكالمة واردة) */
+    public static boolean ringing(Context ctx) {
+        try {
+            return ((android.media.AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE)).getMode() == android.media.AudioManager.MODE_RINGTONE;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** فيديو أو صوت يعمل الآن (يوتيوب، قرآن، موسيقى…)؛ لا يحتاج أي إذن */
     public static boolean mediaPlaying(Context ctx) {
         try {
@@ -108,24 +117,14 @@ public final class PopupScheduler {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
     }
 
-    /** طريقة ظهور البطاقة على الشاشة (اختيار المستخدم): full نافذة في موعدها، bubble فقاعة صغيرة، unlock حين يفتح هاتفه */
+    /** طريقة ظهور البطاقة على الشاشة (اختيار المستخدم): full نافذة في موعدها، bubble فقاعة صغيرة.
+     *  («حين تفتح هاتفك» unlock حُذف في 3.22 بقرار المستخدم؛ من اختاره يعود إلى النافذة الكاملة) */
     public static String mode(Context ctx) {
-        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("mode", "full");
+        return "bubble".equals(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("mode", "full")) ? "bubble" : "full";
     }
 
     public static void setMode(Context ctx, String m) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString("mode", m).apply();
-    }
-
-    /** صاحب الهاتف يستعمله الآن: الشاشة مضاءة وغير مقفلة */
-    public static boolean userActive(Context ctx) {
-        try {
-            android.os.PowerManager pm = (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
-            android.app.KeyguardManager km = (android.app.KeyguardManager) ctx.getSystemService(Context.KEYGUARD_SERVICE);
-            return pm.isInteractive() && !km.isKeyguardLocked();
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     /** يعرض البطاقة بالطريقة التي اختارها المستخدم (فقاعة أو نافذة) */

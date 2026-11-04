@@ -13,20 +13,17 @@ public class PopupReceiver extends BroadcastReceiver {
             PopupScheduler.restore(ctx);
             return;
         }
-        // المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ أو يشغّل فيديو/صوتًا: نؤجّل النافذة 10 دقائق، ثلاث مرات على الأكثر
+        // النافذة الكاملة: المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ أو يشغّل فيديو/صوتًا ← نؤجّلها 10 دقائق، ثلاث مرات على الأكثر.
+        // الفقاعة (قرار المستخدم 2026-11-04): تظهر في وقتها حتى أثناء الفيديو والمكالمة، لأنها صغيرة تُزاح بسهولة، والتأجيل قد يطول مع فيديو
+        // أو مكالمة طويلة؛ ولا تُؤجَّل إلا والهاتف يرنّ، حتى لا تقع على زرّ الردّ.
         // (الإشعار العادي مجدول وحده في LocalNotifications، فلا يتأثّر بشيء من هذا)
-        if (PopupScheduler.inCall(ctx) || PopupScheduler.mediaPlaying(ctx)) {
+        boolean bubble = "bubble".equals(PopupScheduler.mode(ctx));
+        if (bubble ? PopupScheduler.ringing(ctx) : (PopupScheduler.inCall(ctx) || PopupScheduler.mediaPlaying(ctx))) {
             PopupScheduler.retryLater(ctx, intent);
             return;
         }
         // وضع «عدم الإزعاج» أو «النوم»: لا نافذة، ويبقى الإشعار العادي بحسب إعدادات الهاتف
         if (PopupScheduler.doNotDisturb(ctx)) return;
-        // «حين تفتح هاتفك»: لا تقاطع من يستعمل هاتفه؛ نعيد المحاولة كل 10 دقائق (حتى 3 ساعات) إلى أن تكون الشاشة مطفأة أو مقفلة،
-        // فتُفتح النافذة فيجدها صاحب الهاتف أول ما يفتحه
-        if ("unlock".equals(PopupScheduler.mode(ctx)) && PopupScheduler.userActive(ctx)) {
-            PopupScheduler.retryLater(ctx, intent, 18);
-            return;
-        }
         try {
             PopupScheduler.present(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
         } catch (Exception ignored) {
