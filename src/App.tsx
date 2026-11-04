@@ -590,7 +590,7 @@ export default function App() {
                   <p className="muted small">كيف تظهر؟</p>
                   {([
                     ['full', 'نافذة كاملة في موعدها', 'تنفتح البطاقة فوق ما أمامك، وتتأخّر قليلًا إن كنت في مكالمة أو تشاهد فيديو'],
-                    ['bubble', 'فقاعة صغيرة', 'دائرة على طرف الشاشة في موعدها، ولو كنت تشاهد فيديو؛ المسها لتقرأ البطاقة؛ وإن سحبتها إلى الأسفل دون قراءتها عادت بعد ساعة، مرتين على الأكثر'],
+                    ['bubble', 'فقاعة صغيرة', 'دائرة على طرف الشاشة في موعدها، ولو كنت تشاهد فيديو؛ المسها لتقرأ البطاقة؛ وإن سحبتها إلى الأسفل دون قراءتها عادت مرة واحدة بعد ساعتين'],
                   ] as const).map(([m, t, d]) => (
                     <label key={m} className={'pm' + ((settings.popupMode === 'bubble' ? 'bubble' : 'full') === m ? ' on' : '')}>
                       <input type="radio" name="pmode" checked={(settings.popupMode === 'bubble' ? 'bubble' : 'full') === m} onChange={() => setSettings({ ...settings, popupMode: m })} />

@@ -148,7 +148,7 @@ public class BubbleService extends Service {
                         if (cy > tp.y - dp(app, 40) && Math.abs(cx - dm.widthPixels / 2) < dp(app, 90)) {
                             String j = json, id = cardId; int n = back + 1;
                             dismiss(app);
-                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n); // تعود بعد ساعة
+                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n); // تعود بعد ساعتين مرة واحدة
                             return true;
                         }
                         // وإلا تلتصق بأقرب حافّة
@@ -195,7 +195,7 @@ public class BubbleService extends Service {
         Notification.Builder nb = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
         Notification n = nb.setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("بطاقة من «حبيبنا» تنتظرك ✦")
-            .setContentText("المس الفقاعة لتقرأها؛ وإن أخفيتها دون قراءتها عادت بعد ساعة")
+            .setContentText("المس الفقاعة لتقرأها؛ وإن أخفيتها دون قراءتها عادت بعد ساعتين")
             .setContentIntent(pi)
             .setOngoing(true)
             .build();

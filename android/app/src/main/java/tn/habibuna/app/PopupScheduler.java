@@ -117,13 +117,13 @@ public final class PopupScheduler {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
     }
 
-    /** الفقاعة التي أُخفيت دون أن تُفتح تعود بعد ساعة، مرتين على الأكثر، ولا تعود بعد العاشرة ليلًا
+    /** الفقاعة التي أُخفيت دون أن تُفتح تعود بعد ساعتين مرة واحدة فقط، ولا تعود بعد العاشرة ليلًا
      *  ولا إن جاءت بعدها بطاقة أخرى (اقتراح المستخدم 2026-11-04) */
-    public static final int BUBBLE_BACK_MAX = 2;
+    public static final int BUBBLE_BACK_MAX = 1;
 
     public static void bubbleBack(Context ctx, String json, String cardId, int n) {
         if (n > BUBBLE_BACK_MAX) return;
-        long at = System.currentTimeMillis() + 60 * 60 * 1000L;
+        long at = System.currentTimeMillis() + 2 * 60 * 60 * 1000L;
         java.util.Calendar c = java.util.Calendar.getInstance();
         c.setTimeInMillis(at);
         if (c.get(java.util.Calendar.HOUR_OF_DAY) >= 22) return;
