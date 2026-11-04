@@ -184,8 +184,8 @@ scene(5.0, (el, s) => {
 });
 
 // 1) ثلاث بطاقات في يومك (بعد الافتتاح): قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
-slow(1.2, 4.4, (el, s) => {
-  const ch = chrome(el, s, { title: '[3] بطاقات في يومك', sub: 'مواقف قصيرة من حياته ﷺ', subStart: 2.6, subStep: .2 });
+slow(1.2, 5.0, (el, s) => {
+  const ch = chrome(el, s, { title: '[3] بطاقات في يومك', sub: 'مواقف قصيرة من حياته ﷺ', subStart: 1.6, subStep: .26 });
   const t0 = el.querySelector('.title');
   // نقاط القوس (من اليمين إلى اليسار كاتجاه القراءة): الصباح ثم وسط النهار ثم المساء
   const W = 900, H = 480, cx = 450, cy = 440, R = 380;
@@ -216,8 +216,8 @@ slow(1.2, 4.4, (el, s) => {
 });
 
 // 2) موثّقة: بطاقة حقيقية ثم زرّا المصدر والشرح، والشرح من النووي
-slow(1.3, 6.4, (el, s) => {
-  const ch = chrome(el, s, { title: 'موثّقة [بمصدرها]', sub: 'وشرحٌ موجز من كتب العلماء', subStart: 2.9, subStep: .2 });
+slow(1.3, 6.8, (el, s) => {
+  const ch = chrome(el, s, { title: 'موثّقة [بمصدرها]', sub: 'وشرحٌ موجز من كتب العلماء', subStart: 2.9, subStep: .26 });
   const card = h(`<div class="abs" style="left:110px;top:520px;width:860px">${cardFace(Y04)}</div>`); el.appendChild(card);
   const btns = h(`<div class="btns abs" style="left:0;right:0"><div class="sb">إظهار مصدر الحديث</div><div class="sb">شرح موجز</div></div>`); el.appendChild(btns);
   const sh = h(`<div class="sharh abs" style="left:110px;top:520px"><b>شرح موجز</b><p>${Y04.sharh.text}</p><small>${Y04.sharh.source}</small></div>`); el.appendChild(sh);
@@ -237,8 +237,8 @@ slow(1.3, 6.4, (el, s) => {
 });
 
 // 3) على شاشتك كما تحب (جديد): خياران كما في النسخة 3.22: نافذة كاملة / فقاعة صغيرة
-slow(1.2, 6.2, (el, s) => {
-  const ch = chrome(el, s, { title: 'على شاشتك [كما] تحب', sub: 'النافذة تنتظر قليلًا | إن كنت في [مكالمة] أو تشاهد فيديو', subStart: 3.7, subStep: .2 });
+slow(1.2, 7.0, (el, s) => {
+  const ch = chrome(el, s, { title: 'على شاشتك [كما] تحب', sub: 'النافذة تنتظر قليلًا | إن كنت في [مكالمة] أو تشاهد فيديو', subStart: 2.4, subStep: .24 });
   css(el.querySelector('.sub'), { fontSize: '44px', top: '1300px' });
   const ti = el.querySelector('.title'); ti.insertAdjacentHTML('beforeend', '<span class="newtag">جديد</span>');
   const tag = ti.querySelector('.newtag');
@@ -264,8 +264,8 @@ slow(1.2, 6.2, (el, s) => {
 });
 
 // 4) كل ثلاثة أيام رسم أو خريطة: الرسم يُرسم خطًّا خطًّا ثم لمحة من خريطة المدينة
-slow(1.15, 5.2, (el, s) => {
-  const ch = chrome(el, s, { title: 'كل [3] أيام رسم أو خريطة', sub: 'لتتخيّل ما ورد في الحديث', subStart: 3.3, subStep: .2 });
+slow(1.15, 5.6, (el, s) => {
+  const ch = chrome(el, s, { title: 'كل [3] أيام رسم أو خريطة', sub: 'لتتخيّل ما ورد في الحديث', subStart: 2.2, subStep: .26 });
   const a = F.art, mp = F.map;
   const board = h(`<div class="board abs" style="top:520px">${a.svg}<p>${a.caption}</p><small>رسمٌ تقريبي للتوضيح</small></div>`); el.appendChild(board);
   const map = h(`<div class="map abs" style="top:500px">${mp.svg}</div>`); el.appendChild(map);
@@ -294,8 +294,8 @@ slow(1.15, 5.2, (el, s) => {
 });
 
 // 5) مراجعة الأحد: سؤال حقيقي بأربعة خيارات، واختيار الصحيح
-slow(1.2, 5.0, (el, s) => {
-  const ch = chrome(el, s, { title: 'مراجعة [الأحد]', sub: 'أسئلة قصيرة مما مرّ بك في أسبوعك', subStart: 3.0, subStep: .2 });
+slow(1.2, 6.2, (el, s) => {
+  const ch = chrome(el, s, { title: 'مراجعة [الأحد]', sub: 'أسئلة قصيرة مما مرّ بك في أسبوعك', subStart: 2.6, subStep: .24 });
   const opts = [QUIZ.w[1], QUIZ.a, QUIZ.w[2], QUIZ.w[0]];
   const qz = h(`<div class="quiz abs" style="top:500px"><div class="qtop"><span>مراجعة الأسبوع</span><span>3 / 7</span></div><div class="qbar"><i></i></div>
     <div class="qcard"><p class="qtext">${QUIZ.q.replace('ﷺ', '<span class="saw">ﷺ</span>')}</p>${opts.map(o => `<div class="qopt">${o}</div>`).join('')}</div></div>`);
@@ -331,7 +331,7 @@ slow(1.15, 3.4, (el, s) => {
 });
 
 // 7) حجم الخط (جديد): A− / A+ والنص يكبر
-slow(1.15, 3.4, (el, s) => {
+slow(1.15, 3.8, (el, s) => {
   const ch = chrome(el, s, { title: 'كبّر [الخط] كما يريحك' });
   const ti = el.querySelector('.title'); ti.insertAdjacentHTML('beforeend', '<span class="newtag">جديد</span>');
   const tag = ti.querySelector('.newtag');
