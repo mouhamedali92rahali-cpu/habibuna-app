@@ -504,7 +504,7 @@ export default function App() {
                     </div>
                     <div className="btns">
                       <button className="primary" onClick={() => { setSettings({ ...settings, popupOn: true }); setOffer('done'); if (overlay !== true) void PhoneSettings.openOverlaySettings().catch(() => {}); }}>نعم، فعّلها</button>
-                      <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
+                      <button className="ghost" onClick={() => void previewPopup()}>جرّبها الآن</button>
                       <button className="linkbtn" onClick={closeOffer}>لا، شكرًا</button>
                     </div>
                   </>
@@ -615,7 +615,7 @@ export default function App() {
                   <button className="ghost" onClick={() => { setBgVisited(true); save('bgPopupVisited', true); void PhoneSettings.openPopupPermissions().catch(() => {}); }}>اضغط هنا للسماح</button>
                 </div>
               )}
-              <button className="ghost" onClick={() => void previewPopup()}>معاينة</button>
+              <button className="ghost" onClick={() => void previewPopup()}>جرّبها الآن</button>
             </Frame>
             <button className="helplink" onClick={() => setSub('help')}>لا تصلك البطاقات؟ المساعدة وتجربة الإشعارات ‹</button>
           </section>
@@ -754,7 +754,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {previewSrc && <iframe className="popframe" title="معاينة البطاقة" src={previewSrc} />}
+      {previewSrc && <iframe className="popframe" title="تجربة البطاقة" src={previewSrc} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   );
