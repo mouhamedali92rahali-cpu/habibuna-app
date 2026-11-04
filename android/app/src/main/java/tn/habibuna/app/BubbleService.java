@@ -82,7 +82,14 @@ public class BubbleService extends Service {
         b.setElevation(dp(app, 6));
         ImageView icon = new ImageView(app);
         icon.setImageResource(R.mipmap.ic_launcher_round);
-        int pad = dp(app, 7);
+        // الشعار مربّع، فيُقصّ دائرةً ليناسب الفقاعة (طلب المستخدم بعد التجربة)
+        icon.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        GradientDrawable round = new GradientDrawable();
+        round.setShape(GradientDrawable.OVAL);
+        round.setColor(Color.parseColor("#0F5C4D"));
+        icon.setBackground(round);
+        icon.setClipToOutline(true);
+        int pad = dp(app, 4);
         FrameLayout.LayoutParams ip = new FrameLayout.LayoutParams(size - 2 * pad, size - 2 * pad, Gravity.CENTER);
         b.addView(icon, ip);
 
