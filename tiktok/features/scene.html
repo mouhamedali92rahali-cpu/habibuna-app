@@ -143,22 +143,42 @@ function slow(k, dur, build) {
   });
 }
 
-// 0) الافتتاح (اختيار المستخدم: السؤال ثم الشعار بتوهّج): «كم مرة تذكّرتَ النبي ﷺ اليوم؟» ← شعار حبيبنا ← البطاقات الثلاث
-scene(4.6, (el, s) => {
+// 0) الافتتاح (اختيار المستخدم): «كم مرة تذكّرتَ النبي ﷺ اليوم؟» ← «تطبيق» صغيرة، ثم الشعار (فيه اسم حبيبنا ﷺ) بتوهّج كالمفرقعات، ثم «يذكّرك به»
+scene(5.0, (el, s) => {
+  const CX = 540, CY = 760;
   const q = h(`<div class="abs" style="left:60px;right:60px;top:700px;text-align:center;font:700 112px/1.5 Amiri,serif">${words('كم مرة [تذكّرتَ] | النبي ﷺ اليوم؟')}</div>`); el.appendChild(q);
-  const glow = h(`<div class="abs" style="left:190px;top:330px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,94,.42),transparent 64%)"></div>`); el.appendChild(glow);
-  const lg = h(`<div class="applogo abs" style="left:390px;top:530px"><img src="${LOGO}"></div>`); el.appendChild(lg);
-  const nm = h(`<div class="abs" style="left:0;right:0;top:900px;text-align:center;font:700 120px Amiri,serif">${words('[حبيبنا] ﷺ')}</div>`); el.appendChild(nm);
+  // التوهّج: هالة كبيرة، وأشعة تدور، وحلقتان تتّسعان، وشرر ذهبي يتطاير كالمفرقعات
+  const halo = h(`<div class="abs" style="left:${CX - 600}px;top:${CY - 600}px;width:1200px;height:1200px;border-radius:50%;background:radial-gradient(circle,rgba(255,227,154,.55),rgba(217,178,94,.28) 30%,transparent 62%)"></div>`); el.appendChild(halo);
+  const rays = h(`<div class="abs" style="left:${CX - 650}px;top:${CY - 650}px;width:1300px;height:1300px;border-radius:50%;background:repeating-conic-gradient(rgba(255,227,154,.22) 0 4deg,transparent 4deg 15deg);-webkit-mask:radial-gradient(circle,#000 18%,transparent 66%);mask:radial-gradient(circle,#000 18%,transparent 66%)"></div>`); el.appendChild(rays);
+  const rings = [0, 1].map(() => { const r = h(`<div class="ring abs" style="border-width:6px"></div>`); el.appendChild(r); return r; });
+  const N = 44, sparks = [];
+  for (let i = 0; i < N; i++) {
+    const a = i / N * Math.PI * 2 + (i % 3) * .07, d = 330 + (i * 97 % 260), sz = 10 + (i * 37 % 14), dl = (i % 4) * .05;
+    const e = h(`<div class="abs" style="width:${sz}px;height:${sz}px;margin:${-sz / 2}px 0 0 ${-sz / 2}px;border-radius:50%;background:${i % 3 ? '#ffe39a' : '#f3e7c4'};box-shadow:0 0 ${sz * 2}px ${sz / 2}px rgba(255,214,120,.8)"></div>`);
+    el.appendChild(e); sparks.push({ e, a, d, dl });
+  }
+  const app = h(`<div class="abs" style="left:0;right:0;top:${CY - 330}px;text-align:center;font:400 58px Tajawal,sans-serif;color:#f3e7c4;letter-spacing:2px">تطبيق</div>`); el.appendChild(app);
+  const lg = h(`<div class="applogo abs" style="left:${CX - 210}px;top:${CY - 210}px;width:420px;height:420px"><img src="${LOGO}"></div>`); el.appendChild(lg);
+  const rem = h(`<div class="abs" style="left:0;right:0;top:${CY + 250}px;text-align:center;font:700 104px Amiri,serif">${words('[يذكّرك] به')}</div>`); el.appendChild(rem);
   wordTimes(q, .05, .1).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .7 : .85));
-  sfx(s.start + 2.3, 'pop'); sfx(s.start + 2.45, 'chime', .7);
+  const B = 2.35; // لحظة الانفجار
+  sfx(s.start + 2.1, 'tick', .6); sfx(s.start + B, 'pop', 1); sfx(s.start + B + .05, 'chime', 1); sfx(s.start + B + .25, 'pop', .6); sfx(s.start + B + .45, 'pop', .45);
+  wordTimes(rem, B + 1.0, .2).forEach(t => sfx(s.start + t, 'tick', .8));
   return lt => {
-    // السؤال كاملًا في أول نصف ثانية، يبقى ليُقرأ، ثم يصعد ويتلاشى
     revealWords(q, lt, .05, .1, { dy: 50, blur: 14 });
-    const out = eo(seg(lt, 1.9, .45)); css(q, { opacity: 1 - out, transform: `translateY(${-out * 80}px)` });
-    const p = back(seg(lt, 2.2, .7)); css(lg, { opacity: clamp(p * 1.5), transform: `scale(${.6 + .4 * p + .015 * Math.sin(lt * 2.4)})` });
-    css(glow, { opacity: eo(seg(lt, 2.3, .8)) * (.75 + .25 * Math.sin(lt * 2.4)) });
-    revealWords(nm, lt, 2.8, .15, { dy: 30, blur: 10 });
-    // شارة القناة الصغيرة في الأسفل لا تظهر مع الشعار الكبير
+    const out = eo(seg(lt, 1.9, .4)); css(q, { opacity: 1 - out, transform: `translateY(${-out * 80}px)` });
+    const ap = eo(seg(lt, 2.0, .4)); css(app, { opacity: ap * .9, transform: `translateY(${(1 - ap) * 20}px)` });
+    const p = back(seg(lt, B, .7)); css(lg, { opacity: clamp(p * 1.5), transform: `scale(${.5 + .5 * p + .015 * Math.sin(lt * 2.4)})` });
+    // الهالة تومض قويًّا لحظة الانفجار ثم تهدأ وتنبض
+    const flash = seg(lt, B, .15) * (1 - seg(lt, B + .15, .9));
+    css(halo, { opacity: clamp(eo(seg(lt, B, .4)) * (.7 + .2 * Math.sin(lt * 2.4)) + .6 * flash), transform: `scale(${.6 + .4 * eo(seg(lt, B, .6)) + .15 * flash})` });
+    css(rays, { opacity: eo(seg(lt, B, .5)) * .9, transform: `rotate(${(lt - B) * 14}deg) scale(${.7 + .3 * eo(seg(lt, B, .8))})` });
+    rings.forEach((r, i) => { const k = seg(lt, B + i * .22, 1.1), R = 300 + 1200 * eo(k); css(r, { width: R + 'px', height: R + 'px', left: (CX - R / 2) + 'px', top: (CY - R / 2) + 'px', opacity: k > 0 ? (1 - k) * .9 : 0 }); });
+    for (const k of sparks) {
+      const u = seg(lt, B + k.dl, 1.3), r = 160 + k.d * eo(u), fall = 90 * u * u;
+      css(k.e, { left: (CX + r * Math.cos(k.a)) + 'px', top: (CY + r * Math.sin(k.a) + fall) + 'px', opacity: u > 0 ? Math.max(0, 1 - u * 1.05) * (.7 + .3 * Math.sin(lt * 30 + k.a * 5)) : 0 });
+    }
+    revealWords(rem, lt, B + 1.0, .2, { dy: 30, blur: 10 });
     const badge = document.querySelector('.logo'); if (badge) badge.style.opacity = '0';
   };
 });
