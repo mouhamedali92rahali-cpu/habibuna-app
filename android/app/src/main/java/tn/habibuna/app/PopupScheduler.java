@@ -94,9 +94,11 @@ public final class PopupScheduler {
     }
 
     /** إعادة المحاولة بعد 10 دقائق (3 مرات على الأكثر)؛ لا تُحفظ بعد إعادة تشغيل الهاتف */
-    public static void retryLater(Context ctx, Intent from) {
+    public static void retryLater(Context ctx, Intent from) { retryLater(ctx, from, 3); }
+
+    public static void retryLater(Context ctx, Intent from, int max) {
         int tries = from.getIntExtra("tries", 0);
-        if (tries >= 3) return;
+        if (tries >= max) return;
         Intent i = new Intent(ctx, PopupReceiver.class);
         i.putExtra(CardPopupActivity.EXTRA_JSON, from.getStringExtra(CardPopupActivity.EXTRA_JSON));
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, from.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
@@ -104,6 +106,32 @@ public final class PopupScheduler {
         PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 1, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
+    }
+
+    /** طريقة ظهور البطاقة على الشاشة (اختيار المستخدم): full نافذة في موعدها، bubble فقاعة صغيرة، unlock حين يفتح هاتفه */
+    public static String mode(Context ctx) {
+        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("mode", "full");
+    }
+
+    public static void setMode(Context ctx, String m) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString("mode", m).apply();
+    }
+
+    /** صاحب الهاتف يستعمله الآن: الشاشة مضاءة وغير مقفلة */
+    public static boolean userActive(Context ctx) {
+        try {
+            android.os.PowerManager pm = (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            android.app.KeyguardManager km = (android.app.KeyguardManager) ctx.getSystemService(Context.KEYGUARD_SERVICE);
+            return pm.isInteractive() && !km.isKeyguardLocked();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** يعرض البطاقة بالطريقة التي اختارها المستخدم (فقاعة أو نافذة) */
+    public static boolean present(Context ctx, String json, String cardId) {
+        if ("bubble".equals(mode(ctx))) return BubbleService.show(ctx, json, cardId);
+        return show(ctx, json, cardId);
     }
 
     /** «تجربة النافذة بعد دقيقة»: تمرّ بـ PopupReceiver كالموعد الحقيقي (فتُؤجَّل في المكالمة والفيديو، ولا تظهر في «عدم الإزعاج») */

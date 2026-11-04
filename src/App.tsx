@@ -210,6 +210,8 @@ export default function App() {
   useEffect(() => { save('favs', favs); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
   useEffect(() => { document.documentElement.style.setProperty('--fz', String(settings.fontScale ?? 1)); }, [settings.fontScale]);
+  // طريقة ظهور البطاقة تُحفظ أصليًّا أيضًا، لأن الموعد يقرؤها في أندرويد والتطبيق مغلق
+  useEffect(() => { if (isNative) void PhoneSettings.setPopupMode({ mode: settings.popupMode ?? 'full' }).catch(() => {}); }, [settings.popupMode]);
   // العدّاد المجهول: عند الفتح وعند العودة للتطبيق (مرة في اليوم على الأكثر)
   useEffect(() => {
     countUse();
@@ -583,6 +585,22 @@ export default function App() {
                   <input type="checkbox" checked={settings.popupOn !== false} onChange={(e) => setSettings({ ...settings, popupOn: e.target.checked })} />
                 </label>
               ) : <p className="muted small">في نسخة الهاتف تنفتح البطاقة على شاشتك في موعدها.</p>}
+              {isNative && settings.popupOn !== false && (
+                <div className="pmode" role="radiogroup" aria-label="كيف تظهر البطاقة على شاشتك؟">
+                  <p className="muted small">كيف تظهر؟</p>
+                  {([
+                    ['full', 'نافذة كاملة في موعدها', 'تنفتح البطاقة فوق ما أمامك'],
+                    ['bubble', 'فقاعة صغيرة', 'دائرة على طرف الشاشة لا تغطّي شيئًا؛ المسها لتقرأ البطاقة، أو اسحبها إلى الأسفل لإخفائها'],
+                    ['unlock', 'حين تفتح هاتفك', 'لا تقاطعك وأنت تستعمل الهاتف؛ تجدها أول ما تفتحه بعد الموعد'],
+                  ] as const).map(([m, t, d]) => (
+                    <label key={m} className={'pm' + ((settings.popupMode ?? 'full') === m ? ' on' : '')}>
+                      <input type="radio" name="pmode" checked={(settings.popupMode ?? 'full') === m} onChange={() => setSettings({ ...settings, popupMode: m })} />
+                      <span><b>{t}</b><small>{d}</small></span>
+                    </label>
+                  ))}
+                  <p className="muted small">والإشعار يصلك في موعده في كل الحالات.</p>
+                </div>
+              )}
               {isNative && settings.popupOn !== false && overlay === false && (
                 <div className="perm">
                   <p>لتظهر البطاقة على شاشتك، اسمح بـ{sysAr('overlay')}، ثم ارجع إلى التطبيق.</p>
@@ -613,7 +631,7 @@ export default function App() {
                 say((await showCard(feed[0]?.c ?? cards[0])) ?? 'أُرسل إشعار تجريبي.');
               }}>إشعار تجريبي الآن</button>)}
               {isNative && (
-                <><button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); const ps = await PhoneSettings.popupState().catch(() => null); if (ps) d.push(`حالة الهاتف الآن للنافذة: ${ps.inCall ? 'مكالمة (تتأخّر)' : ps.media ? 'فيديو أو صوت يعمل (تتأخّر)' : ps.dnd ? '«عدم الإزعاج» (لا تظهر)' : 'لا مانع'}`); if (settings.popupOn !== false && overlay !== false) { const c = cardFor(pool, dayNo + 1, 1) ?? cards[0]; await PhoneSettings.testPopup({ json: popupJson(c, 1, byId.get(c.id)?.n ?? 0), cardId: c.id }).catch(() => {}); d.push('نافذة تجريبية: بعد دقيقة'); } setDiag(d); }}>فحص الإشعارات</button>
+                <><button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); const ps = await PhoneSettings.popupState().catch(() => null); if (ps) d.push(`حالة الهاتف الآن للنافذة: ${ps.inCall ? 'مكالمة (تتأخّر)' : ps.media ? 'فيديو أو صوت يعمل (تتأخّر)' : ps.dnd ? '«عدم الإزعاج» (لا تظهر)' : 'لا مانع'}`); if (settings.popupOn !== false && overlay !== false) { const c = cardFor(pool, dayNo + 1, 1) ?? cards[0]; await PhoneSettings.testPopup({ json: popupJson(c, 1, byId.get(c.id)?.n ?? 0), cardId: c.id }).catch(() => {}); d.push(`تجربة البطاقة على الشاشة: بعد دقيقة (${({ full: 'نافذة كاملة', bubble: 'فقاعة صغيرة', unlock: 'حين تفتح هاتفك: أطفئ الشاشة بعد الضغط' } as const)[settings.popupMode ?? 'full']})`); } setDiag(d); }}>فحص الإشعارات</button>
                 <p className="muted small">يرسل إشعارًا الآن وآخر بعد دقيقة، ونافذة البطاقة بعد دقيقة إن كانت مفعّلة، ثم يعرض حالة هاتفك.</p></>
               )}
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}

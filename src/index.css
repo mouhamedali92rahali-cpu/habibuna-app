@@ -337,3 +337,11 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .fzrow button{min-width:56px;font-weight:700}
 .fzrow output{min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
 .fzdemo{font-family:var(--font-body);font-size:calc(1.12rem * var(--fz, 1));line-height:2;text-align:center;margin:8px 0 0}
+
+/* طريقة ظهور البطاقة على الشاشة (نافذة / فقاعة / حين تفتح هاتفك) */
+.pmode{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pmode .pm{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.pmode .pm.on{border-color:var(--gold, #c9a24b);background:color-mix(in srgb, #c9a24b 10%, transparent)}
+.pmode .pm input{margin-top:4px;accent-color:#0f5c4d}
+.pmode .pm span{display:flex;flex-direction:column;gap:2px}
+.pmode .pm small{color:var(--muted);font-size:.8rem;line-height:1.6}

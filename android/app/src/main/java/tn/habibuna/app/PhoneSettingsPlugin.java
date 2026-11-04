@@ -103,8 +103,16 @@ public class PhoneSettingsPlugin extends Plugin {
     @PluginMethod
     public void previewPopup(PluginCall call) {
         JSObject r = new JSObject();
-        r.put("shown", PopupScheduler.show(getContext(), call.getString("json", "{}"), call.getString("cardId", "")));
+        r.put("shown", PopupScheduler.present(getContext(), call.getString("json", "{}"), call.getString("cardId", "")));
         call.resolve(r);
+    }
+
+    /** طريقة ظهور البطاقة (full / bubble / unlock)، تُحفظ أصليًّا لتقرأها PopupReceiver في الموعد */
+    @PluginMethod
+    public void setPopupMode(PluginCall call) {
+        PopupScheduler.setMode(getContext(), call.getString("mode", "full"));
+        if (!"bubble".equals(call.getString("mode", "full"))) BubbleService.dismiss(getContext());
+        call.resolve();
     }
 
     @PluginMethod

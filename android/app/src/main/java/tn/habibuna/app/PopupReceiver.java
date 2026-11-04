@@ -21,8 +21,14 @@ public class PopupReceiver extends BroadcastReceiver {
         }
         // وضع «عدم الإزعاج» أو «النوم»: لا نافذة، ويبقى الإشعار العادي بحسب إعدادات الهاتف
         if (PopupScheduler.doNotDisturb(ctx)) return;
+        // «حين تفتح هاتفك»: لا تقاطع من يستعمل هاتفه؛ نعيد المحاولة كل 10 دقائق (حتى 3 ساعات) إلى أن تكون الشاشة مطفأة أو مقفلة،
+        // فتُفتح النافذة فيجدها صاحب الهاتف أول ما يفتحه
+        if ("unlock".equals(PopupScheduler.mode(ctx)) && PopupScheduler.userActive(ctx)) {
+            PopupScheduler.retryLater(ctx, intent, 18);
+            return;
+        }
         try {
-            PopupScheduler.show(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
+            PopupScheduler.present(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
         } catch (Exception ignored) {
             // إن منع النظام فتح النافذة من الخلفية يبقى الإشعار العادي
         }
