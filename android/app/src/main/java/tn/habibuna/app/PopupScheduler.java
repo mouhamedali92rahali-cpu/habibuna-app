@@ -117,7 +117,7 @@ public final class PopupScheduler {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
     }
 
-    /** الفقاعة التي أُخفيت دون أن تُفتح تعود بعد ساعتين مرة واحدة فقط، ولا تعود بعد العاشرة ليلًا
+    /** الفقاعة التي أُخفيت دون أن تُفتح تعود بعد ساعتين مرة واحدة فقط، ولا تعود بعد منتصف الليل (بطاقة 20:00 تعود نحو 22:00 كغيرها، قرار المستخدم)
      *  ولا إن جاءت بعدها بطاقة أخرى (اقتراح المستخدم 2026-11-04) */
     public static final int BUBBLE_BACK_MAX = 1;
 
@@ -126,7 +126,7 @@ public final class PopupScheduler {
         long at = System.currentTimeMillis() + 2 * 60 * 60 * 1000L;
         java.util.Calendar c = java.util.Calendar.getInstance();
         c.setTimeInMillis(at);
-        if (c.get(java.util.Calendar.HOUR_OF_DAY) >= 22) return;
+        if (c.get(java.util.Calendar.HOUR_OF_DAY) < 7) return; // لا تعود بعد منتصف الليل (من أخفى بطاقة المساء متأخرًا)
         Intent i = new Intent(ctx, PopupReceiver.class);
         i.putExtra(CardPopupActivity.EXTRA_JSON, json);
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
