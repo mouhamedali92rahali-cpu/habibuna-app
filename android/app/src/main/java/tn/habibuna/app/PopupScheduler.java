@@ -161,7 +161,10 @@ public final class PopupScheduler {
     public static void testSoon(Context ctx, String json, String cardId) {
         PendingIntent pi = intent(ctx, -2, json, cardId);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
-        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 60_000L, pi);
+        long at = System.currentTimeMillis() + 60_000L;
+        // دقيق إن سمح الهاتف بالمواعيد الدقيقة، كالمواعيد الحقيقية (المنبّه غير الدقيق كان يتأخّر دقيقة أو أكثر)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
     }
 
     /** يفتح نافذة البطاقة الآن، إن سمح المستخدم بالظهور فوق التطبيقات */
