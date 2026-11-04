@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>كل ما في حبيبنا</title>
 <!-- فيديو «كل ما في حبيبنا ﷺ» (docs/video-features-brief.md، 2026-11-04): نحو 40 ثانية.
-     يبدأ بالبطاقات الثلاث في اليوم (قوس النهار)، ثم التوثيق والشرح، ثم الجديد، كما في النسخة 3.22 (طلب المستخدم).
+     يبدأ بسؤال «كم مرة تذكّرتَ النبي ﷺ اليوم؟» ثم الشعار بتوهّج، ثم البطاقات الثلاث في اليوم (قوس النهار)، ثم التوثيق والشرح، ثم الجديد، كما في النسخة 3.22 (طلب المستخدم).
      نصوص البطاقات والسؤال والشرح من public/cards.json وpublic/quiz.json حرفيًّا. -->
 <link rel="stylesheet" href="../templates/common.css">
 <style>
@@ -143,7 +143,27 @@ function slow(k, dur, build) {
   });
 }
 
-// 1) ثلاث بطاقات في يومك: قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
+// 0) الافتتاح (اختيار المستخدم: السؤال ثم الشعار بتوهّج): «كم مرة تذكّرتَ النبي ﷺ اليوم؟» ← شعار حبيبنا ← البطاقات الثلاث
+scene(4.6, (el, s) => {
+  const q = h(`<div class="abs" style="left:60px;right:60px;top:700px;text-align:center;font:700 112px/1.5 Amiri,serif">${words('كم مرة [تذكّرتَ] | النبي ﷺ اليوم؟')}</div>`); el.appendChild(q);
+  const glow = h(`<div class="abs" style="left:190px;top:330px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,94,.42),transparent 64%)"></div>`); el.appendChild(glow);
+  const lg = h(`<div class="applogo abs" style="left:390px;top:530px"><img src="${LOGO}"></div>`); el.appendChild(lg);
+  const nm = h(`<div class="abs" style="left:0;right:0;top:900px;text-align:center;font:700 120px Amiri,serif">${words('[حبيبنا] ﷺ')}</div>`); el.appendChild(nm);
+  wordTimes(q, .05, .1).forEach((t, i) => sfx(s.start + t, 'tick', i % 2 ? .7 : .85));
+  sfx(s.start + 2.3, 'pop'); sfx(s.start + 2.45, 'chime', .7);
+  return lt => {
+    // السؤال كاملًا في أول نصف ثانية، يبقى ليُقرأ، ثم يصعد ويتلاشى
+    revealWords(q, lt, .05, .1, { dy: 50, blur: 14 });
+    const out = eo(seg(lt, 1.9, .45)); css(q, { opacity: 1 - out, transform: `translateY(${-out * 80}px)` });
+    const p = back(seg(lt, 2.2, .7)); css(lg, { opacity: clamp(p * 1.5), transform: `scale(${.6 + .4 * p + .015 * Math.sin(lt * 2.4)})` });
+    css(glow, { opacity: eo(seg(lt, 2.3, .8)) * (.75 + .25 * Math.sin(lt * 2.4)) });
+    revealWords(nm, lt, 2.8, .15, { dy: 30, blur: 10 });
+    // شارة القناة الصغيرة في الأسفل لا تظهر مع الشعار الكبير
+    const badge = document.querySelector('.logo'); if (badge) badge.style.opacity = '0';
+  };
+});
+
+// 1) ثلاث بطاقات في يومك (بعد الافتتاح): قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
 slow(1.2, 4.4, (el, s) => {
   const ch = chrome(el, s, { title: '[3] بطاقات في يومك', sub: 'مواقف قصيرة من حياته ﷺ', subStart: 2.6, subStep: .2 });
   const t0 = el.querySelector('.title');
