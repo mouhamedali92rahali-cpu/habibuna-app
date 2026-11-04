@@ -155,23 +155,7 @@ scene(3.6, (el, s) => {
   };
 });
 
-// 2) ثلاث بطاقات كل يوم
-scene(4.0, (el, s) => {
-  const ch = chrome(el, s, { title: '[3] بطاقات كل يوم', sub: 'في الصباح، ووسط النهار، وفي المساء', subStart: 1.4, subStep: .2 });
-  const data = [['emerald', '20:00', MOON, 'مساء الخير'], ['navy', '15:00', '', 'وقفة قصيرة مع الحبيب ﷺ'], ['ivory', '10:00', SUN, 'صباح النور']];
-  const minis = data.map(([cls, t, ic, g]) => { const m = h(`<div class="mini abs ${cls}"><div class="in"><div class="t">${t}</div><div class="g" style="color:var(--tc)">${ic}<br>${g.replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div></div>`); el.appendChild(m); return m; });
-  [.4, .58, .76].forEach((t, i) => sfx(s.start + t, 'pop', .8 + i * .1));
-  return lt => {
-    ch(lt);
-    minis.forEach((m, i) => {
-      const p = back(seg(lt, .35 + i * .18, .5)), f = eo(seg(lt, .4 + i * .18, .8)), k = i - 1;
-      css(m, { left: (540 - 150 + k * 245 * f) + 'px', top: (600 + Math.abs(k) * 40 * f + (1 - p) * 500) + 'px', opacity: clamp(p * 1.4),
-        transform: `rotate(${k * 11 * f + Math.sin(lt * 1.3 + i) * 1.2}deg) scale(${.9 + .1 * p})`, zIndex: i === 1 ? 3 : 1 });
-    });
-  };
-});
-
-// 3) موثّقة: بطاقة حقيقية ثم زرّا المصدر والشرح، والشرح من النووي
+// 2) موثّقة: بطاقة حقيقية ثم زرّا المصدر والشرح، والشرح من النووي
 scene(5.4, (el, s) => {
   const ch = chrome(el, s, { title: 'موثّقة [بمصدرها]', sub: 'وشرحٌ موجز من كتب العلماء', subStart: 2.9, subStep: .2 });
   const card = h(`<div class="abs" style="left:110px;top:520px;width:860px">${cardFace(Y04)}</div>`); el.appendChild(card);
@@ -192,7 +176,7 @@ scene(5.4, (el, s) => {
   };
 });
 
-// 4) على شاشتك كما تحب (جديد): نافذة كاملة / فقاعة صغيرة / حين تفتح هاتفك
+// 3) على شاشتك كما تحب (جديد): نافذة كاملة / فقاعة صغيرة / حين تفتح هاتفك
 scene(6.2, (el, s) => {
   const ch = chrome(el, s, { title: 'على شاشتك [كما] تحب', sub: 'ولا تقاطعك في [مكالمة] أو وأنت تشاهد فيديو', subStart: 3.7, subStep: .2 });
   css(el.querySelector('.sub'), { fontSize: '44px', top: '1300px' });
@@ -219,6 +203,35 @@ scene(6.2, (el, s) => {
     css(ms[1].querySelector('.bubble'), { transform: `scale(${1 + .06 * Math.sin(lt * 8)})` });
     css(shk, { transform: `translateY(${-3 * seg(lt, 2.1, .3)}px)` });
     const u = eo(seg(lt, 2.4, .5)); css(unl, { opacity: u });
+  };
+});
+
+// 4) ثلاثة مواعيد في يومك: قوس النهار، والشمس تمرّ عليه فتضيء المواعيد واحدًا واحدًا ثم يصير القمر
+scene(4.4, (el, s) => {
+  const ch = chrome(el, s, { title: '[3] مواعيد في يومك', sub: 'بطاقة قصيرة في كل موعد', subStart: 2.6, subStep: .2 });
+  // نقاط القوس (من اليمين إلى اليسار كاتجاه القراءة): الصباح ثم وسط النهار ثم المساء
+  const W = 900, H = 480, cx = 450, cy = 440, R = 380;
+  const pt = a => [cx + R * Math.cos(a), cy - R * Math.sin(a)];
+  const A = [Math.PI * .16, Math.PI * .5, Math.PI * .84];
+  const lab = [['10:00', 'صباح النور'], ['15:00', 'وقفة قصيرة مع الحبيب ﷺ'], ['20:00', 'مساء الخير']];
+  const sky = h(`<div class="abs" style="left:90px;top:540px;width:${W}px;height:${H + 260}px"></div>`); el.appendChild(sky);
+  sky.innerHTML = `<svg class="abs" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="left:0;top:0;overflow:visible">
+    <path id="arc" d="M ${cx + R} ${cy} A ${R} ${R} 0 0 0 ${cx - R} ${cy}" fill="none" stroke="#d9b25e" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 16"/>
+    <line x1="20" y1="${cy}" x2="${W - 20}" y2="${cy}" stroke="rgba(243,231,196,.25)" stroke-width="3"/></svg>`;
+  const dots = A.map((a, i) => { const [x, y] = pt(a); const d = h(`<div class="abs" style="left:${x - 26}px;top:${y - 26}px;width:52px;height:52px;border-radius:50%;background:#13221e;border:4px solid #d9b25e"></div>`); sky.appendChild(d); return d; });
+  const tags = A.map((a, i) => { const [x, y] = pt(a); const t = h(`<div class="abs" style="left:${x - 150}px;top:${cy + 50}px;width:300px;text-align:center"><div style="font:700 76px Naskh,serif;direction:ltr;color:#f3e7c4">${lab[i][0]}</div><div style="font:400 42px/1.45 Amiri,serif;color:#d9b25e">${lab[i][1].replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`); sky.appendChild(t); return t; });
+  const orb = h(`<div class="abs" style="width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;display:grid;place-items:center"></div>`); sky.appendChild(orb);
+  const T = [.7, 1.45, 2.2];
+  T.forEach(t => sfx(s.start + t, 'pop', .8));
+  return lt => {
+    ch(lt);
+    css(sky, { opacity: eo(seg(lt, .1, .4)) });
+    // الشمس تسير على القوس من الصباح إلى المساء، وتصير قمرًا في آخره
+    const u = eo(seg(lt, .45, 1.9)), a = A[0] + (A[2] - A[0]) * u, [x, y] = pt(a), night = seg(lt, 1.9, .4);
+    css(orb, { left: x + 'px', top: y + 'px', background: night > .5 ? 'transparent' : 'radial-gradient(circle,#ffe39a 40%,#e7c97a 60%,rgba(231,201,122,0) 72%)', color: '#f3e7c4' });
+    orb.innerHTML = night > .5 ? MOON.replace('width="38" height="38"', 'width="80" height="80"') : '';
+    dots.forEach((d, i) => { const on = eo(seg(lt, T[i], .3)); css(d, { background: on > .5 ? '#d9b25e' : '#13221e', boxShadow: `0 0 ${40 * on}px rgba(217,178,94,${.8 * on})`, transform: `scale(${1 + .25 * on * (1 - seg(lt, T[i] + .3, .4))})` }); });
+    tags.forEach((t, i) => { const q = back(seg(lt, T[i], .45)); css(t, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 30}px)` }); });
   };
 });
 

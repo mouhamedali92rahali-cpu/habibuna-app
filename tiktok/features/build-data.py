@@ -7,7 +7,7 @@ quiz = next(q for q in json.load(open(os.path.join(pub, 'quiz.json')))['question
 art = json.load(open(os.path.join(pub, 'art.json')))
 svg = lambda n: open(os.path.join(pub, 'art', n + '.svg')).read()
 d = {'cards': {k: cards[k] for k in ('M01', 'Y04')}, 'quiz': quiz,
-     'art': dict(art['cards']['C33'], svg=svg(art['cards']['C33']['art'])),
+     'art': dict(art['cards']['W11'], svg=svg(art['cards']['W11']['art'])),
      'map': dict(art['maps']['C47'], svg=svg(art['maps']['C47']['art']))}
 open(os.path.join(here, 'data.js'), 'w').write('window.FEAT = ' + json.dumps(d, ensure_ascii=False) + ';\n')
 print('data.js', len(json.dumps(d)))
