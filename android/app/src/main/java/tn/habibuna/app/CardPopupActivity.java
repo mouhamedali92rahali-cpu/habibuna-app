@@ -24,6 +24,14 @@ public class CardPopupActivity extends Activity {
     public static final String EXTRA_CARD_ID = "cardId";
     private WebView web;
     private String cardId;
+    private int noteId;
+    private static java.lang.ref.WeakReference<CardPopupActivity> current;
+
+    /** الضغط على الإشعار يفتح التطبيق: تُغلق النافذة إن كانت مفتوحة */
+    public static void closeCurrent() {
+        CardPopupActivity a = current == null ? null : current.get();
+        if (a != null && !a.isFinishing()) a.finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +57,7 @@ public class CardPopupActivity extends Activity {
             }
         });
         setContentView(web);
+        current = new java.lang.ref.WeakReference<>(this);
         show(getIntent());
     }
 
@@ -62,6 +71,7 @@ public class CardPopupActivity extends Activity {
     private void show(Intent i) {
         String json = i.getStringExtra(EXTRA_JSON);
         cardId = i.getStringExtra(EXTRA_CARD_ID);
+        noteId = i.getIntExtra(PopupScheduler.NOTE, 0);
         if (json == null) { finish(); return; }
         // معامل t يجبر الصفحة على إعادة التحميل حين تصل بطاقة جديدة والنافذة مفتوحة
         web.loadUrl("file:///android_asset/public/popup.html?t=" + System.currentTimeMillis() + "#" + Uri.encode(json));
@@ -90,6 +100,8 @@ public class CardPopupActivity extends Activity {
 
     @Override
     public void finish() {
+        // رأى البطاقة في النافذة (أغلقها بأي زرّ أو بالرجوع): يُزال إشعارها من أعلى الشاشة
+        PopupScheduler.cancelNote(this, noteId);
         super.finish();
         overridePendingTransition(0, android.R.anim.fade_out);
     }

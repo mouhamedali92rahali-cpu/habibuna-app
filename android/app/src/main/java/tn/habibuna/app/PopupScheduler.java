@@ -17,6 +17,13 @@ import org.json.JSONObject;
 public final class PopupScheduler {
     public static final String PREFS = "habibuna_popup";
     private static final int BASE = 5000;
+    public static final String NOTE = "noteId";
+
+    /** يُزيل إشعار البطاقة من أعلى الشاشة: من قرأها في النافذة أو الفقاعة لا يحتاج إشعارها (طلب المستخدم 2026-11-05) */
+    public static void cancelNote(Context ctx, int noteId) {
+        if (noteId <= 0) return;
+        try { ((android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(noteId); } catch (Exception ignored) {}
+    }
 
     private PopupScheduler() {}
 
@@ -58,6 +65,7 @@ public final class PopupScheduler {
         Intent i = new Intent(ctx, PopupReceiver.class);
         i.putExtra(CardPopupActivity.EXTRA_JSON, json);
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
+        if (id > 0) i.putExtra(NOTE, id); // رقم إشعار البطاقة نفسها (المعرّف نفسه في notify.ts)
         return PendingIntent.getBroadcast(ctx, BASE + id, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
@@ -112,6 +120,7 @@ public final class PopupScheduler {
         i.putExtra(CardPopupActivity.EXTRA_JSON, from.getStringExtra(CardPopupActivity.EXTRA_JSON));
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, from.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
         i.putExtra("tries", tries + 1);
+        i.putExtra(NOTE, from.getIntExtra(NOTE, 0));
         PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 1, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 10 * 60 * 1000L, pi);
@@ -121,7 +130,7 @@ public final class PopupScheduler {
      *  ولا إن جاءت بعدها بطاقة أخرى (اقتراح المستخدم 2026-11-04) */
     public static final int BUBBLE_BACK_MAX = 1;
 
-    public static void bubbleBack(Context ctx, String json, String cardId, int n) {
+    public static void bubbleBack(Context ctx, String json, String cardId, int n, int noteId) {
         if (n > BUBBLE_BACK_MAX) return;
         long at = System.currentTimeMillis() + 2 * 60 * 60 * 1000L;
         java.util.Calendar c = java.util.Calendar.getInstance();
@@ -131,6 +140,7 @@ public final class PopupScheduler {
         i.putExtra(CardPopupActivity.EXTRA_JSON, json);
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
         i.putExtra("back", n);
+        i.putExtra(NOTE, noteId);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 3, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         ((AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE)).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
     }
@@ -152,14 +162,21 @@ public final class PopupScheduler {
     }
 
     /** يعرض البطاقة بالطريقة التي اختارها المستخدم (فقاعة أو نافذة) */
-    public static boolean present(Context ctx, String json, String cardId) {
-        if ("bubble".equals(mode(ctx))) return BubbleService.show(ctx, json, cardId);
-        return show(ctx, json, cardId);
+    public static boolean present(Context ctx, String json, String cardId) { return present(ctx, json, cardId, 0); }
+
+    public static boolean present(Context ctx, String json, String cardId, int noteId) {
+        if ("bubble".equals(mode(ctx))) return BubbleService.show(ctx, json, cardId, 0, noteId);
+        return show(ctx, json, cardId, noteId);
     }
 
     /** «تجربة النافذة بعد دقيقة»: تمرّ بـ PopupReceiver كالموعد الحقيقي (فتُؤجَّل في المكالمة والفيديو، ولا تظهر في «عدم الإزعاج») */
     public static void testSoon(Context ctx, String json, String cardId) {
-        PendingIntent pi = intent(ctx, -2, json, cardId);
+        // مرتبطة بإشعار التجربة بعد دقيقة (9998 = TEST_ID - 1 في notify.ts) لتُجرَّب إزالة الإشعار عند فتح النافذة أو الفقاعة
+        Intent ti = new Intent(ctx, PopupReceiver.class);
+        ti.putExtra(CardPopupActivity.EXTRA_JSON, json);
+        ti.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
+        ti.putExtra(NOTE, 9998);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 2, ti, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         long at = System.currentTimeMillis() + 60_000L;
         // دقيق إن سمح الهاتف بالمواعيد الدقيقة، كالمواعيد الحقيقية (المنبّه غير الدقيق كان يتأخّر دقيقة أو أكثر)
@@ -168,11 +185,14 @@ public final class PopupScheduler {
     }
 
     /** يفتح نافذة البطاقة الآن، إن سمح المستخدم بالظهور فوق التطبيقات */
-    public static boolean show(Context ctx, String json, String cardId) {
+    public static boolean show(Context ctx, String json, String cardId) { return show(ctx, json, cardId, 0); }
+
+    public static boolean show(Context ctx, String json, String cardId, int noteId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(ctx)) return false;
         Intent a = new Intent(ctx, CardPopupActivity.class);
         a.putExtra(CardPopupActivity.EXTRA_JSON, json);
         a.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
+        a.putExtra(NOTE, noteId);
         a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         ctx.startActivity(a);
         return true;

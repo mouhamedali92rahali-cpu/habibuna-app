@@ -370,7 +370,7 @@ export default function App() {
 
   useEffect(() => {
     if (!cards) return;
-    return listenTaps((id) => { if (id === 'quiz') { setQuizTap(true); return; } const e = byId.get(id); if (e) setOpen(e.c); });
+    return listenTaps((id) => { if (id === 'quiz') { setQuizTap(true); return; } const e = byId.get(id); if (e) { setOpen(e.c); if (isNative) void PhoneSettings.closeCardViews().catch(() => {}); } });
   }, [cards, byId]);
 
 

@@ -115,6 +115,15 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve();
     }
 
+    /** فُتحت البطاقة من الإشعار: تُغلق الفقاعة والنافذة ولا تعود الفقاعة */
+    @PluginMethod
+    public void closeCardViews(PluginCall call) {
+        BubbleService.dismiss(getContext());
+        PopupScheduler.cancelBubbleBack(getContext());
+        CardPopupActivity.closeCurrent();
+        call.resolve();
+    }
+
     @PluginMethod
     public void testPopup(PluginCall call) {
         PopupScheduler.testSoon(getContext(), call.getString("json", "{}"), call.getString("cardId", ""));

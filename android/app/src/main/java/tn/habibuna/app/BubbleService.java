@@ -36,21 +36,23 @@ public class BubbleService extends Service {
     private static View bubble, trash;
     private static String json, cardId;
     private static int back; // كم مرة عادت هذه الفقاعة بعد إخفائها
+    private static int noteId; // إشعار البطاقة نفسها، يُزال حين تُفتح الفقاعة
 
     /** آخر بطاقة ظهرت فقاعتُها (تُحفظ لأن عودة الفقاعة بعد ساعة قد تجد التطبيق قد أُغلق) */
     public static String lastCard(Context ctx) {
         return ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).getString("bubbleCard", "");
     }
 
-    public static boolean show(Context ctx, String cardJson, String id) { return show(ctx, cardJson, id, 0); }
+    public static boolean show(Context ctx, String cardJson, String id) { return show(ctx, cardJson, id, 0, 0); }
 
     /** يُظهر الفقاعة الآن (أو يبدّل بطاقتها إن كانت ظاهرة)، ثم يشغّل الخدمة التي تُبقيها */
-    public static boolean show(Context ctx, String cardJson, String id, int backCount) {
+    public static boolean show(Context ctx, String cardJson, String id, int backCount, int note) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(ctx)) return false;
         Context app = ctx.getApplicationContext();
         json = cardJson;
         cardId = id;
         back = backCount;
+        noteId = note;
         if (backCount == 0) PopupScheduler.cancelBubbleBack(app); // بطاقة جديدة: لا تعود القديمة
         app.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).edit().putString("bubbleCard", id == null ? "" : id).apply();
         if (bubble == null) addBubble(app);
@@ -146,9 +148,9 @@ public class BubbleService extends Service {
                         // تُركت فوق هدف الإخفاء (أسفل الشاشة في الوسط) ← تختفي
                         int cx = p.x + size / 2, cy = p.y + size / 2;
                         if (cy > tp.y - dp(app, 40) && Math.abs(cx - dm.widthPixels / 2) < dp(app, 90)) {
-                            String j = json, id = cardId; int n = back + 1;
+                            String j = json, id = cardId; int n = back + 1, nid = noteId;
                             dismiss(app);
-                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n); // تعود بعد ساعتين مرة واحدة
+                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n, nid); // تعود بعد ساعتين مرة واحدة
                             return true;
                         }
                         // وإلا تلتصق بأقرب حافّة
@@ -168,10 +170,11 @@ public class BubbleService extends Service {
 
     /** لمس الفقاعة: تختفي وتنفتح نافذة البطاقة الكاملة */
     private static void open(Context app) {
-        String j = json, id = cardId;
+        String j = json, id = cardId; int nid = noteId;
         dismiss(app);
         PopupScheduler.cancelBubbleBack(app); // قُرئت: لا تعود
-        if (j != null) PopupScheduler.show(app, j, id);
+        PopupScheduler.cancelNote(app, nid); // ولا يبقى إشعارها في أعلى الشاشة
+        if (j != null) PopupScheduler.show(app, j, id, nid);
     }
 
     public static void dismiss(Context app) {

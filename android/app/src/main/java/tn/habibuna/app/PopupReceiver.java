@@ -19,7 +19,7 @@ public class PopupReceiver extends BroadcastReceiver {
             String id = intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID);
             if (!"bubble".equals(PopupScheduler.mode(ctx)) || PopupScheduler.doNotDisturb(ctx)
                 || id == null || !id.equals(BubbleService.lastCard(ctx))) return;
-            try { BubbleService.show(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), id, back); } catch (Exception ignored) {}
+            try { BubbleService.show(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), id, back, intent.getIntExtra(PopupScheduler.NOTE, 0)); } catch (Exception ignored) {}
             return;
         }
         // النافذة الكاملة: المستخدم في مكالمة (هاتفية أو واتساب/فيديو) أو الهاتف يرنّ أو يشغّل فيديو/صوتًا ← نؤجّلها 10 دقائق، ثلاث مرات على الأكثر.
@@ -34,7 +34,7 @@ public class PopupReceiver extends BroadcastReceiver {
         // وضع «عدم الإزعاج» أو «النوم»: لا نافذة، ويبقى الإشعار العادي بحسب إعدادات الهاتف
         if (PopupScheduler.doNotDisturb(ctx)) return;
         try {
-            PopupScheduler.present(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID));
+            PopupScheduler.present(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID), intent.getIntExtra(PopupScheduler.NOTE, 0));
         } catch (Exception ignored) {
             // إن منع النظام فتح النافذة من الخلفية يبقى الإشعار العادي
         }
