@@ -345,3 +345,6 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .pmode .pm input{margin-top:4px;accent-color:#0f5c4d}
 .pmode .pm span{display:flex;flex-direction:column;gap:2px}
 .pmode .pm small{color:var(--muted);font-size:.8rem;line-height:1.6}
+
+/* سطر صغير داخل زرّ «فحص الإشعارات» (طلب المستخدم 3.29) */
+.btnnote { display: block; font-size: .78em; font-weight: 400; opacity: .8; margin-top: 2px; }
