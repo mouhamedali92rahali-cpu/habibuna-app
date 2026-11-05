@@ -631,7 +631,7 @@ export default function App() {
               }}>إشعار تجريبي الآن</button>)}
               {isNative && (
                 <><button className="ghost" onClick={async () => { await askPermission().catch(() => false); setDiag(['…']); const d = await diagnose(feed[0]?.c ?? cards[0]); if (maker === 'xiaomi') d.splice(2, 0, `إذن شاومي للنوافذ: ${(await PhoneSettings.bgPopupState().catch(() => ({ state: 'خطأ' }))).state}`); const ps = await PhoneSettings.popupState().catch(() => null); if (ps) d.push(`حالة الهاتف الآن للنافذة: ${ps.dnd ? '«عدم الإزعاج» (لا تظهر)' : ps.bubble ? (ps.ringing ? 'الهاتف يرنّ (تتأخّر)' : 'لا مانع (الفقاعة تظهر في وقتها)') : ps.inCall ? 'مكالمة (تتأخّر)' : ps.media ? 'فيديو أو صوت يعمل (تتأخّر)' : 'لا مانع'}`); if (settings.popupOn !== false && overlay !== false) { const c = cardFor(pool, dayNo + 1, 1) ?? cards[0]; await PhoneSettings.testPopup({ json: popupJson(c, 1, byId.get(c.id)?.n ?? 0), cardId: c.id }).catch(() => {}); d.push(`تجربة البطاقة على الشاشة: بعد دقيقة (${settings.popupMode === 'bubble' ? 'فقاعة صغيرة' : 'نافذة كاملة'})`); } setDiag(d); }}>فحص الإشعارات</button>
-                <p className="muted small">يرسل إشعارًا الآن وآخر بعد دقيقة، ونافذة البطاقة بعد دقيقة إن كانت مفعّلة، ثم يعرض حالة هاتفك.</p></>
+                <p className="muted small">يرسل بعد دقيقة إشعارًا ومعه البطاقة على شاشتك إن كانت مفعّلة، ويعرض الآن حالة هاتفك.</p></>
               )}
               {isNative && settings.notifyOn && planned !== null && <p className="muted small">إشعارات مجدولة للأيام الثلاثين القادمة: {planned}</p>}
               {diag && <pre className="diag">{diag.join('\n')}</pre>}

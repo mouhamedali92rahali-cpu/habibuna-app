@@ -66,7 +66,6 @@ export async function diagnose(card: CardData): Promise<string[]> {
   await step('المواعيد الدقيقة', async () => (await LocalNotifications.checkExactNotificationSetting()).exact_alarm);
   await step('إنشاء القناة', async () => { await ensureChannel(); return 'تم'; });
   await step('القنوات', async () => (await LocalNotifications.listChannels()).channels.map((c) => `${c.id}(${c.importance})`).join('، ') || 'لا شيء');
-  await step('إشعار فوري', async () => { await LocalNotifications.schedule({ notifications: [nativeNote(TEST_ID, card, null, false)] }); return 'أُرسل'; });
   await step('إشعار بعد دقيقة', async () => (await testLater(card)) ?? 'جُدول (دقيق)');
   await step('المجدولة', async () => String((await LocalNotifications.getPending()).notifications.length));
   await step('أقرب المواعيد', async () => {
