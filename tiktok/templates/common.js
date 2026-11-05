@@ -8,7 +8,7 @@ const back = x => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c *
 const h = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
 const css = (el, o) => Object.assign(el.style, o);
 const SFX = [];
-const TITLE_STEP = .2; // سرعة ظهور كلمات العنوان (أبطأ بطلب المستخدم؛ كانت .11)
+const TITLE_STEP = .1; // سرعة ظهور كلمات العنوان: يكتمل في أقل من ثانية (أرقام الحصير 2026-11-05: ثلث الإعجابات في الثانية الأولى ثم يمرّون؛ كانت .2)
 const sfx = (t, kind, gain = 1) => SFX.push({ t: +t.toFixed(3), kind, gain });
 
 const CORNER = `<svg class="corner CLS" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2h56M2 2v56" stroke-width="2.4"/><path d="M10 10h40M10 10v40"/><g transform="translate(34 34)"><rect x="-15" y="-15" width="30" height="30"/><rect x="-15" y="-15" width="30" height="30" transform="rotate(45)"/><circle r="5.5"/></g><path d="M34 19v-9M19 34h-9M49 34h9M34 49v9"/></g></svg>`;

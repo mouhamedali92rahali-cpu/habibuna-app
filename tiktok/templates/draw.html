@@ -5,13 +5,15 @@
 <title>قالب «يُرسم أمامك»</title>
 <!-- قالب «يُرسم أمامك»: سؤال الهوك، ثم رسم البطاقة الخطي (public/art) يُرسم خطًّا خطًّا ثم يتلوّن، ثم سطره،
      ثم البطاقة (وشرحها إن طُلب sharhTitle)، ثم كود التحميل.
-     البيانات: {topic, hook, items:[{id, label, sharhTitle?}], drawDur?} — الرسم يُرفق آليًّا من render.mjs -->
+     البيانات: {topic, hook, answer, ask?, items:[{id, label, sharhTitle?}], drawDur?, answerHold?} — الرسم يُرفق آليًّا من render.mjs -->
 <link rel="stylesheet" href="common.css">
 <style>
 .board{left:110px;right:110px;top:560px;border-radius:48px;background:#f6efdd;border:2px solid rgba(217,178,94,.7);padding:40px 40px 34px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.45)}
 .board svg{display:block;width:100%;height:auto}
 .board p{font:400 46px/1.6 Naskh,Amiri,serif;color:#3b2f1a;margin-top:6px}
 .board small{display:block;margin-top:4px;font:400 30px Tajawal;color:#7a6a4a}
+.ask{left:0;right:0;top:520px;text-align:center;font:400 40px Tajawal;color:#d9b25e}
+.ans{left:40px;right:40px;top:1230px;text-align:center;font:700 84px/1.4 Amiri,serif;color:var(--ivory)}
 </style>
 </head>
 <body>
@@ -24,56 +26,59 @@
 const D = window.DATA;
 const it = D.items[0];
 if (!it.art) throw new Error('البطاقة بلا رسم: ' + it.id);
-const DRAW = D.drawDur || 6.5;              // مدة رسم الخطوط
-const hookEnd = .12 + D.hook.split(' ').length * TITLE_STEP + .3;
-const S0 = hookEnd + .5;                     // يبدأ الرسم بعد اكتمال السؤال
-const FILL0 = S0 + DRAW - .6, FILL = 1.4;    // ثم تتلوّن الأشكال
-const CAP = FILL0 + FILL + .2;
+// القالب بعد أرقام فيديو الحصير (2026-11-05): الجواب في أول ثلاث ثوانٍ لمن يمرّ سريعًا، ثم البطاقة لمن بقي
+// السؤال كاملًا فورًا، وتحته دعوة للتعليق، والرسم نحو ثانيتين، ثم جملة الجواب (D.answer) بخط كبير
+const DRAW = D.drawDur || 1.6;              // مدة رسم الخطوط
+const S0 = .45;                              // يبدأ الرسم والسؤال يكتمل
+const FILL0 = S0 + DRAW - .3, FILL = .5;     // ثم تتلوّن الأشكال
+const ANS = FILL0 + .35;                     // جملة الجواب (نحو الثانية 2.2)
+const HOLD = D.answerHold || 2.4;            // بقاء الجواب قبل البطاقة
 
-// 1) السؤال، ثم الرسم يُرسم أمام المشاهد
-scene(CAP + 3.6, (el, s) => {
+scene(ANS + HOLD, (el, s) => {
   const ch = chrome(el, s, { step: D.topic, title: D.hook });
-  const board = h(`<div class="board abs">${it.art.svg}<p>${it.art.caption}</p><small>رسمٌ تقريبي للتوضيح</small></div>`);
+  const ask = h(`<div class="ask abs">${D.ask || 'اكتب جوابك في التعليقات'}</div>`); el.appendChild(ask);
+  const board = h(`<div class="board abs">${it.art.svg}</div>`); // جملة الجواب تقوم مقام سطر الرسم
   el.appendChild(board);
-  const extra = Math.max(0, ch.titleEl.offsetHeight - 150);   // العنوان المقسوم سطرين يدفع اللوحة إلى الأسفل
-  if (extra) board.style.top = (560 + extra) + 'px';
-  // واللوحة لا تغطي شعار القناة أسفل الشاشة (top 1560): تصغر إن لزم
-  const room = 1535 - (560 + extra);
-  if (board.offsetHeight > room) board.style.zoom = String(room / board.offsetHeight);
+  const ans = h(`<div class="ans abs">${words(D.answer)}</div>`); el.appendChild(ans);
+  // تحت العنوان: دعوة التعليق، ثم اللوحة، ثم جملة الجواب؛ واللوحة تضيق حتى تتّسع لها المسافة
+  const tb = 300 + ch.titleEl.offsetHeight;
+  ask.style.top = (tb + 30) + 'px';
+  const top = tb + 100, room = 1180 - top;
+  board.style.top = top + 'px';
+  if (board.offsetHeight > room) { const w = Math.round(860 * room / board.offsetHeight); css(board, { left: ((1080 - w) / 2) + 'px', right: 'auto', width: w + 'px' }); }
+  ans.style.top = (top + board.offsetHeight + 40) + 'px';
   const svg = board.querySelector('svg');
   const inDefs = e => !!e.closest('defs,mask,clipPath');
   const shapes = [...svg.querySelectorAll('path,circle,ellipse,rect,line,polyline,polygon')].filter(e => !inDefs(e));
-  const bgc = shapes.shift();                // الدائرة العاجية خلف الرسم تظهر مع اللوحة
-  // الخطوط بترتيبها في الملف، ولكل خط وقت بقدر طوله (مع حدّ أدنى)، والتعبئة تُخفى حتى مرحلة التلوين
+  shapes.shift();
   const strokes = [], fills = [];
   for (const e of shapes) {
     const cs = getComputedStyle(e);
     const st = cs.stroke && cs.stroke !== 'none' && parseFloat(cs.strokeWidth) > 0;
     const fl = cs.fill && cs.fill !== 'none' && cs.fill !== 'rgba(0, 0, 0, 0)';
     if (st) { let L = 0; try { L = e.getTotalLength(); } catch { L = 0; } if (L > 0) strokes.push({ e, L, w: Math.max(L, 40) }); }
-    if (fl) fills.push({ e, op: cs.fillOpacity, o: e.getAttribute('opacity') });
+    if (fl) fills.push({ e, op: cs.fillOpacity });
   }
   const total = strokes.reduce((a, b) => a + b.w, 0);
   let acc = 0;
   for (const k of strokes) { k.a = acc / total * DRAW; acc += k.w; k.d = k.w / total * DRAW; k.e.style.strokeDasharray = k.L + ' ' + k.L; }
-  // نقرة خافتة جدًّا مع بداية كل جزء كبير من الرسم (لا مع الحلقات الصغيرة)
-  strokes.filter(k => k.L > 120).forEach((k, i) => { if (i % 2 === 0) sfx(s.start + S0 + k.a, 'tick', .35); });
-  sfx(s.start + FILL0 + .2, 'pop', .6); sfx(s.start + CAP, 'pop', .5);
-  const cap = board.querySelector('p'), sm = board.querySelector('small');
+  strokes.filter(k => k.L > 160).forEach((k, i) => { if (i % 3 === 0) sfx(s.start + S0 + k.a, 'tick', .3); });
+  sfx(s.start + FILL0 + .1, 'pop', .6); sfx(s.start + ANS, 'chime', .7);
+  wordTimes(ans, ANS, .12).forEach(t => sfx(s.start + t, 'tick', .7));
   return lt => {
     ch(lt);
-    const q = back(seg(lt, S0 - .7, .6));
-    css(board, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 80}px) scale(${.95 + .05 * clamp(q)})` });
+    css(ask, { opacity: eo(seg(lt, .35, .4)) * .9 });
+    const q = back(seg(lt, .1, .5));
+    css(board, { opacity: clamp(q * 1.5), transform: `translateY(${(1 - q) * 60}px)` });
     const t = lt - S0;
     for (const k of strokes) {
-      const p = clamp((t - k.a) / Math.max(k.d, .12));
+      const p = clamp((t - k.a) / Math.max(k.d, .08));
       k.e.style.strokeDashoffset = String(k.L * (1 - eo(p)));
       k.e.style.visibility = p > 0 ? '' : 'hidden';
     }
     const f = eo(seg(lt, FILL0, FILL));
     for (const k of fills) k.e.style.fillOpacity = String(f * (k.op ? parseFloat(k.op) : 1));
-    cap.style.opacity = String(eo(seg(lt, CAP, .5)));
-    sm.style.opacity = String(eo(seg(lt, CAP + .4, .5)) * .8);
+    revealWords(ans, lt, ANS, .12, { dy: 30, blur: 10 });
   };
 });
 
