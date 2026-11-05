@@ -32,7 +32,9 @@ const DRAW = D.drawDur || 1.6;              // مدة رسم الخطوط
 const S0 = .45;                              // يبدأ الرسم والسؤال يكتمل
 const FILL0 = S0 + DRAW - .3, FILL = .5;     // ثم تتلوّن الأشكال
 const ANS = FILL0 + .35;                     // جملة الجواب (نحو الثانية 2.2)
-const HOLD = D.answerHold || 2.4;            // بقاء الجواب قبل البطاقة
+const ASTEP = .16;                           // سرعة كلمات الجواب
+// بقاء الشاشة الأولى: الجواب يكتمل ثم يبقى 2.2 ثانية ليقرأه من لا يعرفه (طلب المستخدم بعد فيديو الدرع)
+const HOLD = D.answerHold || ((D.answer.split(' ').length - 1) * ASTEP + .28 + 2.2);
 
 scene(ANS + HOLD, (el, s) => {
   const ch = chrome(el, s, { step: D.topic, title: D.hook });
@@ -64,7 +66,7 @@ scene(ANS + HOLD, (el, s) => {
   for (const k of strokes) { k.a = acc / total * DRAW; acc += k.w; k.d = k.w / total * DRAW; k.e.style.strokeDasharray = k.L + ' ' + k.L; }
   strokes.filter(k => k.L > 160).forEach((k, i) => { if (i % 3 === 0) sfx(s.start + S0 + k.a, 'tick', .3); });
   sfx(s.start + FILL0 + .1, 'pop', .6); sfx(s.start + ANS, 'chime', .7);
-  wordTimes(ans, ANS, .12).forEach(t => sfx(s.start + t, 'tick', .7));
+  wordTimes(ans, ANS, ASTEP).forEach(t => sfx(s.start + t, 'tick', .7));
   return lt => {
     ch(lt);
     css(ask, { opacity: eo(seg(lt, .35, .4)) * .9 });
@@ -78,7 +80,7 @@ scene(ANS + HOLD, (el, s) => {
     }
     const f = eo(seg(lt, FILL0, FILL));
     for (const k of fills) k.e.style.fillOpacity = String(f * (k.op ? parseFloat(k.op) : 1));
-    revealWords(ans, lt, ANS, .12, { dy: 30, blur: 10 });
+    revealWords(ans, lt, ANS, ASTEP, { dy: 30, blur: 10 });
   };
 });
 
