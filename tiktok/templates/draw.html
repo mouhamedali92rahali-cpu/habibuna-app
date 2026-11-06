@@ -43,7 +43,7 @@ scene(ANS + HOLD, (el, s) => {
   el.appendChild(board);
   const ans = h(`<div class="ans abs">${words(D.answer)}</div>`); el.appendChild(ans);
   // تحت العنوان: دعوة التعليق، ثم اللوحة، ثم جملة الجواب؛ واللوحة تضيق حتى تتّسع لها المسافة
-  const tb = 300 + ch.titleEl.offsetHeight;
+  const tb = 300 + Math.min(ch.titleEl.offsetHeight, 290); // سطران على الأكثر (ﷺ في آخر السطر قد يزيد الارتفاع المقيس)
   ask.style.top = (tb + 30) + 'px';
   const top = tb + 100, room = 1180 - top;
   board.style.top = top + 'px';
