@@ -103,7 +103,9 @@ function cardScene(it, step) {
   const tmp = h(`<div>${words(c.text)}</div>`); const n = wordCount(tmp);
   // البطاقة تأتي بعد اكتمال العنوان (d)، وتبقى بعد اكتمال نصها hold ثانية
   const d = Math.max(0, .12 + it.label.split(' ').length * TITLE_STEP + .3 - .7) + (it.pause || 0); // pause: وقفة على العنوان وحده
-  const T = 1.85 + d, textEnd = T + n * .2 + .3, readEnd = textEnd + (it.hold || 2.6);
+  // open: البطاقة مفتوحة ظاهرة من أول لقطة، ونصها يظهر بسرعة (لا بطاقة مقلوبة في البداية؛ قاعدة البقاء 5)
+  const WS = it.open ? .06 : .2;
+  const T = it.open ? .15 : 1.85 + d, textEnd = T + n * WS + .3, readEnd = textEnd + (it.hold || 2.6);
   const withSharh = !!(it.sharhTitle && c.sharh);
   const sharhN = withSharh ? c.sharh.text.split(' ').length : 0;
   const P = readEnd, sharhStart = P + 1.0, sharhEnd = withSharh ? sharhStart + .6 + sharhN * .08 + 5.5 : readEnd;
@@ -133,15 +135,15 @@ function cardScene(it, step) {
       el.appendChild(artEl);
       sfx(s.start + artStart, 'pop', .7);
     }
-    sfx(s.start + 1.3 + d, 'pop');
+    if (!it.open) sfx(s.start + 1.3 + d, 'pop');
     return lt => {
       ch(lt);
       // الصعود ثم القلب من الظهر إلى الوجه
-      const up = back(seg(lt, .7 + d, .55)), rot = 180 * (1 - eo(seg(lt, 1.1 + d, .7)));
+      const up = it.open ? eo(seg(lt, 0, .25)) : back(seg(lt, .7 + d, .55)), rot = it.open ? 0 : 180 * (1 - eo(seg(lt, 1.1 + d, .7)));
       bk.style.transform = `rotateY(${rot - 180}deg)`; face.style.transform = `rotateY(${rot}deg)`;
       const shrink = withSharh ? eo(seg(lt, P, .8)) : withArt ? eo(seg(lt, artStart - .4, .8)) : 0;
       css(flip, { opacity: clamp(up * 1.5), transform: `translateY(${(1 - up) * 160 - shrink * 120}px) scale(${(.92 + .08 * up) * (1 - .4 * shrink) * fit})`, transformOrigin: '50% 0%' });
-      revealWords(tx, lt, T, .2, { dy: 14, blur: 6 });
+      revealWords(tx, lt, T, WS, { dy: 14, blur: 6 });
       if (withSharh) {
         if (su) su.style.visibility = lt > P + .5 ? 'hidden' : '';
         if (su) css(su, { opacity: 1 - seg(lt, P, .4) });

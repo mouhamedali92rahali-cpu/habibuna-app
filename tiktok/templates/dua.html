@@ -24,30 +24,27 @@
 <script>
 const D = window.DATA;
 const it = D.items[0], c = it.card;
-it.hold = it.hold || 4.2; // وقت أطول على البطاقة قبل الانتقال إلى الدعاء
-it.pause = it.pause ?? .5; // البطاقة قبل الثانية الثالثة (كانت 1.5) // العنوان يبقى وحده قبل أن تأتي البطاقة
-
-// 1) البطاقة كاملة (العنوان هو الهوك: يظهر من أول جزء من الثانية)
-cardScene(it, D.topic);
-
-// 2) لفظ الدعاء وحده ليُحفظ (كلمات الدعاء بلا صوت؛ النقرة للترجمة السفلية فقط)
+// قاعدة البقاء 5 (أرقام فيديو 004): المحتوى من أول لقطة. لفظ الدعاء بخط كبير وفوقه العنوان، ثم البطاقة بمصدرها لمن بقي.
 const quote = c.text.slice(c.text.indexOf('«') + 1, c.text.lastIndexOf('»'));
-const qn = quote.split(' ').length, Q0 = .9, qEnd = Q0 + qn * .3 + .3;
-const subStart = qEnd + .3, subN = D.memSub.split(' ').length;
-scene(subStart + subN * .27 + 3.6, (el, s) => {
-  const ch = chrome(el, s, { step: D.topic, title: D.memTitle, sub: D.memSub, subStart });
-  const m = h(`<div class="mem abs">${corners()}<p>${words(quote)}</p><small>${bidiNums(c.source)}</small></div>`); el.appendChild(m);
+const qn = quote.split(' ').length, QS = .12, qEnd = .1 + qn * QS + .3;
+const subStart = qEnd + .2, subN = D.memTitle.split(' ').length;
+scene(Math.max(qEnd + 3.2, subStart + subN * .26 + 2.0), (el, s) => {
+  const ch = chrome(el, s, { step: D.topic, title: it.label, sub: D.memTitle, subStart, subStep: .26 });
+  const m = h(`<div class="mem abs">${corners()}<p>${words(quote)}</p></div>`); el.appendChild(m);
+  const extra = Math.max(0, Math.min(ch.titleEl.offsetHeight, 290) - 150); m.style.top = (540 + extra) + 'px';
   const p = m.querySelector('p');
-  sfx(s.start + .5, 'pop', .8); sfx(s.start + qEnd, 'chime', .4);
+  sfx(s.start + qEnd, 'chime', .4);
   return lt => {
     ch(lt);
-    const a = back(seg(lt, .4, .7)); css(m, { opacity: clamp(a * 1.5), transform: `scale(${.92 + .08 * a})` });
-    revealWords(p, lt, Q0, .3, { dy: 24, blur: 10 });
-    m.querySelector('small').style.opacity = eo(seg(lt, qEnd, .5)) * .9;
-    // توهّج هادئ بعد اكتمال الدعاء
+    css(m, { opacity: eo(seg(lt, 0, .25)) });
+    revealWords(p, lt, .1, QS, { dy: 16, blur: 6 });
     const g = seg(lt, qEnd, 1.2); m.style.boxShadow = `0 40px 90px rgba(0,0,0,.5),0 0 0 ${12 + 20 * eo(g)}px rgba(217,178,94,${.08 + .12 * Math.sin(Math.PI * g)})`;
   };
 });
+
+// 2) البطاقة مفتوحة بمصدرها ودرجتها
+it.open = true; it.hold = it.hold || 2.4;
+cardScene(Object.assign({}, it, { label: D.cardTitle || '[المصدر] والدرجة' }), D.topic);
 
 qrScene();
 finish();

@@ -29,12 +29,12 @@ const plain = s => s.replace(/[\[\]]/g, '').replace(/_/g, ' ');
 // 0) الافتتاح: ثلاث بطاقات مقلوبة مرقّمة
 scene(6.0, (el, s) => {
   const ch = chrome(el, s, { title: D.title, sub: D.hookSub, subStart: .55 });
-  const backs = D.items.map((_, i) => { const b = h(`<div class="back abs" style="width:330px;height:480px">${MIHRAB}<div class="nb">${i + 1}</div></div>`); el.appendChild(b); return b; });
-  backs.forEach((_, i) => sfx(s.start + 1.0 + i * .5, 'pop', .8 + i * .1));
+  const backs = D.items.map((it, i) => { const b = h(`<div class="mini abs ${it.card.theme || 'ivory'}" style="width:310px;height:440px"><div class="in"><b>${i + 1}</b><span>${plain(it.short || it.card.title)}</span></div></div>`); el.appendChild(b); return b; }); // قاعدة البقاء 5: المحتوى مكتوبًا من أول لقطة
+  backs.forEach((_, i) => sfx(s.start + .15 + i * .15, 'pop', .8 + i * .1));
   return lt => {
     ch(lt);
     backs.forEach((b, i) => {
-      const p = back(seg(lt, .95 + i * .5, .8)), f = eo(seg(lt, 1.05 + i * .5, 1.3)), k = 1 - i; // يمين → يسار
+      const p = back(seg(lt, .05 + i * .15, .5)), f = eo(seg(lt, .1 + i * .15, .8)), k = 1 - i; // يمين → يسار
       css(b, { left: (375 + k * 300 * f) + 'px', top: (600 + Math.abs(k) * 40 * f + (1 - p) * 500) + 'px', opacity: clamp(p * 1.4),
         transform: `rotate(${k * 9 * f + Math.sin(lt * 1.3 + i) * 1.2}deg)`, zIndex: i === 1 ? 3 : 1 });
     });
@@ -42,7 +42,7 @@ scene(6.0, (el, s) => {
 });
 
 // 1..N) كل بطاقة: تنقلب، يظهر نصها، ثم الشرح إن طُلب (cardScene في common.js)
-D.items.forEach((it, idx) => cardScene(it, [idx + 1, N, it.topic]));
+D.items.forEach((it, idx) => { it.open = true; cardScene(it, [idx + 1, N, it.topic]); });
 
 // الخاتمة: البطاقات الثلاث معًا وسؤال للمشاهد
 scene(5.6, (el, s) => {
