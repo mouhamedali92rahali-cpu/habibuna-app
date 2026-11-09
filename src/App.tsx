@@ -64,9 +64,9 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
         <CardFront card={c} />
         {onPray && c.chapter === REMINDER && <button className="praybtn" onClick={onPray}>اللهم صلِّ وسلِّم على نبيّنا محمد</button>}
         <div className="under">
-          <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
-            {showSrc ? 'إخفاء مصدر الحديث' : 'إظهار مصدر الحديث'}
-          </button>
+          {c.hadith && !c.same && <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
+            {showSrc ? 'إخفاء نص الحديث' : 'نص الحديث كاملًا'}
+          </button>}
           {c.sharh && <button className={'srcbtn sm' + (showSharh ? ' on' : '')} onClick={() => setShowSharh((v) => !v)} aria-expanded={showSharh}>شرح موجز</button>}
           {art && <button className={'srcbtn sm' + (showArt ? ' on' : '')} onClick={() => setShowArt((v) => !v)} aria-expanded={showArt}>صورة</button>}
           {map && <button className={'srcbtn sm' + (showMap ? ' on' : '')} onClick={() => setShowMap((v) => !v)} aria-expanded={showMap}>خريطة</button>}
@@ -96,16 +96,11 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
             <div className="meta"><b>المصدر:</b> {c.sharh.source}</div>
           </div>
         )}
-        {showSrc && (
+        {showSrc && c.hadith && !c.same && (
           <div className="hadith">
-            {c.hadith ? (
-              <>
-                {c.hadith.narrator && <div className="narr">عن {c.hadith.narrator}</div>}
-                <p className="matn">{c.hadith.matn}</p>
-                {c.hadith.excerpt && <div className="exc">مقتطف من الحديث الطويل</div>}
-              </>
-            ) : <p className="matn soon">نص الحديث الكامل قيد الإضافة.</p>}
-            <div className="meta"><b>المصدر:</b> {c.source}<br /><b>الدرجة:</b> {c.grade}</div>
+            {c.hadith.narrator && <div className="narr">عن {c.hadith.narrator}</div>}
+            <p className="matn">{c.hadith.matn}</p>
+            {c.hadith.excerpt && <div className="exc">مقتطف من الحديث الطويل</div>}
           </div>
         )}
       </article>

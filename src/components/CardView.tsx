@@ -9,6 +9,9 @@ const MARK: Record<string, string> = {
   'زهده': '◇', 'عبادته': '☾', 'رحمته بالحيوان': '✾', 'وفاؤه': '❁', 'صبره': '✥', 'دعاؤه لأصحابه': '✺',
   'رحمته ورأفته': '❦', 'حياته اليومية': '◎', 'الصلاة عليه': '❉',
 };
+/** الراوي على سطر المصدر حين يُخفى زرّ نص الحديث، إلا إذا ذكرته البطاقة («قال معاذ») */
+const narrOnCard = (c: CardData) => !!(c.same && c.hadith?.narrator && !/قالت? /.test(c.text.slice(0, 12)));
+
 export const markOf = (chapter: string) => MARK[chapter] ?? '✦';
 
 /** حجم الخط المختار (--fz)، وإن لم يتّسع له إطار البطاقة يصغر في هذه البطاقة وحدها حتى يتّسع، ولا يقلّ عن الحجم الأصلي */
@@ -43,7 +46,7 @@ export function CardFront({ card }: { card: CardData }) {
         <p className="ctext"><span>{card.text}</span></p>
         <Divider />
         <div className="src">
-          <div>المصدر: {card.source}</div>
+          <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
         </div>
