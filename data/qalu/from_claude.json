@@ -79,7 +79,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا من النص الإنجليزي (Project Gutenberg). تنبيه: في المحاضرة نفسها كلام سلبي عن القرآن، فنأخذ منها جملًا منفردة فقط.",
-   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt"
+   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt",
+   "batch1": "approved"
   },
   {
    "id": "ق04",
@@ -94,7 +95,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt"
+   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt",
+   "batch1": "approved"
   },
   {
    "id": "ق05",
@@ -109,7 +111,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt"
+   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt",
+   "batch1": "approved"
   },
   {
    "id": "ق06",
@@ -124,7 +127,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt"
+   "online_reference": "https://www.gutenberg.org/files/1091/1091-0.txt",
+   "batch1": "approved"
   },
   {
    "id": "ق07",
@@ -138,8 +142,9 @@
    "original_source": "Young India، 23 سبتمبر 1924 (الأعمال الكاملة، المجلد 29)",
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
-   "notes": "جاهزة. ترجمتنا. تنبيه: الجملة تنتشر خطأً على أنها عن الحسين رضي الله عنه. (2026-11-09: أُعيدت الكلمات المحذوفة بطلب المستخدم.)",
-   "online_reference": "https://quotepark.com/quotes/1822722-mahatma-gandhi-i-wanted-to-know-the-best-of-the-life-of-one-muha/"
+   "notes": "جاهزة. ترجمتنا. تنبيه: الجملة تنتشر خطأً على أنها عن الحسين رضي الله عنه. (2026-11-09: أُعيدت الكلمات المحذوفة بطلب المستخدم.) (معلّق 2026-11-09: لم يوجد النص إلا في مواقع ثانوية؛ يُنشر بعد مطابقته على الأعمال الكاملة لغاندي.)",
+   "online_reference": "https://quotepark.com/quotes/1822722-mahatma-gandhi-i-wanted-to-know-the-best-of-the-life-of-one-muha/",
+   "batch1": "hold"
   },
   {
    "id": "ق08",
@@ -153,8 +158,9 @@
    "original_source": "Young India، 23 سبتمبر 1924 (الأعمال الكاملة، المجلد 29)",
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
-   "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://quotepark.com/quotes/1822722-mahatma-gandhi-i-wanted-to-know-the-best-of-the-life-of-one-muha/"
+   "notes": "جاهزة. ترجمتنا. (معلّق 2026-11-09: لم يوجد النص إلا في مواقع ثانوية؛ يُنشر بعد مطابقته على الأعمال الكاملة لغاندي.)",
+   "online_reference": "https://quotepark.com/quotes/1822722-mahatma-gandhi-i-wanted-to-know-the-best-of-the-life-of-one-muha/",
+   "batch1": "hold"
   },
   {
    "id": "ق09",
@@ -168,8 +174,9 @@
    "original_source": "The 100: A Ranking of the Most Influential Persons in History (1978)",
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
-   "notes": "جاهزة. ترجمتنا. هارت ينسب القرآن إلى النبي، فلا نأخذ من كتابه غير هذه الجملة.",
-   "online_reference": "https://en.wikipedia.org/wiki/The_100:_A_Ranking_of_the_Most_Influential_Persons_in_History"
+   "notes": "جاهزة. ترجمتنا. هارت ينسب القرآن إلى النبي، فلا نأخذ من كتابه غير هذه الجملة. (تحقّق 2026-11-09: اللفظ متطابق في نقول كثيرة مع ص33، وويكيبيديا تؤكّد «supremely successful»؛ لم أرَ صفحة الكتاب نفسها.)",
+   "online_reference": "https://en.wikipedia.org/wiki/The_100:_A_Ranking_of_the_Most_Influential_Persons_in_History",
+   "batch1": "approved"
   },
   {
    "id": "ق11",
@@ -704,12 +711,13 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا من الأصل الإنجليزي (Project Gutenberg).",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق38",
    "category": "قالوا عنه",
-   "card_text": "«كان شديد الحب للأطفال؛ يستوقفهم في الطرقات ويمسح على رؤوسهم الصغيرة… ولم يضرب أحدًا في حياته قط.»",
+   "card_text": "«كان شديد الحب للأطفال؛ يستوقفهم في الطرقات ويمسح على رؤوسهم الصغيرة.»",
    "speaker": "ستانلي لين بول",
    "speaker_description": "مستشرق بريطاني (1854–1931)",
    "full_text_ar": null,
@@ -718,8 +726,9 @@
    "original_source": "The Speeches & Table-Talk of the Prophet Mohammad (1882)، المقدمة ص xxix",
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
-   "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "notes": "جاهزة. ترجمتنا. (2026-11-09: حُذفت «ولم يضرب أحدًا في حياته قط» لمخالفتها لفظ مسلم 2328 «إلا أن يجاهد في سبيل الله».)",
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق39",
@@ -734,7 +743,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا. يوافق حديث أنس عند الترمذي.",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق40",
@@ -749,7 +759,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق41",
@@ -764,7 +775,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا. يوافق حديث أنس: «ما قال لي أُفٍّ قط».",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق42",
@@ -779,7 +791,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق43",
@@ -794,7 +807,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق44",
@@ -809,7 +823,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا. يكمّل فصل «ضحكه».",
-   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html"
+   "online_reference": "https://gutenberg.org/cache/epub/58426/pg58426-images.html",
+   "batch1": "approved"
   },
   {
    "id": "ق45",
@@ -824,7 +839,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://www.universalfreemasonry.org/en/library/adyar-pamphlets-theosophy/158-life-teachings-muhammad"
+   "online_reference": "https://www.universalfreemasonry.org/en/library/adyar-pamphlets-theosophy/158-life-teachings-muhammad",
+   "batch1": "approved"
   },
   {
    "id": "ق46",
@@ -839,7 +855,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا.",
-   "online_reference": "https://www.universalfreemasonry.org/en/library/adyar-pamphlets-theosophy/158-life-teachings-muhammad"
+   "online_reference": "https://www.universalfreemasonry.org/en/library/adyar-pamphlets-theosophy/158-life-teachings-muhammad",
+   "batch1": "approved"
   },
   {
    "id": "ق47",
@@ -854,7 +871,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا. وات لا يؤمن بالنبوة، فنأخذ شهادته على الصدق فقط.",
-   "online_reference": "https://sourcebooks.web.fordham.edu/med/watt.asp"
+   "online_reference": "https://sourcebooks.web.fordham.edu/med/watt.asp",
+   "batch1": "approved"
   },
   {
    "id": "ق48",
@@ -869,7 +887,8 @@
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
    "notes": "جاهزة. ترجمتنا. غيبون ناقد للإسلام في مواضع، فنأخذ الجمل الوصفية فقط.",
-   "online_reference": "https://ccel.org/g/gibbon/decline/volume2/chap50.htm"
+   "online_reference": "https://ccel.org/g/gibbon/decline/volume2/chap50.htm",
+   "batch1": "approved"
   },
   {
    "id": "ق49",
@@ -883,8 +902,9 @@
    "original_source": "The History of the Decline and Fall of the Roman Empire، الفصل 50",
    "intermediate_source": null,
    "verification": "تم التحقق من النص الأصلي على الإنترنت",
-   "notes": "جاهزة. ترجمتنا. لا نأخذ الجملة التي بعدها لأنها تشكيك.",
-   "online_reference": "https://ccel.org/g/gibbon/decline/volume2/chap50.htm"
+   "notes": "جاهزة. ترجمتنا. لا نأخذ الجملة التي بعدها لأنها تشكيك. (رفضه المستخدم 2026-11-09: بعده في الأصل «the frankness of his manner concealed the artifice of his views».)",
+   "online_reference": "https://ccel.org/g/gibbon/decline/volume2/chap50.htm",
+   "batch1": "rejected"
   }
  ]
 }
