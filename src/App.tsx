@@ -1,3 +1,4 @@
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
@@ -487,7 +488,7 @@ export default function App() {
             {quizDone[qKey] && <p className="praycount">✦ مراجعة هذا الأسبوع: {quizDone[qKey].score} من {quizDone[qKey].total}</p>}
             {pool.length > 0 && (
               <div className="prayrow">
-                <button className="praytap" aria-label="صلِّ على النبي ﷺ" onClick={(e) => { addPrays({ [dayNo]: 1 }); try { navigator.vibrate?.(12); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); }}>ﷺ</button>
+                <button className="praytap" aria-label="صلِّ على النبي ﷺ" onClick={(e) => { addPrays({ [dayNo]: 1 }); if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(15); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); }}>ﷺ</button>
                 <p className="praycount">{prayWeek > 0 ? <>صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</> : <>صلِّ على النبي ﷺ</>}</p>
               </div>
             )}
