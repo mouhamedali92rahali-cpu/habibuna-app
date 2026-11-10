@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- زرّ الصلاة على النبي ﷺ: شريط بارتفاع ثابت في وسط مساحة الأداة (ما زاد عنه شفاف)،
-     الدائرة الذهبية يمينًا بعدد الأسبوع، وأمامها صيغة اليوم كاملة، وفي الطرف نجمة ثمانية -->
+<!-- زرّ الصلاة على النبي ﷺ (تصميم المستخدم 2026-11-10): الدائرة الذهبية يمينًا بعدد الأسبوع، ثم زخرفة مزهّرة،
+     ثم الصيغة، ثم نجمة ثمانية وزخرفة مزهّرة في الطرف الأيسر. توهّج ذهبي حول الدائرة لحظة اللمس (wglow). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wroot"
     android:layout_width="match_parent"
@@ -8,23 +8,31 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="84dp"
         android:layout_gravity="center_vertical"
         android:layoutDirection="rtl"
         android:background="@drawable/widget_frame"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="12dp"
-        android:paddingRight="9dp">
+        android:paddingLeft="10dp"
+        android:paddingRight="4dp">
 
         <FrameLayout
             android:id="@+id/wpray"
-            android:layout_width="62dp"
-            android:layout_height="62dp">
+            android:layout_width="72dp"
+            android:layout_height="72dp">
 
             <ImageView
+                android:id="@+id/wglow"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:src="@drawable/widget_glow"
+                android:visibility="gone" />
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
                 android:src="@drawable/widget_pray" />
 
             <LinearLayout
@@ -48,10 +56,15 @@
                     android:includeFontPadding="false"
                     android:text="0"
                     android:textColor="#14211F"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </FrameLayout>
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="58dp"
+            android:src="@drawable/widget_flourish" />
 
         <TextView
             android:id="@+id/wtext"
@@ -62,16 +75,21 @@
             android:gravity="center"
             android:lineSpacingMultiplier="1.1"
             android:maxLines="2"
-            android:paddingLeft="6dp"
-            android:paddingRight="8dp"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
             android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
-            android:textColor="#1D2A28"
+            android:textColor="#14211F"
             android:textDirection="rtl"
             android:textSize="15sp" />
 
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:src="@drawable/widget_star" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="58dp"
+            android:src="@drawable/widget_flourish" />
     </LinearLayout>
 </FrameLayout>

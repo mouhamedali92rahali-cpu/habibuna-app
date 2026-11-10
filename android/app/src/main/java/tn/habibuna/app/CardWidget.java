@@ -45,7 +45,12 @@ public class CardWidget extends AppWidgetProvider {
     public void onReceive(Context ctx, Intent i) {
         super.onReceive(ctx, i);
         String a = i.getAction();
-        if (PRAY.equals(a)) { recordPray(ctx); buzz(ctx); updateAll(ctx); }
+        if (PRAY.equals(a)) {
+            // توهّج ذهبي حول الدائرة نحو نصف ثانية، ثم يعود الشكل كما كان
+            recordPray(ctx); buzz(ctx); updateAll(ctx, true);
+            final PendingResult r = goAsync();
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { updateAll(ctx, false); } finally { r.finish(); } }, 550);
+        }
         else if (TICK.equals(a) || Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)) updateAll(ctx);
     }
 
@@ -105,7 +110,9 @@ public class CardWidget extends AppWidgetProvider {
         return String.format(java.util.Locale.ROOT, "%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
     }
 
-    public static void updateAll(Context ctx) {
+    public static void updateAll(Context ctx) { updateAll(ctx, false); }
+
+    public static void updateAll(Context ctx, boolean glow) {
         AppWidgetManager m = AppWidgetManager.getInstance(ctx);
         int[] ids = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
         if (ids == null || ids.length == 0) return;
@@ -120,6 +127,7 @@ public class CardWidget extends AppWidgetProvider {
         v.setTextViewText(R.id.wtext, text);
         v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 15f : text.length() < 75 ? 13.5f : 12.5f);
         v.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
+        v.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
 
         // لمس «ﷺ» يزيد العدد دون فتح التطبيق؛ لمس الصيغة يفتح التطبيق
         Intent pray = new Intent(ctx, CardWidget.class).setAction(PRAY);
