@@ -107,7 +107,7 @@
                 android:fontFamily="serif"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.1"
-                android:maxLines="2"
+                android:maxLines="3"
                 android:paddingLeft="4dp"
                 android:paddingRight="6dp"
                 android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"

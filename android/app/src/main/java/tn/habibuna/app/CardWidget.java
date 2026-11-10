@@ -181,7 +181,7 @@ public class CardWidget extends AppWidgetProvider {
         v.setTextViewText(R.id.wsrc, src);
         v.setViewVisibility(R.id.wsrc, src.isEmpty() ? View.GONE : View.VISIBLE);
         v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 18f : text.length() < 60 ? 16.5f : 15f));
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 18f : text.length() < 60 ? 16.5f : text.length() < 80 ? 15f : 13.5f));
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);
