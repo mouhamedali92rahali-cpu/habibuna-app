@@ -48,7 +48,7 @@ export async function cardToBlob(card: CardData, art?: Art): Promise<Blob | null
   const box = img ? 560 : 800;
   let fs = 50, lh = 92, bl: string[] = [];
   for (;;) {
-    ctx.font = `400 ${fs}px "Noto Naskh Arabic", serif`; bl = wrap(ctx, card.text, W - 260);
+    ctx.font = `400 ${fs}px "Noto Naskh Arabic", serif`; bl = card.text.split("\n").flatMap((p) => wrap(ctx, p, W - 260));
     if (bl.length * lh <= box || fs <= 30) break; fs -= 4; lh -= 7;
   }
   // النص والرسم كتلة واحدة في وسط المساحة

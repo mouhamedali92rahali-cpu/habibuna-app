@@ -530,7 +530,7 @@ export default function App() {
                     <h3>{g.label}</h3>
                     <ul className="list">
                       {g.cards.map((c) => (
-                        <li key={c.id}><button onClick={() => setOpen(c)}><b><i aria-hidden="true">{markOf(c.chapter)}</i> {c.chapter === REMINDER ? 'تذكير' : c.title}</b><span>{c.text}</span></button></li>
+                        <li key={c.id}><button onClick={() => setOpen(c)}><b><i aria-hidden="true">{markOf(c.chapter)}</i> {c.dalail ? 'من دلائل الخيرات' : c.chapter === REMINDER ? 'تذكير' : c.title}</b><span>{c.text}</span></button></li>
                       ))}
                     </ul>
                   </div>
