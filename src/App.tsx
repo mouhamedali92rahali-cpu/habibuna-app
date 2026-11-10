@@ -389,6 +389,11 @@ export default function App() {
   // زرّ الرجوع في الهاتف: يغلق النافذة المفتوحة أولًا (المراجعة، البطاقة، التصفية، الإرشاد، المعاينة)،
   // ثم يعود من «المساعدة» إلى الإعدادات، ومن أي صفحة إلى البطاقات؛ وفي البطاقات يُصغّر التطبيق بدل إغلاقه
   const backRef = useRef<() => void>(() => {});
+  // زرّ الصلاة العائم (3.42): يشفّ أثناء التمرير ويعود بعد توقّفه
+  const [scrolling, setScrolling] = useState(false);
+  const scrollT = useRef<number | undefined>(undefined);
+  const onMainScroll = () => { setScrolling(true); window.clearTimeout(scrollT.current); scrollT.current = window.setTimeout(() => setScrolling(false), 450); };
+  const tapPray = (e: React.MouseEvent<HTMLButtonElement>) => { addPrays({ [dayNo]: 1 }); if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(15); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); };
   backRef.current = () => {
     if (zoom) setZoom(null);
     else if (quiz) setQuiz(null);
@@ -434,7 +439,7 @@ export default function App() {
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
         )}
       </header>
-      <main>
+      <main onScroll={tab === 'feed' ? onMainScroll : undefined} className={tab === 'feed' && pool.length > 0 ? 'withfab' : undefined}>
         {tab === 'feed' && (
           <section className="page feed">
             {isNative && !settings.notifyOn && welcome === 0 && (
@@ -490,7 +495,6 @@ export default function App() {
             {quizDone[qKey] && <p className="praycount">✦ مراجعة هذا الأسبوع: {quizDone[qKey].score} من {quizDone[qKey].total}</p>}
             {pool.length > 0 && (
               <div className="prayrow">
-                <button className="praytap" aria-label="صلِّ على النبي ﷺ" onClick={(e) => { addPrays({ [dayNo]: 1 }); if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(15); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); }}>ﷺ</button>
                 <p className="praycount">{prayWeek > 0 ? <>صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</> : <>صلِّ على النبي ﷺ</>}</p>
               </div>
             )}
@@ -659,6 +663,8 @@ export default function App() {
           </section>
         )}
       </main>
+
+      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}>ﷺ</button>}
 
       <nav className="tabs">
         {TABS.map((t) => (

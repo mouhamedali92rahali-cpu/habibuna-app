@@ -387,3 +387,8 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .themebtn .knob{position:absolute;top:3px;width:24px;height:24px;border-radius:50%;background:var(--gold);transition:inset-inline-start .25s;inset-inline-start:3px}
 .themebtn.dark .knob{inset-inline-start:29px}
 .themebtn .on{color:#12201c}
+
+/* زرّ الصلاة العائم (3.42، طلب المستخدم): ثابت فوق الشريط السفلي على اليمين قرب الإبهام، ويشفّ أثناء التمرير فلا يحجب الكتابة */
+.prayfab{position:absolute;right:16px;bottom:calc(76px + var(--sb));z-index:7;transition:opacity .25s ease,transform .1s}
+.prayfab.faded{opacity:.28}
+main.withfab{padding-bottom:calc(180px + var(--sb))}
