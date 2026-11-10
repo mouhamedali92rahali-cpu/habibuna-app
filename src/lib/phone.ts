@@ -23,7 +23,7 @@ interface PhoneSettingsPlugin {
   setFormulas(o: { items: string }): Promise<void>;
   setPrayBase(o: { days: string }): Promise<void>;
   widgetState(): Promise<{ placed: boolean; canPin: boolean }>;
-  pinWidget(): Promise<{ asked: boolean }>;
+  pinWidget(o?: { kind?: 'coin' | 'strip' }): Promise<{ asked: boolean }>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 

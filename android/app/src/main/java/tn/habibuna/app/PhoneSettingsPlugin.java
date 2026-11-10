@@ -178,7 +178,7 @@ public class PhoneSettingsPlugin extends Plugin {
     @PluginMethod
     public void pinWidget(PluginCall call) {
         JSObject r = new JSObject();
-        r.put("asked", CardWidget.requestPin(getContext()));
+        r.put("asked", CardWidget.requestPin(getContext(), "coin".equals(call.getString("kind", ""))));
         call.resolve(r);
     }
 

@@ -5,4 +5,5 @@
     <string name="package_name">tn.habibuna.app</string>
     <string name="custom_url_scheme">tn.habibuna.app</string>
     <string name="widget_desc">زرّ الصلاة على النبي ﷺ مع صيغة تتبدّل كل يوم</string>
+    <string name="widget_coin_desc">زرّ الصلاة على النبي ﷺ بحجم أيقونة</string>
 </resources>

@@ -394,3 +394,8 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .prayfab .sw{font-size:1.9rem;line-height:1;margin-top:-4px}
 .prayfab .fabn{font:700 .82rem/1 Tajawal,system-ui,sans-serif;margin-top:1px;direction:ltr}
+
+/* زرّ وضع «زرّ الصلاة» على الشاشة الرئيسية (تجربة 2026-11-10، طلب المستخدم: في الصفحة الرئيسية لا في الإعدادات) */
+.homebtn{position:absolute;left:56px;top:calc(10px + var(--st));width:34px;height:34px;border-radius:50%;border:1.5px solid #f3e2a6;background:radial-gradient(circle at 35% 30%,#f1d98c,#c9a24a 70%);color:#1d2a28;font:400 1.05rem/1 Amiri,serif;display:grid;place-items:center;padding:0;cursor:pointer}
+.homebtn i{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;border-radius:50%;background:var(--emerald);color:#fff;font:700 .7rem/16px Tajawal,sans-serif;font-style:normal;text-align:center}
+.homebtn.on i{background:var(--gold)}

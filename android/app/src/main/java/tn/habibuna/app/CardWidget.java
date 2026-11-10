@@ -116,9 +116,19 @@ public class CardWidget extends AppWidgetProvider {
 
     public static void updateAll(Context ctx, boolean glow) {
         AppWidgetManager m = AppWidgetManager.getInstance(ctx);
-        int[] ids = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
-        if (ids == null || ids.length == 0) return;
         SharedPreferences p = ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE);
+        // الزرّ الصغير بحجم أيقونة
+        int[] coins = m.getAppWidgetIds(new ComponentName(ctx, CoinWidget.class));
+        if (coins != null && coins.length > 0) {
+            RemoteViews c = new RemoteViews(ctx.getPackageName(), R.layout.widget_coin);
+            c.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
+            c.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
+            Intent tap = new Intent(ctx, PrayTapActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            c.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7003, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            m.updateAppWidget(coins, c);
+        }
+        int[] ids = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
+        if (ids == null || ids.length == 0) { scheduleNext(ctx, 0); return; }
         RemoteViews v = new RemoteViews(ctx.getPackageName(), R.layout.widget_card);
         // صيغة اليوم: صيغ «دلائل الخيرات» القصيرة يرسلها التطبيق، وتتبدّل كل يوم
         String text = "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ";
@@ -161,15 +171,19 @@ public class CardWidget extends AppWidgetProvider {
 
     /** هل وضع المستخدم البطاقة على شاشته الرئيسية؟ */
     public static boolean placed(Context ctx) {
-        int[] ids = AppWidgetManager.getInstance(ctx).getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
-        return ids != null && ids.length > 0;
+        AppWidgetManager m = AppWidgetManager.getInstance(ctx);
+        int[] a = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
+        int[] b = m.getAppWidgetIds(new ComponentName(ctx, CoinWidget.class));
+        return (a != null && a.length > 0) || (b != null && b.length > 0);
     }
 
     /** يطلب من الهاتف وضع البطاقة على الشاشة الرئيسية (أندرويد 8+، إن سمح الهاتف) */
-    public static boolean requestPin(Context ctx) {
+    public static boolean requestPin(Context ctx) { return requestPin(ctx, false); }
+
+    public static boolean requestPin(Context ctx, boolean coin) {
         if (Build.VERSION.SDK_INT < 26) return false;
         AppWidgetManager m = ctx.getSystemService(AppWidgetManager.class);
         if (m == null || !m.isRequestPinAppWidgetSupported()) return false;
-        return m.requestPinAppWidget(new ComponentName(ctx, CardWidget.class), null, null);
+        return m.requestPinAppWidget(new ComponentName(ctx, coin ? CoinWidget.class : CardWidget.class), null, null);
     }
 }

@@ -445,6 +445,15 @@ export default function App() {
       <header className="top">
         <span className="brandmark">حبيبنا</span>
         <ThemeToggle />
+        {isNative && widget && tab === 'feed' && (
+          <button className={'homebtn' + (widget.placed ? ' on' : '')} aria-label="زرّ الصلاة على شاشتك الرئيسية"
+            onClick={async () => {
+              if (widget.placed) { say('زرّ الصلاة على شاشتك الرئيسية ✦ لإزالته اضغط عليه ضغطًا طويلًا ثم اختر الإزالة'); return; }
+              const r = await PhoneSettings.pinWidget({ kind: 'coin' }).catch(() => ({ asked: false }));
+              if (!r.asked) say('اضغط ضغطًا طويلًا على الشاشة الرئيسية، ثم الأدوات (Widgets)، ثم «حبيبنا»');
+              window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000);
+            }}>ﷺ<i>{widget.placed ? '✓' : '+'}</i></button>
+        )}
         {tab === 'feed' && (
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
         )}
@@ -595,14 +604,6 @@ export default function App() {
               </div>
               <p className="fzdemo">كان رسول الله ﷺ من أحسن الناس خُلُقًا.</p>
             </Frame>
-            {isNative && widget && (
-              <Frame title="زرّ الصلاة على شاشتك الرئيسية">
-                <p className="muted small">دائرة «ﷺ» تلمسها فيزيد عدد صلاتك دون فتح التطبيق، وأمامها صيغة من صيغ الصلاة عليه ﷺ تتبدّل كل يوم.</p>
-                {widget.placed ? <p className="muted small">✓ الزرّ على شاشتك الرئيسية. لنقله أو حذفه اضغط عليه ضغطًا طويلًا.</p>
-                  : widget.canPin ? <button className="primary" onClick={async () => { await PhoneSettings.pinWidget().catch(() => null); window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000); }}>ضعه على شاشتي الرئيسية</button>
-                  : <p className="muted small">اضغط ضغطًا طويلًا على مكان فارغ في الشاشة الرئيسية، ثم اختر الأدوات (Widgets)، ثم «حبيبنا».</p>}
-              </Frame>
-            )}
             <Frame title="البطاقة على شاشتك">
               {isNative ? (
                 <label className="row">
