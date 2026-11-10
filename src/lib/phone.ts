@@ -2,6 +2,7 @@ import { registerPlugin } from '@capacitor/core';
 import { isNative, type WeekSlot } from './notify';
 import type { CardData } from './types';
 import { WIDGET_LINES } from './widgetLines';
+import { widgetLines } from './cards';
 
 interface PhoneSettingsPlugin {
   info(): Promise<{ manufacturer: string; brand: string }>;
@@ -65,7 +66,7 @@ export async function sendFormulas(cards: CardData[]): Promise<void> {
   if (!isNative) return;
   const items = cards.filter((c) => c.dalail).flatMap((c) => c.text.split('\n')).map((l) => l.trim()).filter((l) => l && l.length <= 90);
   const fri = cards.find((c) => c.friday);
-  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '', lines: JSON.stringify(WIDGET_LINES) });
+  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '', lines: JSON.stringify(widgetLines ?? WIDGET_LINES) });
 }
 
 /** مواعيد البطاقات للزرّ على الشاشة الرئيسية: لون إطاره يتبع باب البطاقة الحالية ويتجدّد في الموعد القادم */

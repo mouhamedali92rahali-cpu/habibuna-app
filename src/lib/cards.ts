@@ -2,7 +2,9 @@ import type { CardData } from './types';
 import { isNative } from './notify';
 import { load, save } from './store';
 
-interface CardsFile { version: number; app?: string; cards: CardData[]; }
+interface CardsFile { version: number; app?: string; cards: CardData[]; widget?: unknown; }
+/** جمل زرّ الصلاة على الشاشة الرئيسية من cards.json المنشورة (تصل الدفعات الجديدة بلا تحديث التطبيق) */
+export let widgetLines: unknown = null;
 
 /** أحدث نسخة منشورة من التطبيق (الحقل app في cards.json المنشورة)؛ لا اتصال جديد، فهي في الملف نفسه */
 export let latestApp: string | null = null;
@@ -55,5 +57,6 @@ async function loadMain(): Promise<CardData[]> {
   latestApp = (remote ?? cached)?.app ?? null;
   const best = [remote, cached, bundled].filter((d): d is CardsFile => !!d).sort((a, b) => (b.version ?? 0) - (a.version ?? 0))[0];
   if (!best) throw new Error('no cards');
+  widgetLines = best.widget ?? null;
   return best.cards;
 }
