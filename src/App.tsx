@@ -4,7 +4,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
-import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendWidget, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
@@ -350,10 +350,8 @@ export default function App() {
         const on = settings.notifyOn && settings.popupOn !== false && allowed;
         return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
       }).catch(() => {});
-      // بطاقة اليوم على الشاشة الرئيسية: بطاقات اليوم التي حان موعدها + المواعيد القادمة
-      const today = times.map((m, k) => ({ m, k })).filter((x) => x.m <= nowMin && slotOk(dayNo, x.m))
-        .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAt(dayNo, x.k) }; });
-      void sendWidget([...today, ...weekSlots(settings, pool).map((e) => ({ at: e.at.getTime(), k: e.k, card: e.card }))]).catch(() => {});
+      // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة
+      void sendFormulas(cards ?? []).catch(() => {});
       PhoneSettings.widgetState().then(setWidget).catch(() => {});
       PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
@@ -598,10 +596,10 @@ export default function App() {
               <p className="fzdemo">كان رسول الله ﷺ من أحسن الناس خُلُقًا.</p>
             </Frame>
             {isNative && widget && (
-              <Frame title="بطاقة اليوم على شاشتك الرئيسية">
-                <p className="muted small">بطاقة اليوم تتبدّل وحدها في مواعيدها، وتحتها زرّ «ﷺ» تلمسه فيزيد عدد صلاتك دون فتح التطبيق.</p>
-                {widget.placed ? <p className="muted small">✓ البطاقة على شاشتك الرئيسية. لنقلها أو حذفها اضغط عليها ضغطًا طويلًا.</p>
-                  : widget.canPin ? <button className="primary" onClick={async () => { await PhoneSettings.pinWidget().catch(() => null); window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000); }}>ضعها على شاشتي الرئيسية</button>
+              <Frame title="زرّ الصلاة على شاشتك الرئيسية">
+                <p className="muted small">دائرة «ﷺ» تلمسها فيزيد عدد صلاتك دون فتح التطبيق، وأمامها صيغة من صيغ الصلاة عليه ﷺ تتبدّل كل يوم.</p>
+                {widget.placed ? <p className="muted small">✓ الزرّ على شاشتك الرئيسية. لنقله أو حذفه اضغط عليه ضغطًا طويلًا.</p>
+                  : widget.canPin ? <button className="primary" onClick={async () => { await PhoneSettings.pinWidget().catch(() => null); window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000); }}>ضعه على شاشتي الرئيسية</button>
                   : <p className="muted small">اضغط ضغطًا طويلًا على مكان فارغ في الشاشة الرئيسية، ثم اختر الأدوات (Widgets)، ثم «حبيبنا».</p>}
               </Frame>
             )}

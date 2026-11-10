@@ -151,6 +151,14 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve();
     }
 
+    /** صيغ الصلاة القصيرة لزرّ الشاشة الرئيسية (صيغة لكل يوم) */
+    @PluginMethod
+    public void setFormulas(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("formulas", call.getString("items", "[]")).apply();
+        CardWidget.updateAll(getContext());
+        call.resolve();
+    }
+
     /** عدد الصلاة المحفوظ في التطبيق {يوم: عدد} للأيام السبعة، ليعرضه زرّ «ﷺ» على الشاشة الرئيسية */
     @PluginMethod
     public void setPrayBase(PluginCall call) {

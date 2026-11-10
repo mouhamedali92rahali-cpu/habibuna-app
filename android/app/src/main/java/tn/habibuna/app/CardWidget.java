@@ -19,8 +19,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 /**
- * بطاقة اليوم على الشاشة الرئيسية (تجربة 2026-11-10، طلب المستخدم).
- * البطاقات يرسلها التطبيق (setWidget) لليوم وثلاثين يومًا قادمة، فتتبدّل وحدها في مواعيدها بمنبّه.
+ * زرّ الصلاة على النبي ﷺ على الشاشة الرئيسية (تجربة 2026-11-10، طلب المستخدم):
+ * دائرة «ﷺ» بعدد صلوات الأسبوع، وصيغة اليوم من «دلائل الخيرات» (setFormulas) تتبدّل كل يوم بمنبّه منتصف الليل.
  * زرّ «ﷺ» يسجّل الصلاة في «prays» نفسه الذي تسجّل فيه النافذة (يأخذه التطبيق بـ takePrays)،
  * والعدد المعروض = ما في التطبيق للأيام السبعة (prayBase) + ما لم يأخذه التطبيق بعد.
  */
@@ -64,11 +64,16 @@ public class CardWidget extends AppWidgetProvider {
         } catch (Exception ignored) { }
     }
 
+    /** اهتزاز قصير: أندرويد يُسقط اهتزاز التطبيق الذي في الخلفية إلا لأنواع منها «الإشعار»، فنطلبه بهذا النوع */
     static void buzz(Context ctx) {
         try {
             android.os.Vibrator v = (android.os.Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
-            if (Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createOneShot(25, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
-            else v.vibrate(25);
+            if (Build.VERSION.SDK_INT >= 26) {
+                android.os.VibrationEffect e = Build.VERSION.SDK_INT >= 29 ? android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_HEAVY_CLICK)
+                    : android.os.VibrationEffect.createOneShot(40, 255);
+                android.media.AudioAttributes a = new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_EVENT).build();
+                v.vibrate(e, a);
+            } else v.vibrate(40);
         } catch (Exception ignored) { }
     }
 
@@ -106,48 +111,25 @@ public class CardWidget extends AppWidgetProvider {
         if (ids == null || ids.length == 0) return;
         SharedPreferences p = ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE);
         RemoteViews v = new RemoteViews(ctx.getPackageName(), R.layout.widget_card);
-        long now = System.currentTimeMillis();
-        JSONObject cur = null, next = null;
+        // صيغة اليوم: صيغ «دلائل الخيرات» القصيرة يرسلها التطبيق، وتتبدّل كل يوم
+        String text = "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ";
         try {
-            JSONArray items = new JSONArray(p.getString("widget", "[]"));
-            for (int k = 0; k < items.length(); k++) {
-                JSONObject it = items.getJSONObject(k);
-                long at = it.optLong("at");
-                if (at <= now) { if (cur == null || at > cur.optLong("at")) cur = it; }
-                else if (next == null || at < next.optLong("at")) next = it;
-            }
+            JSONArray f = new JSONArray(p.getString("formulas", "[]"));
+            if (f.length() > 0) text = f.optString((int) (today() % f.length()));
         } catch (Exception ignored) { }
-        String theme = cur != null ? cur.optString("theme") : "emerald";
-        boolean ivory = "ivory".equals(theme);
-        v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
-        int lab = ivory ? Color.parseColor("#3B2F12") : Color.parseColor("#F3E2A6");
-        v.setTextColor(R.id.wpraylab, lab);
-        v.setTextColor(R.id.wnext, lab);
-        if (cur != null) {
-            String text = cur.optString("text");
-            v.setTextViewText(R.id.wkicker, cur.optString("kicker"));
-            v.setTextViewText(R.id.wtext, text);
-            int len = text.length();
-            v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, len < 110 ? 16f : len < 180 ? 14.5f : len < 260 ? 13f : 12f);
-            v.setTextViewText(R.id.wsrc, cur.optString("src"));
-        } else {
-            v.setTextViewText(R.id.wkicker, "حبيبنا");
-            v.setTextViewText(R.id.wtext, next != null ? "أول بطاقة تصلك هنا عند " + hhmm(next.optLong("at")) + " بإذن الله" : "افتح «حبيبنا» مرة لتظهر بطاقاتك هنا");
-            v.setTextViewText(R.id.wsrc, "");
-        }
-        v.setTextViewText(R.id.wnext, next != null ? "البطاقة القادمة " + hhmm(next.optLong("at")) + " ✦" : "");
+        v.setTextViewText(R.id.wtext, text);
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 16f : text.length() < 75 ? 14.5f : 13f);
         v.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
 
-        // لمس البطاقة يفتحها في التطبيق؛ لمس «ﷺ» يزيد العدد دون فتحه
-        Intent open = new Intent(ctx, MainActivity.class);
-        open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        if (cur != null) open.putExtra(EXTRA_OPEN, cur.optString("cardId"));
-        v.setOnClickPendingIntent(R.id.wpaper, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        // لمس «ﷺ» يزيد العدد دون فتح التطبيق؛ لمس الصيغة يفتح التطبيق
         Intent pray = new Intent(ctx, CardWidget.class).setAction(PRAY);
         v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getBroadcast(ctx, 7001, pray, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        Intent open = new Intent(ctx, MainActivity.class);
+        open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        v.setOnClickPendingIntent(R.id.wtext, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
 
         m.updateAppWidget(ids, v);
-        scheduleNext(ctx, next != null ? next.optLong("at") : 0);
+        scheduleNext(ctx, 0);
     }
 
     private static PendingIntent tick(Context ctx, int extra) {
