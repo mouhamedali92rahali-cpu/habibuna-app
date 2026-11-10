@@ -40,7 +40,7 @@ export async function cardToBlob(card: CardData, art?: Art): Promise<Blob | null
   ctx.fillStyle = paper; ctx.fillRect(m, m, W - 2 * m, H - 2 * m);
   ctx.strokeStyle = gold; ctx.lineWidth = 4; ctx.strokeRect(m + 22, m + 22, W - 2 * m - 44, H - 2 * m - 44);
   ctx.fillStyle = frame;
-  ctx.font = '400 34px "Noto Naskh Arabic", serif'; ctx.fillText(card.qalu ? 'قالوا عنه ﷺ' : 'من مواقف النبي ﷺ', W / 2, 190);
+  ctx.font = '400 34px "Noto Naskh Arabic", serif'; ctx.fillText(card.dalail ? 'من دلائل الخيرات' : card.qalu ? 'قالوا عنه ﷺ' : 'من مواقف النبي ﷺ', W / 2, 190);
   ctx.fillStyle = gold; ctx.fillRect(W / 2 - 180, 240, 360, 3);
   ctx.fillStyle = '#243030';
   // البطاقة التي لها رسم: الرسم صغيرًا تحت النص (فيضيق مكان النص)

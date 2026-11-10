@@ -137,7 +137,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('greet').innerHTML = '';
   $('greet').append(g[0]);
   var s = document.createElement('small'); s.textContent = g[1]; $('greet').append(s);
-  $('kicker').textContent = reminder ? 'تذكير' : c.qalu ? 'قالوا عنه ﷺ' : c.dua ? 'من دعائه ﷺ' : 'من مواقف النبي ﷺ';
+  $('kicker').textContent = c.dalail ? 'من دلائل الخيرات' : reminder ? 'تذكير' : c.qalu ? 'قالوا عنه ﷺ' : c.dua ? 'من دعائه ﷺ' : 'من مواقف النبي ﷺ';
   $('num').textContent = reminder ? '❉' : '✦';
   $('title').textContent = reminder ? 'صلِّ على الحبيب ﷺ' : c.title;
   $('text').textContent = c.text;
