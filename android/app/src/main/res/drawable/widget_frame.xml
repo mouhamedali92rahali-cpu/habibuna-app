@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#0F5C4D" />
-    <stroke android:width="1.5dp" android:color="#C9A24A" />
-    <corners android:radius="40dp" />
-</shape>
+<!-- إطار زرّ الصلاة بألوان البطاقة: حافّة زمردية ثم خيط ذهبي ثم وجه عاجي -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#0F5C4D" />
+            <corners android:radius="40dp" />
+        </shape>
+    </item>
+    <item android:top="4dp" android:bottom="4dp" android:left="4dp" android:right="4dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#F6EFDD" />
+            <stroke android:width="1.5dp" android:color="#C9A24A" />
+            <corners android:radius="36dp" />
+        </shape>
+    </item>
+</layer-list>

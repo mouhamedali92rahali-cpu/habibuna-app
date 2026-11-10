@@ -118,7 +118,7 @@ public class CardWidget extends AppWidgetProvider {
             if (f.length() > 0) text = f.optString((int) (today() % f.length()));
         } catch (Exception ignored) { }
         v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 16f : text.length() < 75 ? 14.5f : 13f);
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 15f : text.length() < 75 ? 13.5f : 12.5f);
         v.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
 
         // لمس «ﷺ» يزيد العدد دون فتح التطبيق؛ لمس الصيغة يفتح التطبيق
