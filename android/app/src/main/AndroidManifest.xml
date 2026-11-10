@@ -48,6 +48,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- لمس «ﷺ» في أداة الشاشة الرئيسية: نافذة شفافة لحظية للاهتزاز (تجربة) -->
+        <activity
+            android:name=".PrayTapActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity="tn.habibuna.app.praytap"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:launchMode="singleInstance"
+            android:exported="false" />
         <!-- بطاقة اليوم على الشاشة الرئيسية (تجربة) -->
         <receiver android:name=".CardWidget" android:exported="true" android:label="بطاقة اليوم">
             <intent-filter>

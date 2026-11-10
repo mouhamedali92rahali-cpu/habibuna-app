@@ -27,6 +27,7 @@ import java.util.TimeZone;
 public class CardWidget extends AppWidgetProvider {
     static final String PRAY = "tn.habibuna.app.WIDGET_PRAY";
     static final String TICK = "tn.habibuna.app.WIDGET_TICK";
+    static final String GLOW = "tn.habibuna.app.WIDGET_GLOW";
     static final String EXTRA_OPEN = "openCard";
 
     @Override
@@ -45,9 +46,10 @@ public class CardWidget extends AppWidgetProvider {
     public void onReceive(Context ctx, Intent i) {
         super.onReceive(ctx, i);
         String a = i.getAction();
-        if (PRAY.equals(a)) {
-            // توهّج ذهبي حول الدائرة نحو نصف ثانية، ثم يعود الشكل كما كان
-            recordPray(ctx); buzz(ctx); updateAll(ctx, true);
+        if (PRAY.equals(a) || GLOW.equals(a)) {
+            // توهّج ذهبي حول الدائرة نحو نصف ثانية، ثم يعود الشكل كما كان (GLOW: سجّلت PrayTapActivity الصلاة واهتزّت)
+            if (PRAY.equals(a)) { recordPray(ctx); buzz(ctx); }
+            updateAll(ctx, true);
             final PendingResult r = goAsync();
             new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { updateAll(ctx, false); } finally { r.finish(); } }, 550);
         }
@@ -130,8 +132,8 @@ public class CardWidget extends AppWidgetProvider {
         v.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
 
         // لمس «ﷺ» يزيد العدد دون فتح التطبيق؛ لمس الصيغة يفتح التطبيق
-        Intent pray = new Intent(ctx, CardWidget.class).setAction(PRAY);
-        v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getBroadcast(ctx, 7001, pray, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        Intent pray = new Intent(ctx, PrayTapActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, pray, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         Intent open = new Intent(ctx, MainActivity.class);
         open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         v.setOnClickPendingIntent(R.id.wtext, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
