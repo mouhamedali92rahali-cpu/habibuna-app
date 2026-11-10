@@ -485,7 +485,12 @@ export default function App() {
               </div>
             )}
             {quizDone[qKey] && <p className="praycount">✦ مراجعة هذا الأسبوع: {quizDone[qKey].score} من {quizDone[qKey].total}</p>}
-            {prayWeek > 0 && <p className="praycount">✦ صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</p>}
+            {pool.length > 0 && (
+              <div className="prayrow">
+                <button className="praytap" aria-label="صلِّ على النبي ﷺ" onClick={(e) => { addPrays({ [dayNo]: 1 }); try { navigator.vibrate?.(12); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); }}>ﷺ</button>
+                <p className="praycount">{prayWeek > 0 ? <>صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</> : <>صلِّ على النبي ﷺ</>}</p>
+              </div>
+            )}
             {(feed.length > 0 || introToday.length > 0) && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
             {pool.length === 0 && <p className="muted">كل الأنواع مخفيّة. افتح ⋯ لإظهارها.</p>}
             {isNative && offer && settings.notifyOn && (offer === 'done' || (settings.popupOn === false && Date.now() - firstOpen > 2 * 86_400_000)) && (
