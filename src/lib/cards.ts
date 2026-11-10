@@ -28,7 +28,25 @@ const get = async (url: string, ms: number): Promise<CardsFile> => {
  * الويب: cards.json بجانب الصفحة (والـ service worker يقدّم الشبكة أولًا).
  * الهاتف: النسخة المنشورة إن وصلت، وإلا آخر نسخة محفوظة، وإلا المرفقة بالتطبيق؛ ويُؤخذ الأحدث رقمًا.
  */
+/** أقوال «قالوا عنه» في ملف مستقل (qalu.json)، حتى لا تظهر في النسخ القديمة بطاقاتٍ عادية؛ تُحمَّل مثل cards.json */
+async function loadQalu(): Promise<CardData[]> {
+  try {
+    if (!isNative) return (await get('qalu.json', 15000)).cards;
+    const bundled = await get('qalu.json', 15000).catch(() => null);
+    const cached = load<CardsFile | null>('qaluCache', null);
+    const remote = await get(REMOTE.replace('cards.json', 'qalu.json'), 6000).catch(() => null);
+    if (remote) save('qaluCache', remote);
+    const best = [remote, cached, bundled].filter((d): d is CardsFile => !!d).sort((a, b) => (b.version ?? 0) - (a.version ?? 0))[0];
+    return (best?.cards ?? []).map((c) => ({ ...c, qalu: true }));
+  } catch { return []; }
+}
+
 export async function loadCards(): Promise<CardData[]> {
+  const [cards, qalu] = await Promise.all([loadMain(), loadQalu()]);
+  return [...cards, ...qalu];
+}
+
+async function loadMain(): Promise<CardData[]> {
   if (!isNative) return (await get('cards.json', 15000)).cards;
   const bundled = await get('cards.json', 15000).catch(() => null);
   const cached = load<CardsFile | null>('cardsCache', null);

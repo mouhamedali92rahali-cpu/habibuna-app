@@ -40,7 +40,7 @@ export async function cardToBlob(card: CardData, art?: Art): Promise<Blob | null
   ctx.fillStyle = paper; ctx.fillRect(m, m, W - 2 * m, H - 2 * m);
   ctx.strokeStyle = gold; ctx.lineWidth = 4; ctx.strokeRect(m + 22, m + 22, W - 2 * m - 44, H - 2 * m - 44);
   ctx.fillStyle = frame;
-  ctx.font = '400 34px "Noto Naskh Arabic", serif'; ctx.fillText('من مواقف النبي ﷺ', W / 2, 190);
+  ctx.font = '400 34px "Noto Naskh Arabic", serif'; ctx.fillText(card.qalu ? 'قالوا عنه ﷺ' : 'من مواقف النبي ﷺ', W / 2, 190);
   ctx.fillStyle = gold; ctx.fillRect(W / 2 - 180, 240, 360, 3);
   ctx.fillStyle = '#243030';
   // البطاقة التي لها رسم: الرسم صغيرًا تحت النص (فيضيق مكان النص)
@@ -62,7 +62,7 @@ export async function cardToBlob(card: CardData, art?: Art): Promise<Blob | null
     ctx.fillText(art.caption, W / 2, iy + ih + 36);
   }
   ctx.fillStyle = frame; ctx.font = '400 32px "Noto Naskh Arabic", serif';
-  ctx.fillText('المصدر: ' + card.source, W / 2, H - 250);
+  ctx.fillText(card.qalu ? '— ' + card.title : 'المصدر: ' + card.source, W / 2, H - 250);
   ctx.fillStyle = gold; ctx.font = '700 40px Amiri, serif'; ctx.fillText('حبيبنا', W / 2, H - 170);
   ctx.fillStyle = frame; ctx.font = '400 26px "Noto Naskh Arabic", serif'; ctx.fillText('mouhamedali92rahali-cpu.github.io/habibuna-app', W / 2, H - 125);
   return new Promise((res) => c.toBlob((b) => res(b), 'image/png'));
@@ -72,7 +72,7 @@ const toBase64 = (b: Blob) => new Promise<string>((res, rej) => { const r = new 
 
 export async function shareCard(card: CardData, art?: Art) {
   // رابط صفحة التحميل في آخر النص المشارَك (اقتراح وافق عليه المستخدم): كل مشاركة دعوة للتطبيق
-  const text = `${card.text}\n\n— ${card.source}\n\nحمّل تطبيق «حبيبنا»: https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html`;
+  const text = `${card.text}\n\n— ${card.qalu ? card.title + '، ' : ''}${card.source}\n\nحمّل تطبيق «حبيبنا»: https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html`;
   const blob = await cardToBlob(card, art);
   // تطبيق الهاتف: قائمة المشاركة في أندرويد (الصورة والنص معًا)
   if (isNative && blob) {

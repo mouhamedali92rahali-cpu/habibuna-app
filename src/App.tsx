@@ -34,7 +34,7 @@ type Intro = { day: number; ids: string[] };
 // ثم تُستثنى من البطاقات القادمة فلا تتكرّر عليه. واحدة من الملامح والحياة اليومية واثنتان من بابين آخرين،
 // بلا أدعية ولا تذكير ولا ضعيف ولا طويل.
 function pickIntro(cards: CardData[]): string[] {
-  const ok = cards.filter((c) => c.chapter !== REMINDER && !c.dua && !c.weak && !c.long && !c.shifa);
+  const ok = cards.filter((c) => c.chapter !== REMINDER && !c.qalu && !c.dua && !c.weak && !c.long && !c.shifa);
   const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
   const feat = ok.filter((c) => FEATURED.has(c.chapter));
   const out: CardData[] = feat.length ? [rnd(feat)] : [];

@@ -5,7 +5,7 @@ import { Corner, Divider, Mihrab } from './Ornaments';
 const MARK: Record<string, string> = {
   'ضحكه': '☺', 'ملاطفاته': '❀', 'فرحه': '☀', 'ما يحبه': '♥', 'بكاؤه': '◌', 'وصاياه': '✎', 'الملامح والشكل': '◈', 'التواضع': '❖',
   'تعامله مع الخدم': '✦', 'رحمته بالأطفال': '✿', 'كرمه': '❂', 'رحمته بغير المسلمين': '☪', 'حبه لأمته': '♡', 'رحمته بأعدائه': '❋',
-  'محبة الصحابة له': '❤', 'شجاعته': '⚔', 'حلمه ويُسره': '☘', 'رفقه وتعليمه': '✧', 'مع أهله': '⌂', 'مكانته وفضله': '★',
+  'محبة الصحابة له': '❤', 'شجاعته': '⚔', 'حلمه ويُسره': '☘', 'رفقه وتعليمه': '✧', 'مع أهله': '⌂', 'مكانته وفضله': '★', 'قالوا عنه': '❝',
   'زهده': '◇', 'عبادته': '☾', 'رحمته بالحيوان': '✾', 'وفاؤه': '❁', 'صبره': '✥', 'دعاؤه لأصحابه': '✺',
   'رحمته ورأفته': '❦', 'حياته اليومية': '◎', 'الصلاة عليه': '❉',
 };
@@ -41,11 +41,12 @@ export function CardFront({ card }: { card: CardData }) {
     <div ref={ref} className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
       <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
       <div className="inner">
-        <div className="kicker">{card.chapter === 'الصلاة عليه' ? 'تذكير' : 'من مواقف النبي ﷺ'}</div>
+        <div className="kicker">{card.chapter === 'الصلاة عليه' ? 'تذكير' : card.qalu ? 'قالوا عنه ﷺ' : 'من مواقف النبي ﷺ'}</div>
         <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : '✦'}</span></div>
         <p className="ctext"><span>{card.text}</span></p>
         <Divider />
         <div className="src">
+          {card.qalu && <div className="who">{card.title}</div>}
           <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}

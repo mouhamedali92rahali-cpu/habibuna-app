@@ -104,7 +104,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 (function () {
   var MARK = { 'ضحكه': '☺', 'ملاطفاته': '❀', 'فرحه': '☀', 'ما يحبه': '♥', 'بكاؤه': '◌', 'وصاياه': '✎', 'الملامح والشكل': '◈', 'التواضع': '❖',
     'تعامله مع الخدم': '✦', 'رحمته بالأطفال': '✿', 'كرمه': '❂', 'رحمته بغير المسلمين': '☪', 'حبه لأمته': '♡', 'رحمته بأعدائه': '❋',
-    'محبة الصحابة له': '❤', 'شجاعته': '⚔', 'حلمه ويُسره': '☘', 'رفقه وتعليمه': '✧', 'مع أهله': '⌂', 'مكانته وفضله': '★', 'زهده': '◇', 'عبادته': '☾',
+    'محبة الصحابة له': '❤', 'شجاعته': '⚔', 'حلمه ويُسره': '☘', 'رفقه وتعليمه': '✧', 'مع أهله': '⌂', 'مكانته وفضله': '★', 'قالوا عنه': '❝', 'زهده': '◇', 'عبادته': '☾',
     'رحمته بالحيوان': '✾', 'وفاؤه': '❁', 'صبره': '✥', 'دعاؤه لأصحابه': '✺', 'رحمته ورأفته': '❦', 'حياته اليومية': '◎', 'الصلاة عليه': '❉' };
   var GREET = [['صباح النور ☀', 'موقفٌ من حياته ﷺ يرافقك اليوم'], ['وقفة قصيرة مع الحبيب ﷺ', 'دقيقة تُنعش قلبك وسط يومك'], ['مساء الخير 🌙', 'اختم يومك بالصلاة على الحبيب ﷺ']];
   var d = {};
@@ -119,7 +119,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('greet').innerHTML = '';
   $('greet').append(g[0]);
   var s = document.createElement('small'); s.textContent = g[1]; $('greet').append(s);
-  $('kicker').textContent = reminder ? 'تذكير' : c.dua ? 'من دعائه ﷺ' : 'من مواقف النبي ﷺ';
+  $('kicker').textContent = reminder ? 'تذكير' : c.qalu ? 'قالوا عنه ﷺ' : c.dua ? 'من دعائه ﷺ' : 'من مواقف النبي ﷺ';
   $('num').textContent = reminder ? '❉' : '✦';
   $('title').textContent = reminder ? 'صلِّ على الحبيب ﷺ' : c.title;
   $('text').textContent = c.text;
@@ -128,7 +128,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
-  if (reminder && !c.sharh) $('more').style.display = 'none'; // التذكير بلا شرح لا يحتاج الرابط
+  if ((reminder || c.qalu) && !c.sharh) $('more').style.display = 'none'; // التذكير بلا شرح لا يحتاج الرابط
   var send = function (what) {
     if (window.parent !== window) window.parent.postMessage({ habibunaPopup: what }, '*');
     else location.href = 'habibuna://' + what;
