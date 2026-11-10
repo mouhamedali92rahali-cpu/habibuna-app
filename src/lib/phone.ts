@@ -41,7 +41,10 @@ export async function phoneMaker(): Promise<Maker> {
 
 /** بيانات نافذة البطاقة (public/popup.html): رقم الموعد k والرقم المعروض والبطاقة */
 export const popupJson = (card: CardData, k: number, n: number) =>
-  JSON.stringify({ slot: k, n, card: { id: card.id, chapter: card.chapter, title: card.title, text: card.text, source: card.source, grade: card.grade, theme: card.theme, dua: !!card.dua, qalu: !!card.qalu, weak: !!card.weak, shifa: !!card.shifa, sharh: !!card.sharh } });
+  JSON.stringify({ slot: k, n, card: { id: card.id, chapter: card.chapter, title: card.title, text: card.text, source: card.source, grade: card.grade, theme: card.theme, dua: !!card.dua, qalu: !!card.qalu, weak: !!card.weak, shifa: !!card.shifa, sharh: !!card.sharh,
+    // ما يظهر داخل النافذة بزرّ «نص الحديث والشرح» (النسخة 3.35)
+    matn: card.hadith && !card.same ? card.hadith.matn : '', narr: card.hadith?.narrator || '', excerpt: !!card.hadith?.excerpt,
+    sharhText: card.sharh?.text || '', sharhSrc: card.sharh?.source || '' } });
 
 /** جدولة نوافذ البطاقات على الشاشة لنفس مواعيد الإشعارات؛ قائمة فارغة تُلغيها */
 export async function schedulePopups(entries: WeekSlot[], num: (id: string) => number): Promise<void> {

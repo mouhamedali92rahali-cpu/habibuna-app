@@ -57,6 +57,19 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .pray{width:100%;border:none;border-radius:16px;padding:14px 18px;font:700 1.08rem Amiri,serif;color:#1d2a28;
   background:linear-gradient(180deg,#e7c97a,#c9a24b);box-shadow:0 8px 22px rgba(201,162,75,.35),0 1px 0 rgba(255,255,255,.5) inset;cursor:pointer}
 .more{border:none;background:none;color:#f3e7c4;font:500 .95rem Tajawal,sans-serif;padding:6px 10px;opacity:.9;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.sheet{position:fixed;inset:auto 0 0 0;z-index:5;display:flex;justify-content:center;padding:0 10px max(10px,env(safe-area-inset-bottom));pointer-events:none}
+.sheet .box{pointer-events:auto;width:min(100%,400px);max-height:78vh;display:flex;flex-direction:column;border-radius:22px 22px 18px 18px;background:var(--frame);padding:10px;box-shadow:0 -10px 40px rgba(0,0,0,.45);animation:pop .45s ease-out both}
+.sheet .in{overflow:auto;border-radius:14px;background:var(--paper);padding:16px 18px 18px;text-align:right}
+.sheet h3{font:700 1.05rem Amiri,serif;color:var(--frame);margin:6px 0 4px;display:flex;align-items:center;gap:8px}
+.t-ivory .sheet h3{color:#6e5518}
+.sheet h3::after{content:"";flex:1;height:1px;background:var(--gold);opacity:.6}
+.sheet .nr{font-size:.82rem;opacity:.75;margin-bottom:4px}
+.sheet .mt{font-family:Naskh,'Noto Naskh Arabic',serif;font-size:1.05rem;line-height:2;margin:0 0 10px;white-space:pre-line}
+.sheet .ex{font-size:.74rem;opacity:.6;font-style:italic;margin:-6px 0 10px}
+.sheet .ss{font-size:.76rem;opacity:.7;margin:-4px 0 10px}
+.sheet .row{display:flex;gap:10px;justify-content:center;margin-top:6px}
+.sheet .row button{border:none;border-radius:12px;padding:10px 16px;font:500 .92rem Tajawal,sans-serif;cursor:pointer;background:var(--soft);color:var(--frame)}
+.t-ivory .sheet .row button{color:#6e5518}
 .x{position:absolute;top:max(12px,env(safe-area-inset-top));left:14px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#f3e7c4;font-size:1.3rem;cursor:pointer;z-index:3}
 .bye .card{animation:out .55s ease-in both}.bye .greet,.bye .actions{animation:fadeout .4s ease-in both}
 .bye .stage{animation:fadeout .6s .15s ease-in both}
@@ -96,9 +109,10 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   </article>
   <div class="actions">
     <button class="pray" id="pray">اللهم صلِّ وسلِّم على نبيّنا محمد</button>
-    <button class="more" id="more">اقرأ المصدر والشرح في التطبيق</button>
+    <button class="more" id="more">نص الحديث والشرح</button>
   </div>
 </div>
+<div class="sheet" id="sheet" hidden><div class="box"><div class="in" id="sin"></div></div></div>
 <div class="glow"></div>
 <script>
 (function () {
@@ -129,7 +143,34 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
-  if ((reminder || c.qalu) && !c.sharh) $('more').style.display = 'none'; // التذكير بلا شرح لا يحتاج الرابط
+  // «نص الحديث والشرح» داخل النافذة نفسها (النسخة 3.35؛ كان رابطًا إلى التطبيق فظنّه المستخدم جملة إخبارية)
+  var label = function () {
+    var m = !!c.matn, h = !!c.sharhText;
+    $('more').textContent = m && h ? 'نص الحديث والشرح' : m ? 'نص الحديث كاملًا' : h ? 'شرح موجز' : 'افتح البطاقة في التطبيق';
+    // النسخ المجدولة قبل 3.35 لا تحمل النص: يبقى الرابط إلى التطبيق
+    $('more').style.display = (reminder || c.qalu) && !m && !h && !c.sharh ? 'none' : '';
+  };
+  label();
+  var add = function (tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; e.textContent = txt; $('sin').append(e); };
+  var openSheet = function () {
+    $('sin').innerHTML = '';
+    if (c.matn) {
+      add('h3', '', 'نص الحديث');
+      if (c.narr) add('div', 'nr', 'عن ' + c.narr);
+      add('p', 'mt', c.matn);
+      if (c.excerpt) add('div', 'ex', 'مقتطف من الحديث الطويل');
+    }
+    if (c.sharhText) {
+      add('h3', '', 'شرح موجز');
+      add('p', 'mt', c.sharhText);
+      if (c.sharhSrc) add('div', 'ss', c.sharhSrc);
+    }
+    var row = document.createElement('div'); row.className = 'row';
+    var b1 = document.createElement('button'); b1.textContent = 'رجوع'; b1.onclick = function () { $('sheet').hidden = true; };
+    var b2 = document.createElement('button'); b2.textContent = 'افتحها في التطبيق'; b2.onclick = function () { send('open'); };
+    row.append(b1, b2); $('sin').append(row);
+    $('sheet').hidden = false; $('sin').scrollTop = 0;
+  };
   var send = function (what) {
     if (window.parent !== window) window.parent.postMessage({ habibunaPopup: what }, '*');
     else location.href = 'habibuna://' + what;
@@ -142,7 +183,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   // الضغط على الصلاة عليه ﷺ يُحسب في عدّاد المستخدم (في هاتفه وحده)، ثم تُغلق النافذة
   $('pray').onclick = function () { leave('pray', true); };
   $('x').onclick = function () { leave('close'); };
-  $('more').onclick = function () { send('open'); };
+  $('more').onclick = function () { if (c.matn || c.sharhText) openSheet(); else send('open'); };
   // نص البطاقة قد يُصحَّح بعد جدولة النافذة (تُجدول لثلاثين يومًا): نأخذ أحدث نص من الموقع إن أمكن، وإلا بقي المحفوظ
   if (c.id && window.fetch) {
     var ctl = window.AbortController ? new AbortController() : null;
@@ -157,7 +198,9 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
         if (n.grade) $('grade').textContent = n.grade;
         $('grade').classList.toggle('weak', !!n.weak);
         if (!reminder && n.title) $('title').textContent = n.title;
-        if (reminder && n.sharh) $('more').style.display = '';
+        if (n.hadith && !n.same) { c.matn = n.hadith.matn; c.narr = n.hadith.narrator || ''; c.excerpt = !!n.hadith.excerpt; } else c.matn = '';
+        c.sharhText = n.sharh ? n.sharh.text : ''; c.sharhSrc = n.sharh ? n.sharh.source : '';
+        label();
       })
       .catch(function () {});
   }
