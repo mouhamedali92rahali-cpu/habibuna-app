@@ -14,7 +14,4 @@
             <corners android:radius="38dp" />
         </shape>
     </item>
-    <item android:left="30dp" android:right="40dp" android:gravity="center_vertical" android:height="46dp">
-        <bitmap android:src="@drawable/widget_star_tile" android:tileModeX="repeat" android:tileModeY="disabled" android:gravity="center_vertical" />
-    </item>
 </layer-list>

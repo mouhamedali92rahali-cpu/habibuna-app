@@ -15,6 +15,15 @@
 
         <ImageView
             android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="60dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/widget_stars" />
+
+        <ImageView
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="44dp"

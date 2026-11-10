@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- صفّ النجوم الثمانية الباهتة، يتكرّر أفقيًّا داخل شريط في وسط الأداة -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android" android:src="@drawable/widget_star_tile" android:tileModeX="repeat" android:tileModeY="clamp" />
