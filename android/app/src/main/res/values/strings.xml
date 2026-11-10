@@ -4,4 +4,5 @@
     <string name="title_activity_main">حبيبنا</string>
     <string name="package_name">tn.habibuna.app</string>
     <string name="custom_url_scheme">tn.habibuna.app</string>
+    <string name="widget_desc">بطاقة اليوم من «حبيبنا» مع زرّ الصلاة على النبي ﷺ</string>
 </resources>

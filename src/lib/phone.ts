@@ -19,6 +19,10 @@ interface PhoneSettingsPlugin {
   takePrays(): Promise<{ days: string }>;
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
   shareImage(o: { base64: string; text: string }): Promise<void>;
+  setWidget(o: { items: string }): Promise<void>;
+  setPrayBase(o: { days: string }): Promise<void>;
+  widgetState(): Promise<{ placed: boolean; canPin: boolean }>;
+  pinWidget(): Promise<{ asked: boolean }>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 
@@ -50,4 +54,14 @@ export const popupJson = (card: CardData, k: number, n: number) =>
 export async function schedulePopups(entries: WeekSlot[], num: (id: string) => number): Promise<void> {
   if (!isNative) return;
   await PhoneSettings.schedulePopups({ items: entries.map((e) => ({ id: e.id, at: e.at.getTime(), json: popupJson(e.card, e.k, num(e.card.id)), cardId: e.card.id })) });
+}
+
+/** بطاقة اليوم على الشاشة الرئيسية (تجربة 2026-11-10): ما يُعرض في كل موعد */
+const GREET = ['صباح النور ☀', 'وقفة قصيرة مع الحبيب ﷺ', 'مساء الخير 🌙'];
+const kickerOf = (c: CardData) => (c.dalail ? 'من دلائل الخيرات' : c.chapter === 'الصلاة عليه' ? 'تذكير' : c.qalu ? 'قالوا عنه ﷺ' : c.dua ? 'من دعائه ﷺ' : 'من مواقف النبي ﷺ');
+export async function sendWidget(entries: { at: number; k: number; card: CardData }[]): Promise<void> {
+  if (!isNative) return;
+  const items = entries.map((e) => ({ at: e.at, kicker: `${GREET[e.k] ?? ''} · ${kickerOf(e.card)}`, text: e.card.qalu ? `${e.card.text}\n— ${e.card.title}` : e.card.text,
+    src: e.card.qalu ? e.card.source : `${e.card.source} · ${e.card.grade.split('—')[0].trim()}`, theme: e.card.theme, cardId: e.card.id }));
+  await PhoneSettings.setWidget({ items: JSON.stringify(items) });
 }

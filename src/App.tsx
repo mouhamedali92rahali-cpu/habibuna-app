@@ -4,7 +4,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
-import { PhoneSettings, phoneMaker, popupJson, schedulePopups, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendWidget, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
@@ -277,6 +277,12 @@ export default function App() {
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId, hist]); // eslint-disable-line react-hooks/exhaustive-deps
   const prayWeek = Array.from({ length: 7 }, (_, i) => prays[dayNo - i] ?? 0).reduce((a, b) => a + b, 0);
+  useEffect(() => {
+    if (!isNative) return;
+    const base: Record<number, number> = {};
+    for (let i = 0; i < 7; i++) if (prays[dayNo - i]) base[dayNo - i] = prays[dayNo - i];
+    void PhoneSettings.setPrayBase({ days: JSON.stringify(base) }).catch(() => {});
+  }, [prays, dayNo]);
   const pray = () => { addPrays({ [dayNo]: 1 }); say('صلّى الله عليه وسلّم ✦'); };
   const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
   const introToday = intro && intro.day === dayNo ? introCards : [];
@@ -344,6 +350,11 @@ export default function App() {
         const on = settings.notifyOn && settings.popupOn !== false && allowed;
         return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
       }).catch(() => {});
+      // بطاقة اليوم على الشاشة الرئيسية: بطاقات اليوم التي حان موعدها + المواعيد القادمة
+      const today = times.map((m, k) => ({ m, k })).filter((x) => x.m <= nowMin && slotOk(dayNo, x.m))
+        .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAt(dayNo, x.k) }; });
+      void sendWidget([...today, ...weekSlots(settings, pool).map((e) => ({ at: e.at.getTime(), k: e.k, card: e.card }))]).catch(() => {});
+      PhoneSettings.widgetState().then(setWidget).catch(() => {});
       PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
       PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
@@ -391,6 +402,7 @@ export default function App() {
   const backRef = useRef<() => void>(() => {});
   // زرّ الصلاة العائم (3.42): يشفّ أثناء التمرير ويعود بعد توقّفه
   const [scrolling, setScrolling] = useState(false);
+  const [widget, setWidget] = useState<{ placed: boolean; canPin: boolean } | null>(null);
   const scrollT = useRef<number | undefined>(undefined);
   const onMainScroll = () => { setScrolling(true); window.clearTimeout(scrollT.current); scrollT.current = window.setTimeout(() => setScrolling(false), 450); };
   const tapPray = (e: React.MouseEvent<HTMLButtonElement>) => { addPrays({ [dayNo]: 1 }); if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(15); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); };
@@ -585,6 +597,14 @@ export default function App() {
               </div>
               <p className="fzdemo">كان رسول الله ﷺ من أحسن الناس خُلُقًا.</p>
             </Frame>
+            {isNative && widget && (
+              <Frame title="بطاقة اليوم على شاشتك الرئيسية">
+                <p className="muted small">بطاقة اليوم تتبدّل وحدها في مواعيدها، وتحتها زرّ «ﷺ» تلمسه فيزيد عدد صلاتك دون فتح التطبيق.</p>
+                {widget.placed ? <p className="muted small">✓ البطاقة على شاشتك الرئيسية. لنقلها أو حذفها اضغط عليها ضغطًا طويلًا.</p>
+                  : widget.canPin ? <button className="primary" onClick={async () => { await PhoneSettings.pinWidget().catch(() => null); window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000); }}>ضعها على شاشتي الرئيسية</button>
+                  : <p className="muted small">اضغط ضغطًا طويلًا على مكان فارغ في الشاشة الرئيسية، ثم اختر الأدوات (Widgets)، ثم «حبيبنا».</p>}
+              </Frame>
+            )}
             <Frame title="البطاقة على شاشتك">
               {isNative ? (
                 <label className="row">

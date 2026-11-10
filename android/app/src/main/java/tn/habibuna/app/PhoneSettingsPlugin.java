@@ -143,6 +143,37 @@ public class PhoneSettingsPlugin extends Plugin {
     }
 
     /** البطاقة التي طلب المستخدم فتحها من النافذة (تُقرأ مرة واحدة) */
+    /** بطاقة اليوم على الشاشة الرئيسية: البطاقات [{at,kicker,text,src,theme,cardId}] لليوم والأيام القادمة */
+    @PluginMethod
+    public void setWidget(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("widget", call.getString("items", "[]")).apply();
+        CardWidget.updateAll(getContext());
+        call.resolve();
+    }
+
+    /** عدد الصلاة المحفوظ في التطبيق {يوم: عدد} للأيام السبعة، ليعرضه زرّ «ﷺ» على الشاشة الرئيسية */
+    @PluginMethod
+    public void setPrayBase(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("prayBase", call.getString("days", "{}")).apply();
+        CardWidget.updateAll(getContext());
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void widgetState(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("placed", CardWidget.placed(getContext()));
+        r.put("canPin", android.os.Build.VERSION.SDK_INT >= 26 && getContext().getSystemService(android.appwidget.AppWidgetManager.class) != null && getContext().getSystemService(android.appwidget.AppWidgetManager.class).isRequestPinAppWidgetSupported());
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void pinWidget(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("asked", CardWidget.requestPin(getContext()));
+        call.resolve(r);
+    }
+
     @PluginMethod
     public void takeOpenCard(PluginCall call) {
         android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
