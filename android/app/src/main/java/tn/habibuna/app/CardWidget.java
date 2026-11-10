@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONArray;
@@ -158,8 +159,29 @@ public class CardWidget extends AppWidgetProvider {
         } catch (Exception ignored) { }
         String fri = p.getString("fridayText", "");
         if (!fri.isEmpty() && Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) text = fri;
+        // جمل اليوم (2026-11-10، قرار المستخدم): آية يومًا وحديث يومًا من السبت إلى الأربعاء، والخميس فضل الصلاة عليه ﷺ، والجمعة حديث الجمعة
+        String src = "";
+        try {
+            JSONObject L = new JSONObject(p.getString("lines", "{}"));
+            JSONArray q = L.optJSONArray("q"), h = L.optJSONArray("h"), s = L.optJSONArray("s");
+            if (q != null && h != null && s != null && q.length() > 0 && h.length() > 0 && s.length() > 0) {
+                long d = today() - 2; // اليوم 2 من 1970 سبت
+                long week = Math.floorDiv(d, 7L); int pos = (int) Math.floorMod(d, 7L);
+                JSONObject o;
+                if (pos == 6) o = L.optJSONObject("f");
+                else if (pos == 5) o = s.getJSONObject((int) Math.floorMod(week, (long) s.length()));
+                else {
+                    long slot = week * 5 + pos;
+                    o = slot % 2 == 0 ? q.getJSONObject((int) Math.floorMod(slot / 2, (long) q.length()))
+                                      : h.getJSONObject((int) Math.floorMod(slot / 2, (long) h.length()));
+                }
+                if (o != null) { text = o.optString("t", text); src = o.optString("s", ""); }
+            }
+        } catch (Exception ignored) { }
+        v.setTextViewText(R.id.wsrc, src);
+        v.setViewVisibility(R.id.wsrc, src.isEmpty() ? View.GONE : View.VISIBLE);
         v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f);
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 16f : text.length() < 60 ? 14.5f : 13.5f));
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);

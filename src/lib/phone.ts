@@ -1,6 +1,7 @@
 import { registerPlugin } from '@capacitor/core';
 import { isNative, type WeekSlot } from './notify';
 import type { CardData } from './types';
+import { WIDGET_LINES } from './widgetLines';
 
 interface PhoneSettingsPlugin {
   info(): Promise<{ manufacturer: string; brand: string }>;
@@ -20,7 +21,7 @@ interface PhoneSettingsPlugin {
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
   shareImage(o: { base64: string; text: string }): Promise<void>;
   setWidget(o: { items: string }): Promise<void>;
-  setFormulas(o: { items: string; friday?: string }): Promise<void>;
+  setFormulas(o: { items: string; friday?: string; lines?: string }): Promise<void>;
   setWidgetHidden(o: { hidden: boolean }): Promise<void>;
   setPrayBase(o: { days: string }): Promise<void>;
   widgetState(): Promise<{ placed: boolean; canPin: boolean; hidden?: boolean }>;
@@ -64,7 +65,7 @@ export async function sendFormulas(cards: CardData[]): Promise<void> {
   if (!isNative) return;
   const items = cards.filter((c) => c.dalail).flatMap((c) => c.text.split('\n')).map((l) => l.trim()).filter((l) => l && l.length <= 90);
   const fri = cards.find((c) => c.friday);
-  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '' });
+  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '', lines: JSON.stringify(WIDGET_LINES) });
 }
 
 /** مواعيد البطاقات للزرّ على الشاشة الرئيسية: لون إطاره يتبع باب البطاقة الحالية ويتجدّد في الموعد القادم */

@@ -154,7 +154,7 @@ public class PhoneSettingsPlugin extends Plugin {
     /** صيغ الصلاة القصيرة لزرّ الشاشة الرئيسية (صيغة لكل يوم) */
     @PluginMethod
     public void setFormulas(PluginCall call) {
-        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("formulas", call.getString("items", "[]")).putString("fridayText", call.getString("friday", "")).apply();
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("formulas", call.getString("items", "[]")).putString("fridayText", call.getString("friday", "")).putString("lines", call.getString("lines", "{}")).apply();
         CardWidget.updateAll(getContext());
         call.resolve();
     }
