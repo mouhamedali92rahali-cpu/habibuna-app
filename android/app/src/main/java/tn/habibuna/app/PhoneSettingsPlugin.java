@@ -154,7 +154,7 @@ public class PhoneSettingsPlugin extends Plugin {
     /** صيغ الصلاة القصيرة لزرّ الشاشة الرئيسية (صيغة لكل يوم) */
     @PluginMethod
     public void setFormulas(PluginCall call) {
-        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("formulas", call.getString("items", "[]")).apply();
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("formulas", call.getString("items", "[]")).putString("fridayText", call.getString("friday", "")).apply();
         CardWidget.updateAll(getContext());
         call.resolve();
     }
@@ -171,8 +171,16 @@ public class PhoneSettingsPlugin extends Plugin {
     public void widgetState(PluginCall call) {
         JSObject r = new JSObject();
         r.put("placed", CardWidget.placed(getContext()));
+        r.put("hidden", CardWidget.hidden(getContext()));
         r.put("canPin", android.os.Build.VERSION.SDK_INT >= 26 && getContext().getSystemService(android.appwidget.AppWidgetManager.class) != null && getContext().getSystemService(android.appwidget.AppWidgetManager.class).isRequestPinAppWidgetSupported());
         call.resolve(r);
+    }
+
+    /** مفتاح «زرّ الصلاة على شاشتك» في التطبيق: يُخفي الأداة أو يُظهرها */
+    @PluginMethod
+    public void setWidgetHidden(PluginCall call) {
+        CardWidget.setHidden(getContext(), Boolean.TRUE.equals(call.getBoolean("hidden", false)));
+        call.resolve();
     }
 
     @PluginMethod

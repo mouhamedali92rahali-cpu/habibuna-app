@@ -9,7 +9,7 @@ import android.os.Looper;
 /**
  * لمس «ﷺ» في أداة الشاشة الرئيسية (تجربة 2026-11-10، طلب المستخدم): نافذة شفافة تمامًا تُفتح لحظة،
  * لأن أندرويد لا يسمح بالاهتزاز إلا للتطبيق الذي في المقدّمة. تسجّل الصلاة وتُظهر التوهّج وتهتزّ،
- * وتبقى 180ms قبل أن تُغلق (أندرويد يقطع اهتزاز التطبيق حين يرجع إلى الخلفية؛ كان يهتزّ مرة من كل خمس).
+ * (والتوهّج حُذف بطلب المستخدم) وتبقى 180ms قبل أن تُغلق (أندرويد يقطع اهتزاز التطبيق حين يرجع إلى الخلفية؛ كان يهتزّ مرة من كل خمس).
  */
 public class PrayTapActivity extends Activity {
     @Override
@@ -17,9 +17,8 @@ public class PrayTapActivity extends Activity {
         super.onCreate(b);
         final android.content.Context app = getApplicationContext();
         CardWidget.recordPray(app);
-        CardWidget.updateAll(app, true);
+        CardWidget.updateAll(app);
         Handler h = new Handler(Looper.getMainLooper());
-        h.postDelayed(() -> CardWidget.updateAll(app, false), 900);
         h.postDelayed(() -> { finish(); overridePendingTransition(0, 0); }, 180);
     }
 

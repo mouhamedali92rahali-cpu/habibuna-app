@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- زرّ الصلاة على النبي ﷺ (أ + ب، اختيار المستخدم 2026-11-10): الدائرة الذهبية يمينًا بعدد الأسبوع،
      خيط ذهبي ثانٍ يبدأ من تحت الدائرة ويحيط بالصيغة، ونجوم ثمانية باهتة في الخلفية، ونجمة في الطرف الأيسر.
-     توهّج ذهبي حول الدائرة لحظة اللمس (wglow). -->
+     الإطار يأخذ لون باب البطاقة الحالية. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wroot"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <FrameLayout
+        android:id="@+id/wbody"
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/widget_frame">
+        android:layout_gravity="center_vertical">
+
+        <!-- الحافّة بلون باب البطاقة الحالية (setColorFilter)، ثم الوجه العاجي بخيطه الذهبي -->
+        <ImageView
+            android:id="@+id/wframe"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/widget_edge" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/widget_face" />
 
         <ImageView
             android:layout_width="match_parent"
@@ -47,13 +62,6 @@
                 android:layout_height="76dp">
 
                 <ImageView
-                    android:id="@+id/wglow"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/widget_glow"
-                    android:visibility="gone" />
-
-                <ImageView
                     android:layout_width="62dp"
                     android:layout_height="62dp"
                     android:layout_gravity="center"
@@ -75,6 +83,7 @@
 
                     <TextView
                         android:id="@+id/wcount"
+                        android:layout_marginTop="-6dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"

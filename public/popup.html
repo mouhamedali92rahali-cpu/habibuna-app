@@ -45,6 +45,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .text{font-family:Naskh,'Noto Naskh Arabic',serif;font-size:1.2rem;line-height:2.05;margin:4px 0 6px;white-space:pre-line}
 .athar{margin:2px 0 4px;padding:7px 12px;border-radius:12px;background:rgba(201,162,75,.16);border:1px solid rgba(201,162,75,.5);font:400 .95rem/1.7 Tajawal,sans-serif;color:var(--ink)}
 .athar b{color:#a8822f}
+.news{margin:8px 34px 0;padding:6px 10px;border-radius:10px;border:1px dashed rgba(168,130,47,.7);font:500 .85rem/1.6 Tajawal,sans-serif;color:#7a5c1c;text-align:center;cursor:pointer}
 .divider{display:flex;align-items:center;gap:8px;width:62%;margin:12px 0 10px}
 .divider span{flex:1;height:1px;background:var(--gold)}
 .divider i{width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
@@ -109,6 +110,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
         <div class="grade weak" id="shifa" hidden>ذكره القاضي عياض في الشفا</div>
       </div>
       <div class="chip" id="chip"></div>
+      <p class="news" id="news" hidden>جديد ✦ زرّ الصلاة على النبي ﷺ على شاشتك الرئيسية، فعّله من التطبيق</p>
     </div>
   </article>
   <div class="actions">
@@ -143,6 +145,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('text').textContent = c.text;
   var setAthar = function (t) { $('atharT').textContent = t || ''; $('athar').hidden = !t; };
   setAthar(c.athar);
+  if (d.news) { $('news').hidden = false; $('news').onclick = function () { send('open'); }; }
   $('source').textContent = 'المصدر: ' + c.source;
   if (c.qalu) { $('source').textContent = 'المصدر:'; var en = document.createElement('div'); en.dir = /[A-Za-z]/.test(c.source) ? 'ltr' : 'rtl'; en.style.unicodeBidi = 'isolate'; en.textContent = c.source; $('source').append(en); }
   $('grade').textContent = c.grade;

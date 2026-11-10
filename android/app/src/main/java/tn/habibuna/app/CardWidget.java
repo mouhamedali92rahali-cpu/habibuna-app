@@ -46,13 +46,8 @@ public class CardWidget extends AppWidgetProvider {
     public void onReceive(Context ctx, Intent i) {
         super.onReceive(ctx, i);
         String a = i.getAction();
-        if (PRAY.equals(a) || GLOW.equals(a)) {
-            // توهّج ذهبي حول الدائرة نحو نصف ثانية، ثم يعود الشكل كما كان (GLOW: سجّلت PrayTapActivity الصلاة واهتزّت)
-            if (PRAY.equals(a)) { recordPray(ctx); buzz(ctx); }
-            updateAll(ctx, true);
-            final PendingResult r = goAsync();
-            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { updateAll(ctx, false); } finally { r.finish(); } }, 550);
-        }
+        if (PRAY.equals(a)) { recordPray(ctx); buzz(ctx); updateAll(ctx); }
+        else if (GLOW.equals(a)) updateAll(ctx);
         else if (TICK.equals(a) || Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)) updateAll(ctx);
     }
 
@@ -95,6 +90,14 @@ public class CardWidget extends AppWidgetProvider {
         return n;
     }
 
+    /** عدد صلوات اليوم (رقم الأداة، قرار المستخدم 2026-11-10: يبدأ من الصفر كل صباح) */
+    static int todayCount(SharedPreferences p) {
+        try {
+            String k = String.valueOf(today());
+            return new JSONObject(p.getString("prayBase", "{}")).optInt(k, 0) + new JSONObject(p.getString("prays", "{}")).optInt(k, 0);
+        } catch (Exception e) { return 0; }
+    }
+
     static int frameColor(String theme) {
         switch (theme == null ? "" : theme) {
             case "navy": return Color.parseColor("#17305C");
@@ -114,42 +117,60 @@ public class CardWidget extends AppWidgetProvider {
 
     public static void updateAll(Context ctx) { updateAll(ctx, false); }
 
+    /** glow: باقٍ في التوقيع لما يستدعيه، والتوهّج حُذف بطلب المستخدم (الاهتزاز من PrayTapActivity لا منه) */
     public static void updateAll(Context ctx, boolean glow) {
         AppWidgetManager m = AppWidgetManager.getInstance(ctx);
         SharedPreferences p = ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE);
-        // الزرّ الصغير بحجم أيقونة
+        // مفتاح التطبيق مطفأ: تختفي الأداة (أندرويد لا يسمح للتطبيق بإزالتها؛ يزيلها صاحبها بالضغط الطويل)
+        boolean hidden = p.getBoolean("widgetHidden", false);
+        int vis = hidden ? android.view.View.INVISIBLE : android.view.View.VISIBLE;
+        String count = String.valueOf(todayCount(p));
+        Intent tap = new Intent(ctx, PrayTapActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
         int[] coins = m.getAppWidgetIds(new ComponentName(ctx, CoinWidget.class));
         if (coins != null && coins.length > 0) {
             RemoteViews c = new RemoteViews(ctx.getPackageName(), R.layout.widget_coin);
-            c.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
-            c.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
-            Intent tap = new Intent(ctx, PrayTapActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            c.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7003, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            c.setTextViewText(R.id.wcount, count);
+            c.setViewVisibility(R.id.wroot, vis);
+            if (!hidden) c.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7003, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             m.updateAppWidget(coins, c);
         }
         int[] ids = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
-        if (ids == null || ids.length == 0) { scheduleNext(ctx, 0); return; }
+        long now = System.currentTimeMillis();
+        // لون الإطار: باب البطاقة التي حان موعدها (يرسلها التطبيق: setWidget)، ويتبدّل في الموعد القادم
+        String theme = "emerald"; long nextAt = 0, curAt = -1;
+        try {
+            JSONArray items = new JSONArray(p.getString("widget", "[]"));
+            for (int k = 0; k < items.length(); k++) {
+                JSONObject it = items.getJSONObject(k);
+                long at = it.optLong("at");
+                if (at <= now) { if (at > curAt) { curAt = at; theme = it.optString("theme", "emerald"); } }
+                else if (nextAt == 0 || at < nextAt) nextAt = at;
+            }
+        } catch (Exception ignored) { }
+        if (ids == null || ids.length == 0) { scheduleNext(ctx, nextAt); return; }
         RemoteViews v = new RemoteViews(ctx.getPackageName(), R.layout.widget_card);
-        // صيغة اليوم: صيغ «دلائل الخيرات» القصيرة يرسلها التطبيق، وتتبدّل كل يوم
+        // صيغة اليوم من «دلائل الخيرات» تتبدّل كل يوم، ويوم الجمعة حديث «فأكثروا عليّ من الصلاة فيه»
         String text = "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ";
         try {
             JSONArray f = new JSONArray(p.getString("formulas", "[]"));
             if (f.length() > 0) text = f.optString((int) (today() % f.length()));
         } catch (Exception ignored) { }
+        String fri = p.getString("fridayText", "");
+        if (!fri.isEmpty() && Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) text = fri;
         v.setTextViewText(R.id.wtext, text);
         v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f);
-        v.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
-        v.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
-
-        // لمس «ﷺ» يزيد العدد دون فتح التطبيق؛ لمس الصيغة يفتح التطبيق
-        Intent pray = new Intent(ctx, PrayTapActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, pray, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-        Intent open = new Intent(ctx, MainActivity.class);
-        open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        v.setOnClickPendingIntent(R.id.wtext, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-
+        v.setTextViewText(R.id.wcount, count);
+        v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
+        v.setViewVisibility(R.id.wroot, vis);
+        if (!hidden) {
+            v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            Intent open = new Intent(ctx, MainActivity.class);
+            open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            v.setOnClickPendingIntent(R.id.wtext, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        }
         m.updateAppWidget(ids, v);
-        scheduleNext(ctx, 0);
+        scheduleNext(ctx, nextAt);
     }
 
     private static PendingIntent tick(Context ctx, int extra) {
@@ -167,6 +188,15 @@ public class CardWidget extends AppWidgetProvider {
         PendingIntent pi = tick(ctx, PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
         else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+    }
+
+    public static void setHidden(Context ctx, boolean h) {
+        ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).edit().putBoolean("widgetHidden", h).apply();
+        updateAll(ctx);
+    }
+
+    public static boolean hidden(Context ctx) {
+        return ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).getBoolean("widgetHidden", false);
     }
 
     /** هل وضع المستخدم البطاقة على شاشته الرئيسية؟ */

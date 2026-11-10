@@ -4,7 +4,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { latestApp, loadCards, newer } from './lib/cards';
-import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
@@ -226,7 +226,7 @@ export default function App() {
   }, []);
   useEffect(() => { save('hiddenChapters', hidden); }, [hidden]);
 
-  const say = useCallback((m: string) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), Math.max(2200, m.length * 70)); }, []);
+  const say = useCallback((m: string, ms = 0) => { setToast(m); window.clearTimeout(toastT.current); toastT.current = window.setTimeout(() => setToast(''), ms || Math.max(2200, m.length * 70)); }, []);
 
   // ترتيب البطاقات المحفوظ بلا الأنواع المخفيّة؛ منه تُحسب بطاقات كل يوم (في التطبيق وفي الإشعارات)
   // بطاقات البداية مستثناة منه، فلا تعود في الأيام القادمة
@@ -277,6 +277,7 @@ export default function App() {
       .map((x) => x.e!);
   }, [pool, times, dayNo, nowMin, byId, hist]); // eslint-disable-line react-hooks/exhaustive-deps
   const prayWeek = Array.from({ length: 7 }, (_, i) => prays[dayNo - i] ?? 0).reduce((a, b) => a + b, 0);
+  const prayToday = prays[dayNo] ?? 0;
   useEffect(() => {
     if (!isNative) return;
     const base: Record<number, number> = {};
@@ -345,14 +346,21 @@ export default function App() {
     const run = () => {
       scheduleWeek(settings, pool).then(setPlanned).catch(() => setPlanned(0));
       exactAllowed().then(setExact).catch(() => {});
-      PhoneSettings.canOverlay().then(({ allowed }) => {
-        setOverlay(allowed);
-        const on = settings.notifyOn && settings.popupOn !== false && allowed;
-        return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0);
+      PhoneSettings.widgetState().catch(() => null).then((ws) => {
+        if (ws) setWidget(ws);
+        const active = !!ws?.placed && !ws?.hidden;
+        const newsUntil = active ? 0 : widgetNewsAt + 7 * 86_400_000;
+        return PhoneSettings.canOverlay().then(({ allowed }) => {
+          setOverlay(allowed);
+          const on = settings.notifyOn && settings.popupOn !== false && allowed;
+          return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0, newsUntil);
+        });
       }).catch(() => {});
-      // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة
+      // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة، وبطاقات اليوم والمواعيد القادمة (للون الإطار)
       void sendFormulas(cards ?? []).catch(() => {});
-      PhoneSettings.widgetState().then(setWidget).catch(() => {});
+      const todaySlots = times.map((m, k) => ({ m, k })).filter((x) => x.m <= nowMin && slotOk(dayNo, x.m))
+        .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAt(dayNo, x.k) }; });
+      void sendWidget([...todaySlots, ...weekSlots(settings, pool).map((e) => ({ at: e.at.getTime(), k: e.k, card: e.card }))]).catch(() => {});
       PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
       PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
@@ -400,7 +408,10 @@ export default function App() {
   const backRef = useRef<() => void>(() => {});
   // زرّ الصلاة العائم (3.42): يشفّ أثناء التمرير ويعود بعد توقّفه
   const [scrolling, setScrolling] = useState(false);
-  const [widget, setWidget] = useState<{ placed: boolean; canPin: boolean } | null>(null);
+  const [widget, setWidget] = useState<{ placed: boolean; canPin: boolean; hidden?: boolean } | null>(null);
+  // تنبيه «جديد ✦ زرّ الصلاة على شاشتك الرئيسية»: أسبوع من أول ظهور، أو حتى يفعّله أو يغلقه (قرار المستخدم 2026-11-10)
+  const [widgetNewsAt] = useState(() => { const v = load<number>('widgetNewsAt', 0); if (v) return v; const t = Date.now(); save('widgetNewsAt', t); return t; });
+  const [widgetNewsOff, setWidgetNewsOff] = useState(() => load('widgetNewsOff', false));
   const scrollT = useRef<number | undefined>(undefined);
   const onMainScroll = () => { setScrolling(true); window.clearTimeout(scrollT.current); scrollT.current = window.setTimeout(() => setScrolling(false), 450); };
   const tapPray = (e: React.MouseEvent<HTMLButtonElement>) => { addPrays({ [dayNo]: 1 }); if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(15); } catch { /* لا اهتزاز */ } const b = e.currentTarget; const s = document.createElement('span'); s.className = 'plus1'; s.textContent = '+1'; b.append(s); window.setTimeout(() => s.remove(), 700); };
@@ -445,15 +456,7 @@ export default function App() {
       <header className="top">
         <span className="brandmark">حبيبنا</span>
         <ThemeToggle />
-        {isNative && widget && tab === 'feed' && (
-          <button className={'homebtn' + (widget.placed ? ' on' : '')} aria-label="زرّ الصلاة على شاشتك الرئيسية"
-            onClick={async () => {
-              if (widget.placed) { say('زرّ الصلاة على شاشتك الرئيسية ✦ لإزالته اضغط عليه ضغطًا طويلًا ثم اختر الإزالة'); return; }
-              const r = await PhoneSettings.pinWidget({ kind: 'coin' }).catch(() => ({ asked: false }));
-              if (!r.asked) say('اضغط ضغطًا طويلًا على الشاشة الرئيسية، ثم الأدوات (Widgets)، ثم «حبيبنا»');
-              window.setTimeout(() => PhoneSettings.widgetState().then(setWidget).catch(() => {}), 4000);
-            }}>ﷺ<i>{widget.placed ? '✓' : '+'}</i></button>
-        )}
+        {isNative && widget && tab === 'feed' && <WidgetToggle widget={widget} onChange={setWidget} say={say} />}
         {tab === 'feed' && (
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
         )}
@@ -485,6 +488,16 @@ export default function App() {
                 <div className="btns"><button className="primary" onClick={() => { setArtNews(false); save('artNews', true); }}>حسنًا</button></div>
               </div>
             )}
+            {isNative && widget && !widgetNewsOff && !(widget.placed && !widget.hidden) && Date.now() < widgetNewsAt + 7 * 86_400_000 && (
+              <div className="offer news">
+                <b>جديد ✦ زرّ الصلاة على شاشتك الرئيسية</b>
+                <p>دائرة «ﷺ» على شاشتك الرئيسية، تلمسها فتصلّي على النبي ﷺ ويزيد عددك دون فتح التطبيق، وأمامها صيغة من صيغ الصلاة عليه تتبدّل كل يوم. تشغّله وتطفئه من المفتاح الذهبي في أعلى هذه الصفحة.</p>
+                <div className="btns">
+                  <button className="primary" onClick={() => { void widgetOn(widget, setWidget, say); }}>ضعه على شاشتي</button>
+                  <button className="linkbtn" onClick={() => { setWidgetNewsOff(true); save('widgetNewsOff', true); }}>لاحقًا</button>
+                </div>
+              </div>
+            )}
             {quizAvail && quizLater !== dayNo && (
               <div className="offer quizoffer">
                 <b>مراجعة الأسبوع جاهزة ✦</b>
@@ -514,7 +527,7 @@ export default function App() {
             {quizDone[qKey] && <p className="praycount">✦ مراجعة هذا الأسبوع: {quizDone[qKey].score} من {quizDone[qKey].total}</p>}
             {pool.length > 0 && (
               <div className="prayrow">
-                <p className="praycount">{prayWeek > 0 ? <>صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</> : <>صلِّ على النبي ﷺ</>}</p>
+                <p className="praycount">{prayWeek === 0 ? <>صلِّ على النبي ﷺ</> : prayToday > 0 ? <>صلّيت على النبي ﷺ اليوم {times_(prayToday)}، وهذا الأسبوع {times_(prayWeek)}</> : <>صلّيت على النبي ﷺ هذا الأسبوع {times_(prayWeek)}</>}</p>
               </div>
             )}
             {(feed.length > 0 || introToday.length > 0) && <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>}
@@ -683,7 +696,7 @@ export default function App() {
         )}
       </main>
 
-      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}><span className="sw">ﷺ</span><b className="fabn">{prayWeek}</b></button>}
+      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}><span className="sw">ﷺ</span><b className="fabn">{prayToday}</b></button>}
 
       <nav className="tabs">
         {TABS.map((t) => (
@@ -799,6 +812,33 @@ function HuaweiSteps() {
 }
 
 /** زرّ النهار/الليل (3.41، طلب المستخدم): بلا كتابة، ويغلب وضع الهاتف بعد أول ضغطة */
+/** يضع «زرّ الصلاة» على الشاشة الرئيسية أو يُظهره إن كان مخفيًّا */
+async function widgetOn(w: { placed: boolean; canPin: boolean; hidden?: boolean }, set: (w: { placed: boolean; canPin: boolean; hidden?: boolean }) => void, say: (m: string, ms?: number) => void) {
+  await PhoneSettings.setWidgetHidden({ hidden: false }).catch(() => {});
+  if (w.placed) { set({ ...w, hidden: false }); return; }
+  const r = await PhoneSettings.pinWidget({ kind: 'strip' }).catch(() => ({ asked: false }));
+  if (!r.asked) say('اضغط ضغطًا طويلًا على مكان فارغ في الشاشة الرئيسية، ثم اختر الأدوات (Widgets)، ثم «حبيبنا»', 6000);
+  // يُقرأ الوضع بعد أن يوافق صاحب الهاتف
+  for (const ms of [3000, 7000, 12000]) window.setTimeout(() => PhoneSettings.widgetState().then(set).catch(() => {}), ms);
+}
+
+/** مفتاح «زرّ الصلاة على شاشتك الرئيسية» بجانب زرّ الليل والنهار (قرار المستخدم 2026-11-10) */
+function WidgetToggle({ widget, onChange, say }: { widget: { placed: boolean; canPin: boolean; hidden?: boolean }; onChange: (w: { placed: boolean; canPin: boolean; hidden?: boolean }) => void; say: (m: string, ms?: number) => void }) {
+  const on = widget.placed && !widget.hidden;
+  const flip = async () => {
+    if (!on) { await widgetOn(widget, onChange, say); return; }
+    await PhoneSettings.setWidgetHidden({ hidden: true }).catch(() => {});
+    onChange({ ...widget, hidden: true });
+    say('أخفينا زرّ الصلاة من شاشتك ✦ ولإزالة مكانه نهائيًّا: اضغط عليه ضغطًا طويلًا في الشاشة الرئيسية، ثم اختر الإزالة', 7000);
+  };
+  return (
+    <button className={'wtoggle' + (on ? ' on' : '')} onClick={() => { void flip(); }} aria-label={on ? 'إخفاء زرّ الصلاة من الشاشة الرئيسية' : 'وضع زرّ الصلاة على الشاشة الرئيسية'}>
+      <span className="knob">ﷺ</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
+    </button>
+  );
+}
+
 function ThemeToggle() {
   const sys = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches;
   const [mode, setMode] = useState<'light' | 'dark' | null>(() => { try { const v = localStorage.getItem('theme'); return v === 'light' || v === 'dark' ? v : null; } catch { return null; } });
