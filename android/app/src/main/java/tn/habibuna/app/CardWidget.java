@@ -159,29 +159,36 @@ public class CardWidget extends AppWidgetProvider {
         } catch (Exception ignored) { }
         String fri = p.getString("fridayText", "");
         if (!fri.isEmpty() && Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) text = fri;
-        // جمل اليوم (2026-11-10، قرار المستخدم): آية يومًا وحديث يومًا من السبت إلى الأربعاء، والخميس فضل الصلاة عليه ﷺ، والجمعة حديث الجمعة
+        // جمل الشريط (قرار المستخدم 2026-11-11): تتبدّل ثلاث مرات في اليوم في 11:00 و16:00 و21:00 (بعد مواعيد البطاقات بساعة)؛
+        // آية وحديث بالتناوب، وفي الجمعة 11:00 حديث الجمعة، وفي الخميس 21:00 (ليلة الجمعة) من فضل الصلاة عليه ﷺ
         String src = "";
         try {
             JSONObject L = new JSONObject(p.getString("lines", "{}"));
             JSONArray q = L.optJSONArray("q"), h = L.optJSONArray("h"), s = L.optJSONArray("s");
             if (q != null && h != null && s != null && q.length() > 0 && h.length() > 0 && s.length() > 0) {
-                long d = today() - 2; // اليوم 2 من 1970 سبت
+                Calendar cal = Calendar.getInstance();
+                int hr = cal.get(Calendar.HOUR_OF_DAY);
+                long day = today(); int k;
+                if (hr >= 21) k = 2; else if (hr >= 16) k = 1; else if (hr >= 11) k = 0; else { k = 2; day -= 1; }
+                long d = day - 2; // اليوم 2 من 1970 سبت
                 long week = Math.floorDiv(d, 7L); int pos = (int) Math.floorMod(d, 7L);
                 JSONObject o;
-                if (pos == 6) o = L.optJSONObject("f");
-                else if (pos == 5) o = s.getJSONObject((int) Math.floorMod(week, (long) s.length()));
+                if (pos == 6 && k == 0) o = L.optJSONObject("f");
+                else if (pos == 5 && k == 2) o = s.getJSONObject((int) Math.floorMod(week, (long) s.length()));
                 else {
-                    long slot = week * 5 + pos;
+                    long slot = day * 3 + k;
                     o = slot % 2 == 0 ? q.getJSONObject((int) Math.floorMod(slot / 2, (long) q.length()))
                                       : h.getJSONObject((int) Math.floorMod(slot / 2, (long) h.length()));
                 }
                 if (o != null) { text = o.optString("t", text); src = o.optString("s", ""); }
+                // قوسا الآية ﴿ ﴾ يرسمهما خط الهاتف صغيرين بنقطة، فتُحذفان ويُكتب «سورة» قبل اسمها
+                if (text.startsWith("﴿") && text.endsWith("﴾")) { text = text.substring(1, text.length() - 1); src = "سورة " + src; }
             }
         } catch (Exception ignored) { }
         v.setTextViewText(R.id.wsrc, src);
         v.setViewVisibility(R.id.wsrc, src.isEmpty() ? View.GONE : View.VISIBLE);
         v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 18f : text.length() < 60 ? 16.5f : text.length() < 80 ? 15f : 13.5f));
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 16.5f : text.length() < 60 ? 15.5f : text.length() < 80 ? 14f : 13f));
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);
@@ -206,6 +213,12 @@ public class CardWidget extends AppWidgetProvider {
         c.set(Calendar.HOUR_OF_DAY, 0); c.set(Calendar.MINUTE, 0); c.set(Calendar.SECOND, 5); c.set(Calendar.MILLISECOND, 0);
         long at = c.getTimeInMillis();
         if (nextAt > 0 && nextAt + 2000 < at) at = nextAt + 2000;
+        // ساعات تبدّل جملة الشريط
+        for (int hh : new int[]{11, 16, 21}) {
+            Calendar t = Calendar.getInstance();
+            t.set(Calendar.HOUR_OF_DAY, hh); t.set(Calendar.MINUTE, 0); t.set(Calendar.SECOND, 5); t.set(Calendar.MILLISECOND, 0);
+            if (t.getTimeInMillis() > System.currentTimeMillis() + 1000 && t.getTimeInMillis() < at) at = t.getTimeInMillis();
+        }
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = tick(ctx, PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
