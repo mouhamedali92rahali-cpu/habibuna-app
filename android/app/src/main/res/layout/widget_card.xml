@@ -113,7 +113,8 @@
                 android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
                 android:textColor="#14211F"
                 android:textDirection="rtl"
-                android:textSize="17sp" />
+                android:textSize="17sp"
+                android:textStyle="bold" />
             <TextView
                 android:id="@+id/wsrc"
                 android:layout_width="match_parent"
