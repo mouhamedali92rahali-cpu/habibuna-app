@@ -350,3 +350,4 @@ ul.steps li{background:rgba(201,162,75,.12);border-radius:10px;padding:8px 12px;
 .btnnote { display: block; font-size: .78em; font-weight: 400; opacity: .8; margin-top: 2px; }
 .src .nw { white-space: nowrap; }
 .src .who { font-weight: 600; color: var(--frame); }
+.src .ltr { direction: ltr; unicode-bidi: isolate; font-family: Georgia, "Times New Roman", serif; font-size: .92em; }

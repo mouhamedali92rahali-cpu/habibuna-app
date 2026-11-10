@@ -124,6 +124,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('title').textContent = reminder ? 'صلِّ على الحبيب ﷺ' : c.title;
   $('text').textContent = c.text;
   $('source').textContent = 'المصدر: ' + c.source;
+  if (c.qalu) { $('source').textContent = 'المصدر:'; var en = document.createElement('div'); en.dir = 'ltr'; en.style.unicodeBidi = 'isolate'; en.textContent = c.source; $('source').append(en); }
   $('grade').textContent = c.grade;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;
