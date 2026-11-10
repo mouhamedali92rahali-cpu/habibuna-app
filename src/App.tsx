@@ -593,6 +593,7 @@ export default function App() {
         {tab === 'settings' && sub === 'main' && (
           <section className="page settings">
             <h1><span>✦</span> الإعدادات <span>✦</span></h1>
+            <p className="sline">تصلك البطاقات كل يوم في {slots().map(fmt).join(' و ')}</p>
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
               <Frame title="خطوة خاصة بهاتفك" className="hl">
                 <p>{maker === 'xiaomi' ? 'هواتف شاومي' : maker === 'huawei' ? 'هواتف هواوي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
@@ -606,17 +607,6 @@ export default function App() {
                 <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن ✦ وصلِّ عليه ﷺ' : 'تم'}</button>
               </Frame>
             )}
-            <Frame title="مواعيد البطاقات">
-              <div className="times">{slots().map((m, k) => <span key={m}><b>{fmt(m)}</b><small>{['صباحًا', 'ظهرًا', 'مساءً'][k]}</small></span>)}</div>
-            </Frame>
-            <Frame title="حجم الخط">
-              <div className="fzrow">
-                <button className="ghost" dir="ltr" aria-label="تصغير الخط" disabled={(settings.fontScale ?? 1) <= FZ[0]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, -1) })}>A−</button>
-                <output>{Math.round((settings.fontScale ?? 1) * 100)}٪</output>
-                <button className="ghost" dir="ltr" aria-label="تكبير الخط" disabled={(settings.fontScale ?? 1) >= FZ[FZ.length - 1]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, 1) })}>A+</button>
-              </div>
-              <p className="fzdemo">كان رسول الله ﷺ من أحسن الناس خُلُقًا.</p>
-            </Frame>
             <Frame title="البطاقة على شاشتك">
               {isNative ? (
                 <label className="row">
@@ -686,6 +676,11 @@ export default function App() {
                 )}
               </Frame>
             )}
+            <div className="fzline"><span>حجم خط البطاقات</span>
+                <button className="ghost" dir="ltr" aria-label="تصغير الخط" disabled={(settings.fontScale ?? 1) <= FZ[0]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, -1) })}>A−</button>
+                <output>{Math.round((settings.fontScale ?? 1) * 100)}٪</output>
+                <button className="ghost" dir="ltr" aria-label="تكبير الخط" disabled={(settings.fontScale ?? 1) >= FZ[FZ.length - 1]} onClick={() => setSettings({ ...settings, fontScale: stepFz(settings.fontScale, 1) })}>A+</button>
+              </div>
             <Frame title="كيف تعمل الإشعارات؟">
               <p>{isNative
                 ? `يُجهّز التطبيق مواعيد بطاقات الأيام الثلاثين القادمة، ويجدّدها كلما فتحته، فتصلك البطاقات ولو كان مغلقًا. وفي هواتف شاومي وهواوي وأوبو: فعّل ${sysText('autostart')} إن وجدته، واجعل ${sysText('battery')} على ${sysText('noRestrict')}، وإلا فقد تتأخر البطاقات أو لا تصل.`

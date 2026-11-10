@@ -403,3 +403,11 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .wtoggle.on{border-color:var(--gold);background:rgba(201,162,75,.18)}
 .wtoggle.on .knob{left:26px;opacity:1}
 .wtoggle.on svg{margin-left:0;margin-right:auto;color:var(--emerald)}
+
+/* الإعدادات (2026-11-10، طلب المستخدم): المواعيد سطر صغير، وحجم الخط سطر نحيل في «المساعدة» */
+.sline{text-align:center;color:rgba(246,239,221,.82);font-size:.9rem;margin:-6px 0 14px}
+.sline bdi{direction:ltr;unicode-bidi:isolate}
+.fzline{display:flex;align-items:center;gap:8px;background:#f8f2e2;color:#2b2a24;border:2px solid #0f5c4d;border-radius:14px;padding:6px 12px;margin:0 0 16px}
+.fzline span{flex:1;font-weight:700;font-size:.95rem}
+.fzline button{min-width:44px;padding:4px 8px;font-weight:700}
+.fzline output{min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
