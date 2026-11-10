@@ -429,6 +429,7 @@ export default function App() {
     <div className={'app' + (tab === 'settings' ? ' dressed' : '')}>
       <header className="top">
         <span className="brandmark">حبيبنا</span>
+        <ThemeToggle />
         {tab === 'feed' && (
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
         )}
@@ -769,5 +770,21 @@ function HuaweiSteps() {
       <li>أوقف <Sys k="hwAuto" /></li>
       <li>فعّل الخيارات الثلاثة: <Sys k="hwOptions" /></li>
     </ul>
+  );
+}
+
+/** زرّ النهار/الليل (3.41، طلب المستخدم): بلا كتابة، ويغلب وضع الهاتف بعد أول ضغطة */
+function ThemeToggle() {
+  const sys = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const [mode, setMode] = useState<'light' | 'dark' | null>(() => { try { const v = localStorage.getItem('theme'); return v === 'light' || v === 'dark' ? v : null; } catch { return null; } });
+  const dark = mode ? mode === 'dark' : !!sys();
+  useEffect(() => { if (mode) document.documentElement.dataset.theme = mode; else delete document.documentElement.dataset.theme; }, [mode]);
+  const flip = () => { const m = dark ? 'light' : 'dark'; setMode(m); try { localStorage.setItem('theme', m); } catch { /* */ } };
+  return (
+    <button className={'themebtn' + (dark ? ' dark' : '')} onClick={flip} aria-label={dark ? 'المظهر النهاري' : 'المظهر الليلي'}>
+      <span className="knob" />
+      <svg className={dark ? '' : 'on'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></svg>
+      <svg className={dark ? 'on' : ''} viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" /></svg>
+    </button>
   );
 }
