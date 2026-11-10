@@ -664,7 +664,7 @@ export default function App() {
         )}
       </main>
 
-      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}>ﷺ</button>}
+      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}><span className="sw">ﷺ</span><b className="fabn">{prayWeek}</b></button>}
 
       <nav className="tabs">
         {TABS.map((t) => (
