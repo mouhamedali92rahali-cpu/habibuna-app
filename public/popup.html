@@ -42,7 +42,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .title{font-family:Amiri,serif;font-weight:700;font-size:1.55rem;line-height:1.5;color:var(--frame);margin:8px 0 6px}
 .t-ivory .title{color:#6e5518}
 .t-ivory .num span{background:#a8822f;color:#fff}
-.text{font-family:Naskh,'Noto Naskh Arabic',serif;font-size:1.2rem;line-height:2.05;margin:4px 0 6px}
+.text{font-family:Naskh,'Noto Naskh Arabic',serif;font-size:1.2rem;line-height:2.05;margin:4px 0 6px;white-space:pre-line}
 .divider{display:flex;align-items:center;gap:8px;width:62%;margin:12px 0 10px}
 .divider span{flex:1;height:1px;background:var(--gold)}
 .divider i{width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
@@ -139,7 +139,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('title').textContent = reminder ? 'صلِّ على الحبيب ﷺ' : c.title;
   $('text').textContent = c.text;
   $('source').textContent = 'المصدر: ' + c.source;
-  if (c.qalu) { $('source').textContent = 'المصدر:'; var en = document.createElement('div'); en.dir = 'ltr'; en.style.unicodeBidi = 'isolate'; en.textContent = c.source; $('source').append(en); }
+  if (c.qalu) { $('source').textContent = 'المصدر:'; var en = document.createElement('div'); en.dir = /[A-Za-z]/.test(c.source) ? 'ltr' : 'rtl'; en.style.unicodeBidi = 'isolate'; en.textContent = c.source; $('source').append(en); }
   $('grade').textContent = c.grade;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;

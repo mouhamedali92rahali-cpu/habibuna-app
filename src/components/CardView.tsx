@@ -47,7 +47,7 @@ export function CardFront({ card }: { card: CardData }) {
         <Divider />
         <div className="src">
           {card.qalu && <div className="who">{card.title}</div>}
-          {card.qalu ? <><div>المصدر:</div><div dir="ltr" className="ltr">{card.source}</div></> : <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>}
+          {card.qalu ? <><div>المصدر:</div><div dir={/[A-Za-z]/.test(card.source) ? 'ltr' : 'rtl'} className={/[A-Za-z]/.test(card.source) ? 'ltr' : undefined}>{card.source}</div></> : <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>}
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
         </div>

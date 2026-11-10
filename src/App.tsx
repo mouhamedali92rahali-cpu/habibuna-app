@@ -63,6 +63,7 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
     return (
       <article className="block">
         <CardFront card={c} />
+        {c.athar && <p className="athar"><b>✦ جرّب:</b> {c.athar}</p>}
         {onPray && c.chapter === REMINDER && <button className="praybtn" onClick={onPray}>اللهم صلِّ وسلِّم على نبيّنا محمد</button>}
         <div className="under">
           {c.hadith && !c.same && <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
