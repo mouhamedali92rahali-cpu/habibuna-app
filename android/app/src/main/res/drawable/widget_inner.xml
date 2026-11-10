@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- الخيط الذهبي الثاني: يبدأ من تحت الدائرة (لا يلتفّ حولها) ويحيط بالصيغة حتى الطرف الأيسر -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <stroke android:width="1.2dp" android:color="#C9A24A" />
+    <corners android:topLeftRadius="30dp" android:bottomLeftRadius="30dp" android:topRightRadius="0dp" android:bottomRightRadius="0dp" />
+</shape>

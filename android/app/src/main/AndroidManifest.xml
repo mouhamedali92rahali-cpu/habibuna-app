@@ -51,7 +51,7 @@
         <!-- لمس «ﷺ» في أداة الشاشة الرئيسية: نافذة شفافة لحظية للاهتزاز (تجربة) -->
         <activity
             android:name=".PrayTapActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:theme="@style/PrayTap"
             android:taskAffinity="tn.habibuna.app.praytap"
             android:excludeFromRecents="true"
             android:noHistory="true"

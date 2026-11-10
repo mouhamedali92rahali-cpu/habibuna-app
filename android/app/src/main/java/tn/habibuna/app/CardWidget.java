@@ -127,7 +127,7 @@ public class CardWidget extends AppWidgetProvider {
             if (f.length() > 0) text = f.optString((int) (today() % f.length()));
         } catch (Exception ignored) { }
         v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 15f : text.length() < 75 ? 13.5f : 12.5f);
+        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f);
         v.setTextViewText(R.id.wcount, String.valueOf(weekCount(p)));
         v.setViewVisibility(R.id.wglow, glow ? android.view.View.VISIBLE : android.view.View.GONE);
 

@@ -1,95 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- زرّ الصلاة على النبي ﷺ (تصميم المستخدم 2026-11-10): الدائرة الذهبية يمينًا بعدد الأسبوع، ثم زخرفة مزهّرة،
-     ثم الصيغة، ثم نجمة ثمانية وزخرفة مزهّرة في الطرف الأيسر. توهّج ذهبي حول الدائرة لحظة اللمس (wglow). -->
+<!-- زرّ الصلاة على النبي ﷺ (أ + ب، اختيار المستخدم 2026-11-10): الدائرة الذهبية يمينًا بعدد الأسبوع،
+     خيط ذهبي ثانٍ يبدأ من تحت الدائرة ويحيط بالصيغة، ونجوم ثمانية باهتة في الخلفية، ونجمة في الطرف الأيسر.
+     توهّج ذهبي حول الدائرة لحظة اللمس (wglow). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/wroot"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="84dp"
         android:layout_gravity="center_vertical"
-        android:layoutDirection="rtl"
-        android:background="@drawable/widget_frame"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="4dp">
+        android:background="@drawable/widget_frame">
 
-        <FrameLayout
-            android:id="@+id/wpray"
-            android:layout_width="72dp"
-            android:layout_height="72dp">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="44dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/widget_inner" />
 
-            <ImageView
-                android:id="@+id/wglow"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/widget_glow"
-                android:visibility="gone" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layoutDirection="rtl"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingRight="4dp">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="center"
-                android:src="@drawable/widget_pray" />
+            <FrameLayout
+                android:id="@+id/wpray"
+                android:layout_width="76dp"
+                android:layout_height="76dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                <ImageView
+                    android:id="@+id/wglow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_glow"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/widget_pray" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="ﷺ"
+                        android:textColor="#14211F"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:id="@+id/wcount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="0"
+                        android:textColor="#14211F"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/wtext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="serif"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:lineSpacingMultiplier="1.1"
+                android:maxLines="2"
+                android:paddingLeft="4dp"
+                android:paddingRight="6dp"
+                android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
+                android:textColor="#14211F"
+                android:textDirection="rtl"
+                android:textSize="17sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:includeFontPadding="false"
-                    android:text="ﷺ"
-                    android:textColor="#14211F"
-                    android:textSize="27sp" />
-
-                <TextView
-                    android:id="@+id/wcount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:includeFontPadding="false"
-                    android:text="0"
-                    android:textColor="#14211F"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </FrameLayout>
-
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="58dp"
-            android:src="@drawable/widget_flourish" />
-
-        <TextView
-            android:id="@+id/wtext"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="serif"
-            android:gravity="center"
-            android:lineSpacingMultiplier="1.1"
-            android:maxLines="2"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp"
-            android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
-            android:textColor="#14211F"
-            android:textDirection="rtl"
-            android:textSize="15sp" />
-
-        <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/widget_star" />
-
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="58dp"
-            android:src="@drawable/widget_flourish" />
-    </LinearLayout>
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/widget_star" />
+        </LinearLayout>
+    </FrameLayout>
 </FrameLayout>
