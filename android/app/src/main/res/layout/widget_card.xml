@@ -122,7 +122,7 @@
                 android:maxLines="1"
                 android:textColor="#7A6A45"
                 android:textDirection="rtl"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 android:visibility="gone" />
             </LinearLayout>
 
