@@ -58,7 +58,7 @@
             android:launchMode="singleInstance"
             android:exported="false" />
         <!-- بطاقة اليوم على الشاشة الرئيسية (تجربة) -->
-        <receiver android:name=".CardWidget" android:exported="true" android:label="بطاقة اليوم">
+        <receiver android:name=".CardWidget" android:exported="true" android:label="زرّ الصلاة على النبي ﷺ">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -66,13 +66,6 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_widget_info" />
-        </receiver>
-
-        <receiver android:name=".CoinWidget" android:exported="true" android:label="زرّ الصلاة">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_coin_info" />
         </receiver>
 
         <provider

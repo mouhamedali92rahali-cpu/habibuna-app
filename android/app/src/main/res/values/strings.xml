@@ -4,6 +4,6 @@
     <string name="title_activity_main">حبيبنا</string>
     <string name="package_name">tn.habibuna.app</string>
     <string name="custom_url_scheme">tn.habibuna.app</string>
-    <string name="widget_desc">زرّ الصلاة على النبي ﷺ مع صيغة تتبدّل كل يوم</string>
+    <string name="widget_desc">اضغطه كلما صلّيت على النبي ﷺ، ومعه آية أو حديث يتبدّل ثلاث مرات في اليوم</string>
     <string name="widget_coin_desc">زرّ الصلاة على النبي ﷺ بحجم أيقونة</string>
 </resources>
