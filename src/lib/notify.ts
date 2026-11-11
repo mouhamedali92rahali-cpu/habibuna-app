@@ -121,7 +121,7 @@ export const dayNumber = (at: Date) => Math.floor((at.getTime() - at.getTimezone
 
 /** أبواب «يتخيّله فيها»: البطاقة الأولى كل يوم منها (قرار المستخدم) */
 export const FEATURED = new Set(['الملامح والشكل', 'حياته اليومية']);
-/** باب بطاقات التذكير بالصلاة على النبي ﷺ: البطاقة الثالثة كل يوم، ولا يُخفى */
+/** باب بطاقات الصلاة على النبي ﷺ (تذكير وصيغ الدلائل): كل ثلاثة أيام والجمعة، ولا يُخفى */
 export const REMINDER = 'الصلاة عليه';
 /** يوما بطاقات الأدعية: day % 7 (يوم 0 خميس، فالاثنين 4) */
 const DUA_DAYS = [4, 0];
@@ -132,36 +132,47 @@ export const PER_DAY = 3;
 
 /**
  * بطاقة الموعد k من يوم ما: نفس الحساب للإشعارات وللبطاقات الظاهرة في التطبيق.
- * الأولى من الملامح والحياة اليومية يومًا بعد يوم، والثانية من بقية الأبواب، والثالثة تذكير بالصلاة عليه ﷺ.
+ * الصباح من الملامح والحياة اليومية يومًا بعد يوم، وبقية المواعيد من بقية الأبواب.
+ * بطاقات الصلاة عليه ﷺ (قرار المستخدم 2026-11-11): لم تعد خاصة بالمساء؛ الجمعة 15:00
+ * حديث الجمعة، وفي غيرها بطاقة صلاة كل ثلاثة أيام في موعد يتبدّل (10 ثم 15 ثم 20).
  */
-type Slot = 'rem' | 'dua' | 'qalu' | 'pic' | 'feat' | 'rest';
-type Has = { dua: boolean; qalu: boolean; pic: boolean; split: boolean };
-/** نوع الموعد k من يوم ما. الأنواع تتكرّر كل 42 يومًا (2 × 3 × 7) */
+type Slot = 'fri' | 'rem' | 'dua' | 'qalu' | 'pic' | 'feat' | 'rest';
+type Has = { fri: boolean; rem: boolean; dua: boolean; qalu: boolean; pic: boolean; split: boolean };
+/** نوع الموعد k من يوم ما. الأنواع تتكرّر كل 126 يومًا (2 × 9 × 7) */
 function slotType(day: number, k: number, has: Has): Slot {
-  if (k === 2) return 'rem';
-  const duaDay = DUA_DAYS.includes(day % 7);
-  // بطاقات الأدعية متباعدة (قرار المستخدم): يومي الاثنين والخميس في موعد الظهر
-  if (k === 1 && duaDay && has.dua) return 'dua';
-  // قول من «قالوا عنه» مرة في الأسبوع: الأربعاء ظهرًا
+  const friday = day % 7 === 1;
+  const duaDay = DUA_DAYS.includes(day % 7) && has.dua;
   const qaluDay = day % 7 === QALU_DAY && has.qalu;
+  // الجمعة ظهرًا: «فأكثروا عليّ من الصلاة فيه»
+  if (friday && has.fri && k === 1) return 'fri';
+  // بطاقات الأدعية متباعدة (قرار المستخدم): يومي الاثنين والخميس في موعد الظهر
+  if (k === 1 && duaDay) return 'dua';
+  // قول من «قالوا عنه» مرة في الأسبوع: الأربعاء ظهرًا
   if (k === 1 && qaluDay) return 'qalu';
-  // «يوم الصورة» كل ثلاثة أيام (طلب المستخدم): الظهر، وفي يومي الأدعية الصباح
-  if (day % 3 === 0 && has.pic && k === ((duaDay && has.dua) || qaluDay ? 0 : 1)) return 'pic';
+  const noon = duaDay || qaluDay || (friday && has.fri);
+  // بطاقة صلاة كل ثلاثة أيام (غير الجمعة)، موعدها يتبدّل؛ إن كان الظهر مأخوذًا فالمساء
+  if (has.rem && !friday && day % 3 === 1) {
+    let rk = Math.floor(day / 3) % 3;
+    if (rk === 1 && noon) rk = 2;
+    if (k === rk) return 'rem';
+  }
+  // «يوم الصورة» كل ثلاثة أيام (طلب المستخدم): الظهر، وإن كان الظهر مأخوذًا فالصباح
+  if (day % 3 === 0 && has.pic && k === (noon ? 0 : 1)) return 'pic';
   // بطاقة الملامح والحياة اليومية صباحًا يومًا بعد يوم (قرار المستخدم)
   if (has.split && k === 0 && day % 2 === 0) return 'feat';
   return 'rest';
 }
-const PERIOD = 42;
+const PERIOD = 126;
 const posCache = new Map<string, { per: Record<Slot, number>; before: Record<Slot, number>[] }>();
 /**
  * ترتيب الموعد بين مواعيد نوعه منذ اليوم 0: كل نوع يتقدّم بما يستعمله فعلًا من مواعيد،
  * فلا تُتخطّى بطاقةٌ حين يأخذ الدعاءُ أو الصورةُ موعدها (كانت بعض البطاقات تنتظر أكثر من سنة).
  */
 function slotIndex(day: number, k: number, has: Has): number {
-  const key = `${+has.dua}${+has.qalu}${+has.pic}${+has.split}`;
+  const key = `${+has.fri}${+has.rem}${+has.dua}${+has.qalu}${+has.pic}${+has.split}`;
   let t = posCache.get(key);
   if (!t) {
-    const zero = (): Record<Slot, number> => ({ rem: 0, dua: 0, qalu: 0, pic: 0, feat: 0, rest: 0 });
+    const zero = (): Record<Slot, number> => ({ fri: 0, rem: 0, dua: 0, qalu: 0, pic: 0, feat: 0, rest: 0 });
     const run = zero(); const before: Record<Slot, number>[] = [];
     for (let i = 0; i < PERIOD * PER_DAY; i++) { before.push({ ...run }); run[slotType(Math.floor(i / PER_DAY), i % PER_DAY, has)]++; }
     t = { per: run, before }; posCache.set(key, t);
@@ -172,20 +183,18 @@ function slotIndex(day: number, k: number, has: Has): number {
 }
 
 export function cardFor(pool: CardData[], day: number, k: number): CardData {
-  // يوم 0 (1970/1/1) خميس، فالجمعة حين day % 7 === 1: تذكير الجمعة، وفي غيرها تتبدّل بقية التذكيرات
-  const friday = day % 7 === 1;
-  const reminders = pool.filter((c) => c.chapter === REMINDER && !!c.friday === friday);
-  if (k === 2 && reminders.length) return reminders[day % reminders.length];
+  const fri = pool.filter((c) => c.chapter === REMINDER && c.friday);
+  const rem = pool.filter((c) => c.chapter === REMINDER && !c.friday);
   const qalu = pool.filter((c) => c.qalu);
   const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER && !c.qalu);
   const pics = pool.filter((c) => c.pic && c.chapter !== REMINDER && !c.dua && !c.qalu);
   const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua && !c.pic && !c.qalu);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
-  const has: Has = { dua: duas.length > 0, qalu: qalu.length > 0, pic: pics.length > 0, split: feat.length > 0 && rest.length > 0 };
+  const has: Has = { fri: fri.length > 0, rem: rem.length > 0, dua: duas.length > 0, qalu: qalu.length > 0, pic: pics.length > 0, split: feat.length > 0 && rest.length > 0 };
   const type = slotType(day, k, has);
   const i = slotIndex(day, k, has);
-  const list = type === 'qalu' ? qalu : type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
+  const list = type === 'fri' ? fri : type === 'rem' ? rem : type === 'qalu' ? qalu : type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
   if (list.length === 0) return (body.length ? body : pool)[(day * PER_DAY + k) % (body.length || pool.length)];
   return list[i % list.length];
 }
