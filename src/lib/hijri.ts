@@ -91,9 +91,10 @@ export function hijriToday(now = new Date(), over: Overrides = {}): { greg: stri
 // كل شهر بداية مؤكّدة (lo == hi) أو محتملة بين يومين (lo < hi) حين تكون الرؤية حدّية.
 // التطبيق لا يكتب رقم اليوم ما دام الشكّ قائمًا، ولا يكتب التاريخ الهجري يوم الانتقال المشكوك فيه؛
 // ويزول الشكّ بتصحيح رسمي في cards.json، أو حين تلتقي الاحتمالات في شهر لاحق.
-function compute(today: number, pl: Place, ov: Record<string, string>): string {
-  const fmt = (d: number, m: number, y: number) => `${d} ${HMONTHS[m - 1]} ${y} هـ`;
-  const months: { lo: number; hi: number; y: number; m: number }[] = [];
+type Month = { lo: number; hi: number; y: number; m: number };
+const fmt = (d: number, m: number, y: number) => `${d} ${HMONTHS[m - 1]} ${y} هـ`;
+function monthsFor(today: number, pl: Place, ov: Record<string, string>): Month[] {
+  const months: Month[] = [];
   const fixes = Object.values(ov).map((d) => Math.round(Date.parse(d + 'T00:00:00Z') / 86_400_000)).filter((d) => d <= today);
   const anchor = fixes.length ? Math.max(...fixes) : null;
   let t = MakeTime(dateOfDay(Math.min(today - 75, (anchor ?? today) - 15)));
@@ -130,11 +131,40 @@ function compute(today: number, pl: Place, ov: Record<string, string>): string {
     if (lo > today + 40) break;
     t = conj.AddDays(5);
   }
-  const cur = months.filter((s) => s.lo <= today).pop();
+  return months;
+}
+
+function compute(today: number, pl: Place, ov: Record<string, string>): string {
+  const cur = monthsFor(today, pl, ov).filter((s) => s.lo <= today).pop();
   if (!cur) { const u = umq(dateOfDay(today)); return fmt(u.d, u.m, u.y); }
   if (today < cur.hi) return ''; // يوم انتقال مشكوك فيه: الميلادي وحده
   if (cur.lo < cur.hi) return `${HMONTHS[cur.m - 1]} ${cur.y} هـ`;
   return fmt(today - cur.lo + 1, cur.m, cur.y);
 }
 
-export const _test = { compute, iso, ZONES };
+/** في أول يومين من كل شهر (ما لم يصل تصحيح رسمي لهذا الشهر): سؤال صغير «ما التاريخ الهجري اليوم في بلدك؟»
+ *  بخيارات ثلاثة على الأكثر (اليوم آخر الشهر الماضي، أو أول الشهر، أو ثانيه)؛ ما يختاره يصير بداية الشهر عنده وحده. */
+export function hijriAsk(now = new Date(), over: Overrides = {}): { id: string; cc: string; key: string; options: { start: string; label: string }[] } | null {
+  const pl = place();
+  if (!pl.cc || pl.cc === 'SA') return null;
+  const today = dayOf(now);
+  const ov = over[pl.cc] ?? {};
+  const months = monthsFor(today, pl, ov);
+  let i = -1;
+  months.forEach((s, j) => { if (s.lo <= today + 1) i = j; });
+  if (i < 1) return null;
+  const cur = months[i], prev = months[i - 1];
+  const key = `${cur.y}-${cur.m}`;
+  if (ov[key] || today - cur.lo > 1) return null;
+  const options: { start: string; label: string }[] = [];
+  for (let s0 = cur.lo - 1; s0 <= Math.min(cur.hi + 1, today + 1); s0++) {
+    if (s0 < today - 2) continue;
+    // الشهر الماضي 29 أو 30 يومًا لا غير
+    if (!(s0 - prev.hi >= 29 && s0 - prev.lo <= 30) && !(s0 - prev.lo >= 29 && s0 - prev.lo <= 30) && !(s0 - prev.hi <= 30 && s0 - prev.hi >= 29)) continue;
+    const label = s0 <= today ? fmt(today - s0 + 1, cur.m, cur.y) : fmt(today - prev.lo + 1, prev.m, prev.y);
+    if (!options.some((o) => o.label === label)) options.push({ start: iso(s0), label });
+  }
+  return options.length > 1 ? { id: `${pl.cc}-${key}`, cc: pl.cc, key, options } : null;
+}
+
+export const _test = { compute, iso, ZONES, hijriAsk };

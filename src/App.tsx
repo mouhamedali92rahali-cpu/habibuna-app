@@ -4,7 +4,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
-import { hijriToday } from './lib/hijri';
+import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
@@ -853,16 +853,48 @@ function ThemeToggle() {
 
 // التاريخ الميلادي والهجري تحت «حبيبنا»: يدخل من اليمين ويخرج من اليسار مرتين، ثم يستقرّ في الوسط
 function DateTicker() {
-  const fix = useRef(hijriFix);
-  const [d, setD] = useState(() => hijriToday(new Date(), fix.current));
+  type H = Record<string, Record<string, string>>;
+  // ما اختاره صاحب الهاتف لبلده (يحلّ محلّه التصحيح الرسمي إن وصل)
+  const [mine, setMine] = useState<H>(() => load<H>('hijriMine', {}));
+  const official = useRef<H>(hijriFix);
+  const merged = (m: H): H => { const r: H = { ...m }; for (const k of Object.keys(official.current)) r[k] = { ...(m[k] ?? {}), ...official.current[k] }; return r; };
+  const [now, setNow] = useState(() => new Date());
+  const [, setTick] = useState(0);
+  const [asked, setAsked] = useState<string[]>(() => load<string[]>('hijriAsked', []));
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    void loadHijri().then((h) => { fix.current = h; setD(hijriToday(new Date(), h)); });
-    const t = setInterval(() => setD(hijriToday(new Date(), fix.current)), 60_000);
+    void loadHijri().then((h) => { official.current = h; setTick((x) => x + 1); });
+    const t = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(t);
   }, []);
+  const fix = merged(mine);
+  const d = hijriToday(now, fix);
+  const ask = hijriAsk(now, fix);
+  const showAsk = !!ask && !asked.includes(ask.id);
+  const done = (id: string) => { const a = [...asked, id].slice(-24); setAsked(a); save('hijriAsked', a); setOpen(false); };
+  const choose = (start: string) => {
+    if (!ask) return;
+    const m = { ...mine, [ask.cc]: { ...(mine[ask.cc] ?? {}), [ask.key]: start } };
+    setMine(m); save('hijriMine', m); done(ask.id);
+  };
   return (
-    <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
-      <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
-    </div>
+    <>
+      <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
+        <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
+      </div>
+      {showAsk && ask && (
+        <div className="hijriask">
+          {!open ? (
+            <button className="linkbtn" onClick={() => setOpen(true)}>تأكّد من التاريخ الهجري في بلدك … لتغييره اضغط هنا</button>
+          ) : (
+            <>
+              <p>ما التاريخ الهجري اليوم في بلدك؟</p>
+              <div className="hopts">{ask.options.map((o) => <button key={o.start} onClick={() => choose(o.start)}>{o.label}</button>)}</div>
+              <button className="linkbtn" onClick={() => done(ask.id)}>لا أعرف</button>
+            </>
+          )}
+        </div>
+      )}
+    </>
   );
 }

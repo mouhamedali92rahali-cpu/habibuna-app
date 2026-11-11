@@ -420,3 +420,9 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 @keyframes dsettle{from{transform:translateX(calc(50vw + 50%))}to{transform:translateX(0)}}
 @media (prefers-reduced-motion: reduce){.dateline .dtrack{animation:none}}
 .page.feed h2.today{margin-top:4px}
+/* سؤال التاريخ الهجري أول الشهر (حين لا يصل تصحيح رسمي) */
+.hijriask{text-align:center;margin:-6px 0 8px;font-family:'Tajawal',sans-serif;font-size:.85rem;color:var(--muted)}
+.hijriask .linkbtn{font-size:.85rem}
+.hijriask p{margin:4px 0 8px}
+.hopts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
+.hopts button{font:inherit;font-size:.9rem;padding:8px 14px;border-radius:999px;border:1px solid var(--gold);background:var(--paper);color:var(--ink);cursor:pointer}
