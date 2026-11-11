@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
-import { hijriFix, latestApp, loadCards, newer } from './lib/cards';
+import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -853,14 +853,16 @@ function ThemeToggle() {
 
 // التاريخ الميلادي والهجري تحت «حبيبنا»: يدخل من اليمين ويخرج من اليسار مرتين، ثم يستقرّ في الوسط
 function DateTicker() {
-  const [d, setD] = useState(() => hijriToday(new Date(), hijriFix));
+  const fix = useRef(hijriFix);
+  const [d, setD] = useState(() => hijriToday(new Date(), fix.current));
   useEffect(() => {
-    const t = setInterval(() => setD(hijriToday(new Date(), hijriFix)), 60_000);
+    void loadHijri().then((h) => { fix.current = h; setD(hijriToday(new Date(), h)); });
+    const t = setInterval(() => setD(hijriToday(new Date(), fix.current)), 60_000);
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="dateline" aria-label={d.greg + ' — ' + d.hijri}>
-      <span className="dtrack">{d.greg}<i>✦</i>{d.hijri}</span>
+    <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
+      <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
     </div>
   );
 }

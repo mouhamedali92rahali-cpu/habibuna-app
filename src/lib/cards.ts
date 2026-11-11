@@ -63,3 +63,19 @@ async function loadMain(): Promise<CardData[]> {
   hijriFix = best.hijri ?? {};
   return best.cards;
 }
+
+/** تصحيحات التاريخ الهجري من ملف صغير مستقل (public/hijri.json) يسهل تعديله من موقع GitHub دون مبرمج:
+ *  {البلد: {"السنة-رقم الشهر": "تاريخ أول يوم ميلاديًّا"}}، ويُدمج فوق الحقل hijri في cards.json */
+export async function loadHijri(): Promise<Record<string, Record<string, string>>> {
+  type H = Record<string, Record<string, string>>;
+  const merge = (a: H, b: H): H => { const r: H = { ...a }; for (const k of Object.keys(b)) r[k] = { ...(a[k] ?? {}), ...b[k] }; return r; };
+  let file = load<H>('hijriCache', {});
+  try {
+    const url = isNative ? REMOTE.replace(/cards\.json$/, 'hijri.json') : 'hijri.json';
+    const ctl = new AbortController();
+    const t = window.setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch(url, { cache: 'no-cache', signal: ctl.signal }).finally(() => window.clearTimeout(t));
+    if (r.ok) { file = (await r.json()) as H; save('hijriCache', file); }
+  } catch { /* بلا شبكة: المحفوظ */ }
+  return merge(hijriFix, file);
+}

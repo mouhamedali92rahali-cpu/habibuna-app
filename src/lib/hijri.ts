@@ -42,32 +42,35 @@ function umq(d: Date): { y: number; m: number; d: number } {
   return { y: g('year'), m: g('month'), d: g('day') };
 }
 
-// معيار عودة لإمكان رؤية الهلال مساء اليوم day في المكان pl
-function visible(day: number, pl: Place): boolean {
+// معيار عودة لإمكان رؤية الهلال مساء اليوم day في المكان pl: 'yes' أو 'no' أو 'maybe'
+// (maybe: قريب من الحدّ بأقل من 1.5 درجة، فقد يُرى وقد لا يُرى، ولا يُجزم فيه بالحساب)
+type Vis = 'yes' | 'no' | 'maybe';
+const visCache = new Map<string, Vis>();
+function visible(day: number, pl: Place): Vis {
+  const key = pl.cc + day;
+  const hit = visCache.get(key);
+  if (hit) return hit;
   const obs = new Observer(pl.lat, pl.lon, 0);
   const noon = new Date(day * 86_400_000 + (12 - pl.lon / 15) * 3_600_000);
   const sunset = SearchRiseSet(Body.Sun, obs, -1, MakeTime(noon), 1);
   const moonset = SearchRiseSet(Body.Moon, obs, -1, MakeTime(noon), 1.5);
-  if (!sunset || !moonset) return false;
-  const lag = moonset.ut - sunset.ut;
-  if (lag <= 0) return false;
-  const best = sunset.AddDays((4 / 9) * lag);
-  const alt = (b: Body) => { const e = Equator(b, best, obs, true, true); return Horizon(best, obs, e.ra, e.dec).altitude; };
-  const arcv = alt(Body.Moon) - alt(Body.Sun);
-  const arcl = AngleFromSun(Body.Moon, best);
-  const distKm = Illumination(Body.Moon, best).geo_dist * 149_597_870.7;
-  const sd = (Math.asin(1737.4 / distKm) * 180) / Math.PI * 60; // نصف القطر بالدقائق
-  const w = sd * (1 - Math.cos((arcl * Math.PI) / 180));
-  const v = arcv - (-0.1018 * w ** 3 + 0.7319 * w ** 2 - 6.3226 * w + 7.1651);
-  return v >= (pl.sight ?? 2);
+  let r: Vis = 'no';
+  if (sunset && moonset && moonset.ut > sunset.ut) {
+    const best = sunset.AddDays((4 / 9) * (moonset.ut - sunset.ut));
+    const alt = (b: Body) => { const e = Equator(b, best, obs, true, true); return Horizon(best, obs, e.ra, e.dec).altitude; };
+    const arcv = alt(Body.Moon) - alt(Body.Sun);
+    const arcl = AngleFromSun(Body.Moon, best);
+    const distKm = Illumination(Body.Moon, best).geo_dist * 149_597_870.7;
+    const sd = (Math.asin(1737.4 / distKm) * 180) / Math.PI * 60; // نصف القطر بالدقائق
+    const w = sd * (1 - Math.cos((arcl * Math.PI) / 180));
+    const v = arcv - (-0.1018 * w ** 3 + 0.7319 * w ** 2 - 6.3226 * w + 7.1651);
+    const th = pl.sight ?? 2;
+    r = v >= th + MARGIN ? 'yes' : v < th - MARGIN ? 'no' : 'maybe';
+  }
+  visCache.set(key, r);
+  return r;
 }
-
-// أول يوم في الشهر الذي يبدأ بعد الاقتران conj (بالرؤية)
-function monthStart(conj: Date, pl: Place): number {
-  const c = dayOf(conj);
-  for (let e = c; e <= c + 2; e++) if (visible(e, pl)) return e + 1;
-  return c + 3;
-}
+const MARGIN = 1.5;
 
 const cache = new Map<string, string>();
 
@@ -85,34 +88,53 @@ export function hijriToday(now = new Date(), over: Overrides = {}): { greg: stri
   return { greg, hijri: hij };
 }
 
+// كل شهر بداية مؤكّدة (lo == hi) أو محتملة بين يومين (lo < hi) حين تكون الرؤية حدّية.
+// التطبيق لا يكتب رقم اليوم ما دام الشكّ قائمًا، ولا يكتب التاريخ الهجري يوم الانتقال المشكوك فيه؛
+// ويزول الشكّ بتصحيح رسمي في cards.json، أو حين تلتقي الاحتمالات في شهر لاحق.
 function compute(today: number, pl: Place, ov: Record<string, string>): string {
   const fmt = (d: number, m: number, y: number) => `${d} ${HMONTHS[m - 1]} ${y} هـ`;
-  // بدايات الأشهر القريبة: من أم القرى أو من الرؤية، ثم التصحيح الرسمي إن وُجد
-  const starts: { day: number; y: number; m: number }[] = [];
-  // آخر تصحيح رسمي معروف لهذا البلد: نبدأ منه ونعدّ الأشهر بعده بالرؤية مساء التاسع والعشرين
+  const months: { lo: number; hi: number; y: number; m: number }[] = [];
   const fixes = Object.values(ov).map((d) => Math.round(Date.parse(d + 'T00:00:00Z') / 86_400_000)).filter((d) => d <= today);
   const anchor = fixes.length ? Math.max(...fixes) : null;
-  const t0 = MakeTime(dateOfDay(Math.min(today - 75, (anchor ?? today) - 15)));
-  let t = t0;
+  let t = MakeTime(dateOfDay(Math.min(today - 75, (anchor ?? today) - 15)));
   for (let i = 0; i < 16; i++) {
     const conj = SearchMoonPhase(0, t, 40);
     if (!conj) break;
     const cd = dayOf(conj.date);
     // اسم الشهر ورقم السنة من أم القرى في منتصف الشهر الذي يلي الاقتران
     const mid = umq(dateOfDay(cd + 12));
-    let start = pl.sight === null ? cd + 12 - (mid.d - 1) : monthStart(conj.date, pl);
-    const prev = starts[starts.length - 1];
-    // بعد التصحيح الرسمي: الشهر 29 يومًا إن رُئي الهلال مساء التاسع والعشرين، وإلا 30 (كما يُعمل في الإعلان)
-    if (pl.sight !== null && anchor !== null && prev && prev.day >= anchor) start = prev.day + (visible(prev.day + 28, pl) ? 29 : 30);
+    let lo: number, hi: number;
+    const prev = months[months.length - 1];
+    if (pl.sight === null) {
+      lo = hi = cd + 12 - (mid.d - 1);
+    } else if (prev) {
+      // كما في البلاغ الرسمي: يُتحرّى الهلال مساء التاسع والعشرين، فإن لم يُرَ أُكمل الشهر ثلاثين
+      const c: number[] = [];
+      for (let s0 = prev.lo; s0 <= prev.hi; s0++) {
+        const v = visible(s0 + 28, pl);
+        if (v !== 'no') c.push(s0 + 29);
+        if (v !== 'yes') c.push(s0 + 30);
+      }
+      lo = Math.min(...c); hi = Math.max(...c);
+    } else {
+      // أول شهر في الحساب: بعد أول مساء يُرى فيه الهلال
+      const c: number[] = [];
+      let e = cd;
+      for (; e <= cd + 2; e++) { const v = visible(e, pl); if (v !== 'no') c.push(e + 1); if (v === 'yes') break; }
+      if (e > cd + 2) c.push(cd + 3);
+      lo = Math.min(...c); hi = Math.max(...c);
+    }
     const o = ov[`${mid.y}-${mid.m}`];
-    if (o) start = Math.round(Date.parse(o + 'T00:00:00Z') / 86_400_000);
-    starts.push({ day: start, y: mid.y, m: mid.m });
-    if (start > today + 40) break;
+    if (o) lo = hi = Math.round(Date.parse(o + 'T00:00:00Z') / 86_400_000);
+    months.push({ lo, hi, y: mid.y, m: mid.m });
+    if (lo > today + 40) break;
     t = conj.AddDays(5);
   }
-  const cur = starts.filter((s) => s.day <= today).pop();
+  const cur = months.filter((s) => s.lo <= today).pop();
   if (!cur) { const u = umq(dateOfDay(today)); return fmt(u.d, u.m, u.y); }
-  return fmt(today - cur.day + 1, cur.m, cur.y);
+  if (today < cur.hi) return ''; // يوم انتقال مشكوك فيه: الميلادي وحده
+  if (cur.lo < cur.hi) return `${HMONTHS[cur.m - 1]} ${cur.y} هـ`;
+  return fmt(today - cur.lo + 1, cur.m, cur.y);
 }
 
 export const _test = { compute, iso, ZONES };
