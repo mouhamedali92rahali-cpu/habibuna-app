@@ -94,20 +94,19 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="match_parent"
+                android:layout_weight="1">
             <TextView
                 android:id="@+id/wtext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="7dp"
                 android:fontFamily="serif"
                 android:gravity="center"
-                android:includeFontPadding="false"
-                android:lineSpacingMultiplier="0.9"
+                android:lineSpacingMultiplier="0.88"
                 android:maxLines="3"
                 android:paddingLeft="4dp"
                 android:paddingRight="6dp"
@@ -118,15 +117,18 @@
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/wsrc"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:layout_gravity="bottom|left"
+                android:layout_marginBottom="13dp"
+                android:layout_marginLeft="2dp"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:textColor="#7A6A45"
                 android:textDirection="rtl"
                 android:textSize="11sp"
                 android:visibility="gone" />
-            </LinearLayout>
+            </FrameLayout>
 
             <ImageView
                 android:layout_width="20dp"
