@@ -98,12 +98,13 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1">
+            <!-- جملة قصيرة (سطر أو سطران): أنزل قليلًا؛ وطويلة: أعلى بخط أصغر حتى لا تلمس المصدر -->
             <TextView
                 android:id="@+id/wtext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="7dp"
+                android:layout_marginTop="4dp"
                 android:fontFamily="serif"
                 android:gravity="center"
                 android:lineSpacingMultiplier="0.88"
@@ -114,6 +115,24 @@
                 android:textColor="#14211F"
                 android:textDirection="rtl"
                 android:textSize="17sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/wtextL"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:lineSpacingMultiplier="0.88"
+                android:maxLines="3"
+                android:paddingLeft="4dp"
+                android:paddingRight="6dp"
+                android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
+                android:textColor="#14211F"
+                android:textDirection="rtl"
+                android:textSize="14sp"
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/wsrc"

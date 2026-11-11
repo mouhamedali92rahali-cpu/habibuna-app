@@ -187,8 +187,14 @@ public class CardWidget extends AppWidgetProvider {
         } catch (Exception ignored) { }
         v.setTextViewText(R.id.wsrc, src);
         v.setViewVisibility(R.id.wsrc, src.isEmpty() ? View.GONE : View.VISIBLE);
-        v.setTextViewText(R.id.wtext, text);
-        v.setTextViewTextSize(R.id.wtext, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (text.length() < 50 ? 17f : text.length() < 75 ? 15.5f : 14.5f) : (text.length() < 40 ? 16.5f : text.length() < 60 ? 15.5f : text.length() < 80 ? 14f : 13f));
+        // الطول بلا تشكيل: القصيرة (سطر أو سطران) تنزل إلى الوسط، والطويلة تصعد بخط أصغر فوق المصدر
+        int plain = text.replaceAll("[\u064B-\u0652\u0670]", "").length();
+        boolean longT = !src.isEmpty() && plain >= 48;
+        int tv = longT ? R.id.wtextL : R.id.wtext;
+        v.setViewVisibility(R.id.wtext, longT ? View.GONE : View.VISIBLE);
+        v.setViewVisibility(R.id.wtextL, longT ? View.VISIBLE : View.GONE);
+        v.setTextViewText(tv, text);
+        v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f));
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);
@@ -196,7 +202,9 @@ public class CardWidget extends AppWidgetProvider {
             v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             Intent open = new Intent(ctx, MainActivity.class);
             open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            v.setOnClickPendingIntent(R.id.wtext, PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            PendingIntent op = PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            v.setOnClickPendingIntent(R.id.wtext, op);
+            v.setOnClickPendingIntent(R.id.wtextL, op);
         }
         m.updateAppWidget(ids, v);
         scheduleNext(ctx, nextAt);
