@@ -427,3 +427,6 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .hopts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
 .hopts button{font:inherit;font-size:.9rem;padding:8px 14px;border-radius:999px;border:1px solid var(--gold);background:var(--paper);color:var(--ink);cursor:pointer}
 .hopts button.calc{border-width:2px;font-weight:700}
+/* زرّ الصلاة العائم: ضغطة طويلة ثم سحب لنقله */
+.prayfab{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.prayfab.dragging{opacity:.92;box-shadow:0 0 0 6px rgba(201,162,75,.35),0 10px 24px rgba(0,0,0,.25);transition:none}

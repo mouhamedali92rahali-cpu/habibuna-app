@@ -693,7 +693,7 @@ export default function App() {
         )}
       </main>
 
-      {tab === 'feed' && pool.length > 0 && <button className={'praytap prayfab' + (scrolling ? ' faded' : '')} aria-label="صلِّ على النبي ﷺ" onClick={tapPray}><span className="sw">ﷺ</span><b className="fabn">{prayToday}</b></button>}
+      {tab === 'feed' && pool.length > 0 && <PrayFab faded={scrolling} count={prayToday} onTap={tapPray} />}
 
       <nav className="tabs">
         {TABS.map((t) => (
@@ -889,5 +889,52 @@ function DateTicker() {
         </div>
       )}
     </>
+  );
+}
+
+// زرّ الصلاة العائم: مكانه الافتراضي تحت الإبهام لكل الناس، ومن أراد نقله ضغط عليه ضغطة طويلة ثم سحبه؛
+// يُحفظ مكانه في الهاتف (fabPos: نسبة من عرض الصفحة وارتفاعها). الضغطة الطويلة تمنع اختلاط السحب بالعدّ.
+function PrayFab({ faded, count, onTap }: { faded: boolean; count: number; onTap: (e: React.MouseEvent<HTMLButtonElement>) => void }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => load<{ x: number; y: number } | null>('fabPos', null));
+  const [drag, setDrag] = useState(false);
+  const st = useRef<{ timer?: number; sx: number; sy: number; moved: boolean; dragging: boolean; justDragged: boolean }>({ sx: 0, sy: 0, moved: false, dragging: false, justDragged: false });
+  const place = (cx: number, cy: number) => {
+    const b = ref.current, par = b?.offsetParent as HTMLElement | null;
+    if (!b || !par) return;
+    const r = par.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
+    const x = Math.min(Math.max(cx - r.left, w / 2 + 4), r.width - w / 2 - 4);
+    const y = Math.min(Math.max(cy - r.top, h / 2 + 4), r.height - h / 2 - 70); // لا يغطّي شريط التبويب
+    setPos({ x: x / r.width, y: y / r.height });
+  };
+  const down = (e: React.PointerEvent) => {
+    const s = st.current; s.sx = e.clientX; s.sy = e.clientY; s.moved = false; s.dragging = false;
+    window.clearTimeout(s.timer);
+    s.timer = window.setTimeout(() => {
+      if (s.moved) return;
+      s.dragging = true; setDrag(true);
+      try { ref.current?.setPointerCapture(e.pointerId); } catch { /* */ }
+      if (isNative) void Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}); else try { navigator.vibrate?.(30); } catch { /* */ }
+    }, 450);
+  };
+  const move = (e: React.PointerEvent) => {
+    const s = st.current;
+    if (s.dragging) { e.preventDefault(); place(e.clientX, e.clientY); return; }
+    if (Math.abs(e.clientX - s.sx) + Math.abs(e.clientY - s.sy) > 10) { s.moved = true; window.clearTimeout(s.timer); }
+  };
+  const up = () => {
+    const s = st.current; window.clearTimeout(s.timer);
+    if (s.dragging) { s.dragging = false; s.justDragged = true; setDrag(false); setPos((p) => { if (p) save('fabPos', p); return p; }); }
+  };
+  const click = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (st.current.justDragged) { st.current.justDragged = false; return; }
+    onTap(e);
+  };
+  const style: React.CSSProperties | undefined = pos ? { left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, right: 'auto', bottom: 'auto', marginLeft: -36, marginTop: -36 } : undefined;
+  return (
+    <button ref={ref} className={'praytap prayfab' + (faded && !drag ? ' faded' : '') + (drag ? ' dragging' : '')} style={style} aria-label="صلِّ على النبي ﷺ"
+      onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onContextMenu={(e) => e.preventDefault()} onClick={click}>
+      <span className="sw">ﷺ</span><b className="fabn">{count}</b>
+    </button>
   );
 }
