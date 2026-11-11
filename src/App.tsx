@@ -270,6 +270,8 @@ export default function App() {
     if (JSON.stringify(h) !== JSON.stringify(hist)) { setHist(h); save('cardHist', h); }
   }, [pool, times, dayNo]); // eslint-disable-line react-hooks/exhaustive-deps
   const cardAt = (day: number, k: number): CardData => byId.get(hist[day]?.[k] ?? '')?.c ?? cardFor(pool, day, k);
+  const cardAtRef = useRef(cardAt);
+  cardAtRef.current = cardAt;
   const feed = useMemo(() => {
     if (pool.length === 0) return [] as { c: CardData; n: number }[];
     return times
@@ -359,8 +361,10 @@ export default function App() {
       }).catch(() => {});
       // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة، وبطاقات اليوم والمواعيد القادمة (للون الإطار)
       void sendFormulas(cards ?? []).catch(() => {});
-      const todaySlots = times.map((m, k) => ({ m, k })).filter((x) => x.m <= nowMin && slotOk(dayNo, x.m))
-        .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAt(dayNo, x.k) }; });
+      // اليوم والساعة يُحسبان الآن لا من وقت رسم الصفحة: من عاد إلى التطبيق في يوم جديد كان لون الشريط يأخذ بطاقة الأمس
+      const n = new Date(), dNow = dayNumber(n), mNow = n.getHours() * 60 + n.getMinutes();
+      const todaySlots = times.map((m, k) => ({ m, k })).filter((x) => x.m <= mNow && slotOk(dNow, x.m))
+        .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAtRef.current(dNow, x.k) }; });
       void sendWidget([...todaySlots, ...weekSlots(settings, pool).map((e) => ({ at: e.at.getTime(), k: e.k, card: e.card }))]).catch(() => {});
       PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
@@ -493,7 +497,7 @@ export default function App() {
             {isNative && widget && !widgetNewsOff && !(widget.placed && !widget.hidden) && Date.now() < widgetNewsAt + 7 * 86_400_000 && (
               <div className="offer news">
                 <b>جديد ✦ زرّ الصلاة على شاشتك الرئيسية</b>
-                <p>دائرة «ﷺ» على شاشتك الرئيسية، تلمسها فتصلّي على النبي ﷺ ويزيد عددك دون فتح التطبيق، وأمامها صيغة من صيغ الصلاة عليه تتبدّل كل يوم. تشغّله وتطفئه من المفتاح الذهبي في أعلى هذه الصفحة.</p>
+                <p>دائرة «ﷺ» على شاشتك الرئيسية، تلمسها فتصلّي على النبي ﷺ ويزيد عددك دون فتح التطبيق، وأمامها آية أو حديث يتبدّل ثلاث مرات في اليوم. تشغّله وتطفئه من المفتاح الذهبي في أعلى هذه الصفحة.</p>
                 <div className="btns">
                   <button className="primary" onClick={() => { void widgetOn(widget, setWidget, say); }}>ضعه على شاشتي</button>
                   <button className="linkbtn" onClick={() => { setWidgetNewsOff(true); save('widgetNewsOff', true); }}>لاحقًا</button>
@@ -733,9 +737,9 @@ export default function App() {
                   <ul className="wtimes">
                     <li><b>{fmt(times[0])}</b><span>من ملامحه ﷺ وحياته اليومية، أو من مواقفه</span></li>
                     <li><b>{fmt(times[1])}</b><span>موقف من مواقفه وأخلاقه</span></li>
-                    <li><b>{fmt(times[2])}</b><span>تذكير بالصلاة عليه ﷺ</span></li>
+                    <li><b>{fmt(times[2])}</b><span>موقف آخر تختم به يومك</span></li>
                   </ul>
-                  <p className="wquiz">وكل ثلاثة أيام بطاقة برسمٍ توضيحي أو خريطة،<br />وكل أحد مراجعة قصيرة لما مرّ بك من بطاقات الأسبوع ✦</p>
+                  <p className="wquiz">ومن حين لآخر تذكير بالصلاة عليه ﷺ، وكل ثلاثة أيام بطاقة برسمٍ توضيحي أو خريطة،<br />وكل أحد مراجعة قصيرة لما مرّ بك من بطاقات الأسبوع ✦</p>
                   <button className="primary" onClick={() => (settings.notifyOn ? closeWelcome(true) : setWelcome(2))}>{settings.notifyOn ? 'ابدأ' : 'التالي'}</button>
                 </>
               ) : (
