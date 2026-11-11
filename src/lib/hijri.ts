@@ -134,12 +134,12 @@ function monthsFor(today: number, pl: Place, ov: Record<string, string>): Month[
   return months;
 }
 
+// التاريخ يُكتب دائمًا كاملًا (قرار المستخدم 2026-11-11): في الشهر المشكوك يُؤخذ الاحتمال الأبعد (أن يُكمل الشهر الماضي)،
+// وهو نفسه الخيار العريض في سؤال «هل اليوم في بلدك»، ومن رأى غيره في بلده صحّحه بضغطة.
 function compute(today: number, pl: Place, ov: Record<string, string>): string {
-  const cur = monthsFor(today, pl, ov).filter((s) => s.lo <= today).pop();
+  const cur = monthsFor(today, pl, ov).filter((s) => s.hi <= today).pop();
   if (!cur) { const u = umq(dateOfDay(today)); return fmt(u.d, u.m, u.y); }
-  if (today < cur.hi) return ''; // يوم انتقال مشكوك فيه: الميلادي وحده
-  if (cur.lo < cur.hi) return `${HMONTHS[cur.m - 1]} ${cur.y} هـ`;
-  return fmt(today - cur.lo + 1, cur.m, cur.y);
+  return fmt(today - cur.hi + 1, cur.m, cur.y);
 }
 
 /** سؤال الشهر (ما لم يصل تصحيح رسمي لهذا الشهر، وما لم يختر صاحب الهاتف): «هل اليوم في بلدك …؟» بثلاثة خيارات
