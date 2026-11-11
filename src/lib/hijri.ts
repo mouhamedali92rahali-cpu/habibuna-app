@@ -142,9 +142,9 @@ function compute(today: number, pl: Place, ov: Record<string, string>): string {
   return fmt(today - cur.lo + 1, cur.m, cur.y);
 }
 
-/** في أول يومين من كل شهر (ما لم يصل تصحيح رسمي لهذا الشهر): سؤال صغير «ما التاريخ الهجري اليوم في بلدك؟»
- *  بخيارات ثلاثة على الأكثر (اليوم آخر الشهر الماضي، أو أول الشهر، أو ثانيه)؛ ما يختاره يصير بداية الشهر عنده وحده. */
-export function hijriAsk(now = new Date(), over: Overrides = {}): { id: string; cc: string; key: string; options: { start: string; label: string }[] } | null {
+/** سؤال الشهر (ما لم يصل تصحيح رسمي لهذا الشهر، وما لم يختر صاحب الهاتف): «هل اليوم في بلدك …؟» بثلاثة خيارات
+ *  هي يوم الحساب وما قبله وما بعده، وتتقدّم مع الأيام (30/1/2 ثم 1/2/3 ثم 2/3/4…) حتى يختار؛ يبدأ ليلة أول الشهر. */
+export function hijriAsk(now = new Date(), over: Overrides = {}): { id: string; cc: string; key: string; calc: string; options: { start: string; label: string }[] } | null {
   const pl = place();
   if (!pl.cc || pl.cc === 'SA') return null;
   const today = dayOf(now);
@@ -155,16 +155,22 @@ export function hijriAsk(now = new Date(), over: Overrides = {}): { id: string; 
   if (i < 1) return null;
   const cur = months[i], prev = months[i - 1];
   const key = `${cur.y}-${cur.m}`;
-  if (ov[key] || today - cur.lo > 1) return null;
-  const options: { start: string; label: string }[] = [];
-  for (let s0 = cur.lo - 1; s0 <= Math.min(cur.hi + 1, today + 1); s0++) {
-    if (s0 < today - 2) continue;
-    // الشهر الماضي 29 أو 30 يومًا لا غير
-    if (!(s0 - prev.hi >= 29 && s0 - prev.lo <= 30) && !(s0 - prev.lo >= 29 && s0 - prev.lo <= 30) && !(s0 - prev.hi <= 30 && s0 - prev.hi >= 29)) continue;
-    const label = s0 <= today ? fmt(today - s0 + 1, cur.m, cur.y) : fmt(today - prev.lo + 1, prev.m, prev.y);
-    if (!options.some((o) => o.label === label)) options.push({ start: iso(s0), label });
+  if (ov[key]) return null;
+  const base = cur.lo === cur.hi ? cur.lo : cur.hi; // بداية الحساب (وفي الشكّ: الأرجح أن يُكمل الشهر الماضي)
+  const opts: { s: number; label: string }[] = [];
+  for (const s0 of [base - 1, base, base + 1]) {
+    let label: string, st = s0;
+    if (s0 <= today) label = fmt(today - s0 + 1, cur.m, cur.y);
+    else {
+      // اليوم من الشهر الماضي: إن كان الثلاثين فالشهر الجديد يبدأ غدًا حتمًا
+      const d = today - prev.lo + 1; if (d > 30) continue;
+      label = fmt(d, prev.m, prev.y); if (d === 30) st = today + 1;
+    }
+    if (!opts.some((o) => o.label === label)) opts.push({ s: st, label });
   }
-  return options.length > 1 ? { id: `${pl.cc}-${key}`, cc: pl.cc, key, options } : null;
+  // من اليمين: الأصغر يومًا (أي البداية الأبعد)
+  const options = opts.sort((a, b) => b.s - a.s).map((o) => ({ start: iso(o.s), label: o.label }));
+  return options.length > 1 ? { id: `${pl.cc}-${key}`, cc: pl.cc, key, calc: iso(base), options } : null;
 }
 
 export const _test = { compute, iso, ZONES, hijriAsk };

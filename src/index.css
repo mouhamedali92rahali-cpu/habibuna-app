@@ -426,3 +426,4 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .hijriask p{margin:4px 0 8px}
 .hopts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
 .hopts button{font:inherit;font-size:.9rem;padding:8px 14px;border-radius:999px;border:1px solid var(--gold);background:var(--paper);color:var(--ink);cursor:pointer}
+.hopts button.calc{border-width:2px;font-weight:700}

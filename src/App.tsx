@@ -861,7 +861,6 @@ function DateTicker() {
   const [now, setNow] = useState(() => new Date());
   const [, setTick] = useState(0);
   const [asked, setAsked] = useState<string[]>(() => load<string[]>('hijriAsked', []));
-  const [open, setOpen] = useState(false);
   useEffect(() => {
     void loadHijri().then((h) => { official.current = h; setTick((x) => x + 1); });
     const t = setInterval(() => setNow(new Date()), 60_000);
@@ -871,7 +870,7 @@ function DateTicker() {
   const d = hijriToday(now, fix);
   const ask = hijriAsk(now, fix);
   const showAsk = !!ask && !asked.includes(ask.id);
-  const done = (id: string) => { const a = [...asked, id].slice(-24); setAsked(a); save('hijriAsked', a); setOpen(false); };
+  const done = (id: string) => { const a = [...asked, id].slice(-24); setAsked(a); save('hijriAsked', a); };
   const choose = (start: string) => {
     if (!ask) return;
     const m = { ...mine, [ask.cc]: { ...(mine[ask.cc] ?? {}), [ask.key]: start } };
@@ -884,15 +883,9 @@ function DateTicker() {
       </div>
       {showAsk && ask && (
         <div className="hijriask">
-          {!open ? (
-            <button className="linkbtn" onClick={() => setOpen(true)}>تأكّد من التاريخ الهجري في بلدك … لتغييره اضغط هنا</button>
-          ) : (
-            <>
-              <p>ما التاريخ الهجري اليوم في بلدك؟</p>
-              <div className="hopts">{ask.options.map((o) => <button key={o.start} onClick={() => choose(o.start)}>{o.label}</button>)}</div>
-              <button className="linkbtn" onClick={() => done(ask.id)}>لا أعرف</button>
-            </>
-          )}
+          <p>هل اليوم في بلدك:</p>
+          <div className="hopts">{ask.options.map((o) => <button key={o.start} className={o.start === ask.calc ? 'calc' : undefined} onClick={() => choose(o.start)}>{o.label}</button>)}</div>
+          <button className="linkbtn" onClick={() => done(ask.id)}>لا أعرف</button>
         </div>
       )}
     </>
