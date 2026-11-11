@@ -89,18 +89,25 @@ function compute(today: number, pl: Place, ov: Record<string, string>): string {
   const fmt = (d: number, m: number, y: number) => `${d} ${HMONTHS[m - 1]} ${y} هـ`;
   // بدايات الأشهر القريبة: من أم القرى أو من الرؤية، ثم التصحيح الرسمي إن وُجد
   const starts: { day: number; y: number; m: number }[] = [];
-  const t0 = MakeTime(dateOfDay(today - 75));
+  // آخر تصحيح رسمي معروف لهذا البلد: نبدأ منه ونعدّ الأشهر بعده بالرؤية مساء التاسع والعشرين
+  const fixes = Object.values(ov).map((d) => Math.round(Date.parse(d + 'T00:00:00Z') / 86_400_000)).filter((d) => d <= today);
+  const anchor = fixes.length ? Math.max(...fixes) : null;
+  const t0 = MakeTime(dateOfDay(Math.min(today - 75, (anchor ?? today) - 15)));
   let t = t0;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 16; i++) {
     const conj = SearchMoonPhase(0, t, 40);
     if (!conj) break;
     const cd = dayOf(conj.date);
     // اسم الشهر ورقم السنة من أم القرى في منتصف الشهر الذي يلي الاقتران
     const mid = umq(dateOfDay(cd + 12));
     let start = pl.sight === null ? cd + 12 - (mid.d - 1) : monthStart(conj.date, pl);
+    const prev = starts[starts.length - 1];
+    // بعد التصحيح الرسمي: الشهر 29 يومًا إن رُئي الهلال مساء التاسع والعشرين، وإلا 30 (كما يُعمل في الإعلان)
+    if (pl.sight !== null && anchor !== null && prev && prev.day >= anchor) start = prev.day + (visible(prev.day + 28, pl) ? 29 : 30);
     const o = ov[`${mid.y}-${mid.m}`];
     if (o) start = Math.round(Date.parse(o + 'T00:00:00Z') / 86_400_000);
     starts.push({ day: start, y: mid.y, m: mid.m });
+    if (start > today + 40) break;
     t = conj.AddDays(5);
   }
   const cur = starts.filter((s) => s.day <= today).pop();
