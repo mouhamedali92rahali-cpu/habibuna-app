@@ -50,6 +50,7 @@ export function CardFront({ card }: { card: CardData }) {
           {card.qalu ? <><div>المصدر:</div><div dir={/[A-Za-z]/.test(card.source) ? 'ltr' : 'rtl'} className={/[A-Za-z]/.test(card.source) ? 'ltr' : undefined}>{card.source}</div></> : <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>}
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
+          {card.abridged && !card.same && <div className="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div>}
         </div>
         <div className="chip"><b aria-hidden="true">{markOf(card.chapter)}</b> {card.chapter}</div>
       </div>

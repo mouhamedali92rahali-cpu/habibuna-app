@@ -108,6 +108,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
         <div id="source"></div>
         <div class="grade" id="grade"></div>
         <div class="grade weak" id="shifa" hidden>ذكره القاضي عياض في الشفا</div>
+        <div class="grade weak" id="abr" hidden>✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div>
       </div>
       <div class="chip" id="chip"></div>
       <p class="news" id="news" hidden>جديد ✦ زرّ الصلاة على النبي ﷺ على شاشتك الرئيسية، فعّله من التطبيق</p>
@@ -151,6 +152,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('grade').textContent = c.grade;
   if (c.weak) $('grade').classList.add('weak');
   if (c.shifa) $('shifa').hidden = false;
+  if (c.abridged) $('abr').hidden = false;
   $('chip').textContent = (MARK[c.chapter] || '✦') + '  ' + c.chapter;
   // «نص الحديث والشرح» داخل النافذة نفسها (النسخة 3.35؛ كان رابطًا إلى التطبيق فظنّه المستخدم جملة إخبارية)
   var label = function () {
@@ -207,6 +209,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
         if (n.source) $('source').textContent = 'المصدر: ' + n.source;
         if (n.grade) $('grade').textContent = n.grade;
         $('grade').classList.toggle('weak', !!n.weak);
+        $('abr').hidden = !(n.abridged && !n.same);
         if (!reminder && n.title) $('title').textContent = n.title;
         if (n.hadith && !n.same) { c.matn = n.hadith.matn; c.narr = n.hadith.narrator || ''; c.excerpt = !!n.hadith.excerpt; } else c.matn = '';
         c.sharhText = n.sharh ? n.sharh.text : ''; c.sharhSrc = n.sharh ? n.sharh.source : '';
