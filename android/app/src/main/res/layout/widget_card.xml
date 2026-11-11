@@ -98,13 +98,13 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1">
-            <!-- جملة قصيرة (سطر أو سطران): أنزل قليلًا؛ وطويلة: أعلى بخط أصغر حتى لا تلمس المصدر -->
+            <!-- جملة قصيرة (سطر أو سطران) أو طويلة بخط أصغر؛ كلتاهما في وسط الشريط بين الخيطين (قيس على لقطة الهاتف) -->
             <TextView
                 android:id="@+id/wtext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="4dp"
+                android:layout_marginBottom="5dp"
                 android:fontFamily="serif"
                 android:gravity="center"
                 android:lineSpacingMultiplier="0.88"
@@ -122,7 +122,7 @@
                 android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="14dp"
+                android:layout_marginBottom="5dp"
                 android:fontFamily="serif"
                 android:gravity="center"
                 android:lineSpacingMultiplier="0.88"
@@ -134,19 +134,6 @@
                 android:textDirection="rtl"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-            <TextView
-                android:id="@+id/wsrc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|left"
-                android:layout_marginBottom="13dp"
-                android:layout_marginLeft="2dp"
-                android:includeFontPadding="false"
-                android:maxLines="1"
-                android:textColor="#7A6A45"
-                android:textDirection="rtl"
-                android:textSize="11sp"
-                android:visibility="gone" />
             </FrameLayout>
 
             <ImageView
@@ -154,5 +141,19 @@
                 android:layout_height="20dp"
                 android:src="@drawable/widget_star" />
         </LinearLayout>
+        <!-- المصدر في الزاوية السفلى اليسرى من الشريط، تحت النجمة -->
+        <TextView
+            android:id="@+id/wsrc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="21dp"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="#7A6A45"
+            android:textDirection="rtl"
+            android:textSize="9.5sp"
+            android:visibility="gone" />
     </FrameLayout>
 </FrameLayout>

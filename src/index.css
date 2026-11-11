@@ -411,3 +411,12 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .fzline span{flex:1;font-weight:700;font-size:.95rem}
 .fzline button{min-width:44px;padding:4px 8px;font-weight:700}
 .fzline output{min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* التاريخ الميلادي والهجري تحت «حبيبنا» (تجربة): يمرّ من اليمين إلى اليسار مرتين ثم يستقرّ في الوسط */
+.dateline{overflow:hidden;white-space:nowrap;text-align:center;margin:0 -16px 14px;padding:4px 0;font-family:'Tajawal',sans-serif;font-size:.95rem;color:var(--muted)}
+.dateline .dtrack{display:inline-block;animation:dtick 16s linear 2,dsettle 7s cubic-bezier(.2,.7,.3,1) 32s forwards}
+.dateline i{font-style:normal;color:var(--gold);margin:0 .6em}
+@keyframes dtick{from{transform:translateX(calc(50vw + 50%))}to{transform:translateX(calc(-50vw - 50%))}}
+@keyframes dsettle{from{transform:translateX(calc(50vw + 50%))}to{transform:translateX(0)}}
+@media (prefers-reduced-motion: reduce){.dateline .dtrack{animation:none}}
+.page.feed h2.today{margin-top:4px}

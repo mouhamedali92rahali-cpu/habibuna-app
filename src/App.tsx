@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
-import { latestApp, loadCards, newer } from './lib/cards';
+import { hijriFix, latestApp, loadCards, newer } from './lib/cards';
+import { hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
@@ -464,6 +465,7 @@ export default function App() {
       <main onScroll={tab === 'feed' ? onMainScroll : undefined} className={tab === 'feed' && pool.length > 0 ? 'withfab' : undefined}>
         {tab === 'feed' && (
           <section className="page feed">
+            <DateTicker />
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
                 <b>الإشعارات غير مفعّلة</b>
@@ -846,5 +848,19 @@ function ThemeToggle() {
       <svg className={dark ? '' : 'on'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></svg>
       <svg className={dark ? 'on' : ''} viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" /></svg>
     </button>
+  );
+}
+
+// التاريخ الميلادي والهجري تحت «حبيبنا»: يدخل من اليمين ويخرج من اليسار مرتين، ثم يستقرّ في الوسط
+function DateTicker() {
+  const [d, setD] = useState(() => hijriToday(new Date(), hijriFix));
+  useEffect(() => {
+    const t = setInterval(() => setD(hijriToday(new Date(), hijriFix)), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="dateline" aria-label={d.greg + ' — ' + d.hijri}>
+      <span className="dtrack">{d.greg}<i>✦</i>{d.hijri}</span>
+    </div>
   );
 }
