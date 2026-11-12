@@ -40,16 +40,21 @@ async function loadArt(): Promise<Loaded> {
     }
     return out;
   };
-  return { arts: conv(best?.cards), maps: conv(best?.maps) };
+  const out = { arts: conv(best?.cards), maps: conv(best?.maps) };
+  artNow = out;
+  return out;
 }
 
 let shared: Promise<Loaded> | null = null;
+/** آخر رسوم محمَّلة، للنافذة على الشاشة (popupJson): الرسم المحلي داخل التطبيق */
+export let artNow: Loaded = { arts: {}, maps: {} };
+export const startArt = () => { shared ??= loadArt().catch(() => ({ arts: {}, maps: {} })); return shared; };
 function useLoaded(): Loaded {
   const [m, setM] = useState<Loaded>({ arts: {}, maps: {} });
   useEffect(() => {
-    shared ??= loadArt().catch(() => ({ arts: {}, maps: {} }));
+
     let live = true;
-    shared.then((x) => { if (live) setM(x); });
+    startArt().then((x) => { if (live) setM(x); });
     return () => { live = false; };
   }, []);
   return m;

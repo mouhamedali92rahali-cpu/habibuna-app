@@ -14,7 +14,9 @@ import { Sys, SysLine, sysAr, sysText } from './lib/sysnames';
 import { buildQuiz, loadQuiz, QUIZ_AT, QUIZ_MIN, streak, weekKey, type Question, type QuizItem, type QuizRecord } from './lib/quiz';
 import { Quiz } from './components/Quiz';
 import { App as NativeApp } from '@capacitor/app';
-import { useArt, useMaps, openZoom, type ZoomReq } from './lib/art';
+import { useArt, useMaps, openZoom, startArt, type ZoomReq } from './lib/art';
+import { GROUPS, PNAME, PRAYERS, dayTimes, hhmm, loadAdj, loadSel, nextPrayer, saveAdj, saveSel, untilText, type Adj, type Prayer, type PrayerSel } from './lib/prayer';
+import { isRamadan, sunanFor, type Sunna } from './lib/sunan';
 import { Zoom } from './components/Zoom';
 
 type Tab = 'feed' | 'favs' | 'settings';
@@ -349,7 +351,7 @@ export default function App() {
         return PhoneSettings.canOverlay().then(({ allowed }) => {
           setOverlay(allowed);
           const on = settings.notifyOn && settings.popupOn !== false && allowed;
-          return schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0, newsUntil);
+          return startArt().then(() => schedulePopups(on ? weekSlots(settings, pool) : [], (id) => byId.get(id)?.n ?? 0, newsUntil));
         });
       }).catch(() => {});
       // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة، وبطاقات اليوم والمواعيد القادمة (للون الإطار)
@@ -468,7 +470,7 @@ export default function App() {
       <main onScroll={tab === 'feed' ? onMainScroll : undefined} className={tab === 'feed' && pool.length > 0 ? 'withfab' : undefined}>
         {tab === 'feed' && (
           <section className="page feed">
-            <DateTicker />
+            <DateTicker onSettings={() => setTab('settings')} />
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
                 <b>الإشعارات غير مفعّلة</b>
@@ -620,6 +622,7 @@ export default function App() {
                 <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن ✦ وصلِّ عليه ﷺ' : 'تم'}</button>
               </Frame>
             )}
+            <PrayerSettings />
             <Frame title="البطاقة على شاشتك">
               {isNative ? (
                 <label className="row">
@@ -863,7 +866,122 @@ function ThemeToggle() {
 }
 
 // التاريخ الميلادي والهجري تحت «حبيبنا»: يدخل من اليمين ويخرج من اليسار مرتين، ثم يستقرّ في الوسط
-function DateTicker() {
+// خط الصلاة القادمة و«سنن الأيام» تحت التاريخ (تجربة للمستخدم 2026-11-12؛ القرارات في CLAUDE.md)
+const Pulse = () => (
+  <svg className="pglyph" width="46" height="16" viewBox="0 0 46 16" aria-hidden="true"><path d="M46 10 H28 l-3 -8 l-4 13 l-3 -5 H0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+);
+const prayerChanged = () => window.dispatchEvent(new Event('hb-prayer'));
+function usePrayerSel() {
+  const [sel, setSel] = useState<PrayerSel | null>(() => loadSel());
+  const [adj, setAdj] = useState<Adj>(() => loadAdj());
+  useEffect(() => {
+    const f = () => { setSel(loadSel()); setAdj(loadAdj()); };
+    window.addEventListener('hb-prayer', f);
+    return () => window.removeEventListener('hb-prayer', f);
+  }, []);
+  return { sel, adj };
+}
+function PrayerLine({ fix, onSettings }: { fix: Record<string, Record<string, string>>; onSettings: () => void }) {
+  const { sel, adj } = usePrayerSel();
+  const [now, setNow] = useState(() => new Date());
+  const [pick, setPick] = useState(false);
+  const [rot, setRot] = useState(0);
+  const [show, setShow] = useState<Sunna | null>(null);
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 20_000); return () => clearInterval(t); }, []);
+  const sunan = useMemo(() => sunanFor(now, fix), [now.toDateString(), JSON.stringify(fix)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (sunan.length < 2) return; const t = setInterval(() => setRot((r) => r + 1), 6000); return () => clearInterval(t); }, [sunan.length]);
+  const n = sel ? nextPrayer(sel, now, adj) : null;
+  const su = sunan.length ? sunan[rot % sunan.length] : null;
+  return (
+    <>
+      <div className={'pline' + (n?.now ? ' now' : '')} role="button" onClick={() => setPick(true)}>
+        <Pulse />
+        {n ? <span><b>{PNAME[n.p]}</b> {n.now ? 'حان الآن' : untilText(n.at.getTime() - now.getTime())}</span> : <span>مواقيت الصلاة</span>}
+        {!sel?.city && <u>حدّد مدينتك</u>}
+        <Pulse />
+        <button className="pgear" aria-label="إعدادات المواقيت" onClick={(e) => { e.stopPropagation(); onSettings(); }}>⚙</button>
+      </div>
+      {n?.p === 'fajr' && isRamadan(now, fix) && <p className="pnote">هذا وقت الصلاة، لا وقت الإمساك</p>}
+      {su && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
+      {show && (
+        <div className="modal" onClick={() => setShow(null)}>
+          <div className="psheet" onClick={(e) => e.stopPropagation()}>
+            <h3>{show.line}</h3>
+            <p className="pnarr">عن {show.narr}</p>
+            <p className="pmatn">{show.matn}</p>
+            <p className="psrc">المصدر: {show.source}<br /><small>{show.grade}</small></p>
+            <button className="ghost" onClick={() => setShow(null)}>رجوع</button>
+          </div>
+        </div>
+      )}
+      {pick && <CityPicker onClose={() => setPick(false)} />}
+    </>
+  );
+}
+function CityPicker({ onClose }: { onClose: () => void }) {
+  const cur = loadSel();
+  const [gid, setGid] = useState<string | null>(cur?.group ?? null);
+  const [q, setQ] = useState('');
+  const norm = (x: string) => x.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي');
+  const g = GROUPS.find((x) => x.id === gid);
+  const choose = (s: PrayerSel) => { saveSel(s); prayerChanged(); onClose(); };
+  const hits = q.trim() ? GROUPS.flatMap((x) => x.cities.filter((c) => norm(c[0]).includes(norm(q.trim()))).map((c) => ({ g: x, c }))) : [];
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="psheet city" onClick={(e) => e.stopPropagation()}>
+        <h3>اختر مدينتك</h3>
+        <p className="psub">لحساب مواقيت الصلاة في هاتفك، بلا إذن الموقع</p>
+        <input className="psearch" placeholder="ابحث عن مدينتك…" value={q} onChange={(e) => setQ(e.target.value)} />
+        {q.trim() ? (
+          <div className="cgrid">{hits.length ? hits.map(({ g: x, c }) => <button key={x.id + c[0]} onClick={() => choose({ group: x.id, city: c[0] })}>{c[0]}<small>{x.name}</small></button>) : <p className="psub">لم نجدها؛ اختر أقرب مدينة إليك</p>}</div>
+        ) : g ? (
+          <>
+            <p className="pgname">{g.name}</p>
+            <div className="cgrid">
+              {g.cities.map((c) => <button key={c[0]} className={cur?.city === c[0] && cur.group === g.id ? 'on' : undefined} onClick={() => choose({ group: g.id, city: c[0] })}>{c[0]}</button>)}
+              <button className={cur?.group === g.id && !cur.city ? 'on' : undefined} onClick={() => choose({ group: g.id })}>{g.name} عمومًا</button>
+            </div>
+            <button className="linkbtn" onClick={() => setGid(null)}>بلد آخر ›</button>
+          </>
+        ) : (
+          <div className="cgrid">{GROUPS.map((x) => <button key={x.id} onClick={() => setGid(x.id)}>{x.name}</button>)}</div>
+        )}
+        <p className="psub">والعبرة بأذان بلدك</p>
+      </div>
+    </div>
+  );
+}
+function PrayerSettings() {
+  const { sel, adj } = usePrayerSel();
+  const [pick, setPick] = useState(false);
+  const g = sel ? GROUPS.find((x) => x.id === sel.group) : undefined;
+  const t = sel ? dayTimes(sel, new Date(), adj) : null;
+  const step = (p: Prayer, d: number) => { const a = { ...adj, [p]: Math.max(-30, Math.min(30, (adj[p] ?? 0) + d)) }; saveAdj(a); prayerChanged(); };
+  return (
+    <Frame title="مواقيت الصلاة">
+      <button className="ghost" onClick={() => setPick(true)}>{g ? (sel?.city ? `${sel.city}، ${g.name}` : `${g.name} عمومًا`) : 'اختر مدينتك'} — تغيير</button>
+      {t && (
+        <>
+          <p className="sline">اضبط المواقيت على أذان مسجدك</p>
+          <div className="adj">
+            {PRAYERS.map((p) => (
+              <div key={p} className="adjrow">
+                <span>{PNAME[p]}</span><b>{hhmm(t[p])}</b>
+                <button onClick={() => step(p, -1)} aria-label="دقيقة إلى الوراء">−</button>
+                <small>{adj[p] ? (adj[p]! > 0 ? '+' : '') + adj[p] : '0'}</small>
+                <button onClick={() => step(p, 1)} aria-label="دقيقة إلى الأمام">+</button>
+              </div>
+            ))}
+          </div>
+          <p className="sline">{g?.tn ? 'حسب طريقة الحساب في تونس.' : 'حسب أكثر طرق الحساب تأخّرًا في الفجر والعشاء.'} والعبرة بأذان بلدك.</p>
+        </>
+      )}
+      {pick && <CityPicker onClose={() => setPick(false)} />}
+    </Frame>
+  );
+}
+
+function DateTicker({ onSettings }: { onSettings: () => void }) {
   type H = Record<string, Record<string, string>>;
   // ما اختاره صاحب الهاتف لبلده (يحلّ محلّه التصحيح الرسمي إن وصل)
   const [mine, setMine] = useState<H>(() => load<H>('hijriMine', {}));
@@ -892,6 +1010,7 @@ function DateTicker() {
       <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
         <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
       </div>
+      <PrayerLine fix={fix} onSettings={onSettings} />
       {showAsk && ask && (
         <div className="hijriask">
           <p>هل اليوم في بلدك:</p>

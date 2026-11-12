@@ -26,6 +26,7 @@ import java.util.TimeZone;
  * والعدد المعروض = ما في التطبيق للأيام السبعة (prayBase) + ما لم يأخذه التطبيق بعد.
  */
 public class CardWidget extends AppWidgetProvider {
+    static final boolean MARQUEE = true;
     static final String PRAY = "tn.habibuna.app.WIDGET_PRAY";
     static final String TICK = "tn.habibuna.app.WIDGET_TICK";
     static final String GLOW = "tn.habibuna.app.WIDGET_GLOW";
@@ -190,11 +191,13 @@ public class CardWidget extends AppWidgetProvider {
         // الطول بلا تشكيل: القصيرة (سطر أو سطران) تنزل إلى الوسط، والطويلة تصعد بخط أصغر فوق المصدر
         int plain = text.replaceAll("[\u064B-\u0652\u0670]", "").length();
         boolean longT = !src.isEmpty() && plain >= 48;
-        int tv = longT ? R.id.wtextL : R.id.wtext;
-        v.setViewVisibility(R.id.wtext, longT ? View.GONE : View.VISIBLE);
-        v.setViewVisibility(R.id.wtextL, longT ? View.VISIBLE : View.GONE);
+        // تجربة: سطر واحد متحرّك بدل السطرين أو الثلاثة (MARQUEE = false يعيد الشكل السابق)
+        int tv = MARQUEE ? R.id.wtextM : longT ? R.id.wtextL : R.id.wtext;
+        v.setViewVisibility(R.id.wtextM, MARQUEE ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.wtext, !MARQUEE && !longT ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.wtextL, !MARQUEE && longT ? View.VISIBLE : View.GONE);
         v.setTextViewText(tv, text);
-        v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f));
+        if (!MARQUEE) v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f));
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);
@@ -205,6 +208,7 @@ public class CardWidget extends AppWidgetProvider {
             PendingIntent op = PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             v.setOnClickPendingIntent(R.id.wtext, op);
             v.setOnClickPendingIntent(R.id.wtextL, op);
+            v.setOnClickPendingIntent(R.id.wtextM, op);
         }
         m.updateAppWidget(ids, v);
         scheduleNext(ctx, nextAt);

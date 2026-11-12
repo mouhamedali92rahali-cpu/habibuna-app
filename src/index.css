@@ -438,3 +438,38 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .thumb { overflow: hidden; }
 .thumb img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.35); }
 .thumb.sm { width: 74px; height: 74px; margin: 0 auto 6px; }
+
+/* خط الصلاة القادمة و«سنن الأيام» تحت التاريخ (تجربة 2026-11-12) */
+.pline{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 0;font-family:'Tajawal',sans-serif;font-size:.92rem;color:var(--muted);cursor:pointer;flex-wrap:nowrap;white-space:nowrap}
+.pline b{color:var(--emerald)}
+.pline u{color:var(--emerald);text-decoration-color:var(--gold);text-underline-offset:3px;font-size:.85rem}
+.pglyph{color:var(--gold);flex:none;width:34px}
+.pglyph path{stroke-dasharray:60;animation:pbeat 4.5s ease-in-out infinite}
+.pline.now .pglyph path{animation-duration:1.4s}
+.pline.now span{color:var(--emerald);font-weight:700}
+@keyframes pbeat{0%,70%{stroke-dashoffset:0}80%{stroke-dashoffset:60}80.01%{stroke-dashoffset:-60}100%{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){.pglyph path{animation:none}}
+.pgear{border:none;background:none;color:var(--gold);font-size:1rem;padding:2px 4px;cursor:pointer;line-height:1}
+.pnote{margin:2px 0 0;text-align:center;font-size:.78rem;color:var(--muted)}
+.sunna{display:block;margin:6px auto 0;border:none;background:none;font:400 .88rem 'Tajawal',sans-serif;color:var(--emerald);text-align:center;cursor:pointer;animation:sfade .6s ease-out}
+@keyframes sfade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media (prefers-color-scheme: dark){ :where(:root:not([data-theme=light])) .pline b, :where(:root:not([data-theme=light])) .pline u, :where(:root:not([data-theme=light])) .sunna{color:var(--gold)} }
+:where(:root[data-theme=dark]) .pline b, :where(:root[data-theme=dark]) .pline u, :where(:root[data-theme=dark]) .sunna{color:var(--gold)}
+.psheet{background:#f8f2e3;color:#1f2b2a;border-top:3px solid var(--gold);border-radius:18px;padding:16px 18px;width:min(100%,420px);max-height:80vh;overflow:auto;text-align:center;font-family:'Tajawal',sans-serif}
+.psheet h3{margin:0 0 6px;color:#0f5c4d;font-size:1.05rem}
+.psheet .pnarr{margin:4px 0;color:#6b7570;font-size:.85rem}
+.psheet .pmatn{font:400 1.12rem/1.9 'Amiri',serif;margin:6px 0}
+.psheet .psrc{font-size:.85rem;color:#3d4a47}
+.psheet .ghost{border-color:#0f5c4d;color:#0f5c4d}
+.psub{margin:4px 0 8px;font-size:.8rem;color:#6b7570}
+.psearch{width:100%;box-sizing:border-box;border:1.5px solid #d8cba8;border-radius:12px;padding:9px 12px;font:inherit;background:#fff;direction:rtl}
+.pgname{margin:10px 0 6px;font-size:.82rem;color:#8a7f66;text-align:right}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.cgrid button{border:1px solid #e1d6b8;border-radius:10px;padding:8px;background:#fffaf0;font:400 .95rem 'Tajawal',sans-serif;color:#1f2b2a;cursor:pointer}
+.cgrid button small{display:block;font-size:.7rem;color:#8a7f66}
+.cgrid button.on{background:#0f5c4d;color:#f6e7bf;border-color:#0f5c4d}
+.psheet .linkbtn{margin-top:10px;color:#0f5c4d}
+.adj{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.adjrow{display:grid;grid-template-columns:1fr auto 34px 34px 34px;align-items:center;gap:6px}
+.adjrow button{width:34px;height:30px;border-radius:9px;border:1px solid var(--gold);background:none;color:inherit;font-size:1.05rem;cursor:pointer}
+.adjrow small{text-align:center}

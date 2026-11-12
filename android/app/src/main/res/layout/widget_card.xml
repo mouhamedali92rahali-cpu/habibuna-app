@@ -134,6 +134,30 @@
                 android:textDirection="rtl"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+            <!-- تجربة (2026-11-12، طلب المستخدم): الجملة في سطر واحد يتحرّك كما يتحرّك التاريخ -->
+            <TextView
+                android:id="@+id/wtextM"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:duplicateParentState="true"
+                android:paddingLeft="4dp"
+                android:paddingRight="6dp"
+                android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
+                android:textColor="#14211F"
+                android:textDirection="rtl"
+                android:textSize="18sp"
+                android:textStyle="bold">
+                <requestFocus />
+            </TextView>
             </FrameLayout>
 
             <ImageView

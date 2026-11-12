@@ -1,3 +1,4 @@
+import { artNow } from './art';
 import { registerPlugin } from '@capacitor/core';
 import { isNative, type WeekSlot } from './notify';
 import type { CardData } from './types';
@@ -54,7 +55,9 @@ export const popupJson = (card: CardData, k: number, n: number, news = false) =>
   JSON.stringify({ slot: k, n, news, card: { id: card.id, chapter: card.chapter, title: card.title, text: card.text, source: card.source, grade: card.grade, theme: card.theme, dua: !!card.dua, qalu: !!card.qalu, dalail: !!card.dalail, weak: !!card.weak, shifa: !!card.shifa, abridged: !!card.abridged && !card.same, sharh: !!card.sharh,
     // ما يظهر داخل النافذة بزرّ «نص الحديث والشرح» (النسخة 3.35)
     matn: card.hadith && !card.same ? card.hadith.matn : '', narr: card.hadith?.narrator || '', excerpt: !!card.hadith?.excerpt,
-    sharhText: card.sharh?.text || '', sharhSrc: card.sharh?.source || '', athar: card.athar || '' } });
+    sharhText: card.sharh?.text || '', sharhSrc: card.sharh?.source || '', athar: card.athar || '',
+    // الرسم داخل البطاقة تحت النص (2026-11-12): المسار المحلي في التطبيق
+    art: (artNow.arts[card.id] ?? artNow.maps[card.id])?.fallback || '', artCap: (artNow.arts[card.id] ?? artNow.maps[card.id])?.caption || '' } });
 
 /** جدولة نوافذ البطاقات على الشاشة لنفس مواعيد الإشعارات؛ قائمة فارغة تُلغيها */
 export async function schedulePopups(entries: WeekSlot[], num: (id: string) => number, newsUntil = 0): Promise<void> {
