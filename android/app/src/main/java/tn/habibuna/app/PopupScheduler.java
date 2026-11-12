@@ -130,19 +130,58 @@ public final class PopupScheduler {
      *  ولا إن جاءت بعدها بطاقة أخرى (اقتراح المستخدم 2026-11-04) */
     public static final int BUBBLE_BACK_MAX = 1;
 
-    public static void bubbleBack(Context ctx, String json, String cardId, int n, int noteId) {
-        if (n > BUBBLE_BACK_MAX) return;
-        long at = System.currentTimeMillis() + 2 * 60 * 60 * 1000L;
+    /** تُجدول عودة الفقاعة بعد ساعتين، وتعيد true إن كانت ستعود فعلًا ونسخنا نص إشعارها، فيُحذف الإشعار الآن ويعود معها صامتًا
+     *  (قرار المستخدم 2026-11-12). لا تعود: بعد منتصف الليل، أو إن كانت بطاقة أخرى مجدولة قبل موعد عودتها، أو في المرة الثانية؛
+     *  وحينها يبقى الإشعار في أعلى الشاشة حتى يحذفه صاحبه أو يفتحه. */
+    public static boolean bubbleBack(Context ctx, String json, String cardId, int n, int noteId) {
+        if (n > BUBBLE_BACK_MAX) return false;
+        long now = System.currentTimeMillis(), at = now + 2 * 60 * 60 * 1000L;
         java.util.Calendar c = java.util.Calendar.getInstance();
         c.setTimeInMillis(at);
-        if (c.get(java.util.Calendar.HOUR_OF_DAY) < 7) return; // لا تعود بعد منتصف الليل (من أخفى بطاقة المساء متأخرًا)
+        if (c.get(java.util.Calendar.HOUR_OF_DAY) < 7) return false; // لا تعود بعد منتصف الليل (من أخفى بطاقة المساء متأخرًا)
+        try { // بطاقة الموعد التالي قبل عودتها (من أخفاها بعد أكثر من ثلاث ساعات من وصولها) ← لا تعود
+            JSONArray items = new JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("items", "[]"));
+            for (int k = 0; k < items.length(); k++) { long t = items.getJSONObject(k).optLong("at"); if (t > now && t <= at) return false; }
+        } catch (Exception ignored) {}
+        String title = null, text = null;
+        try { // نص إشعار البطاقة كما هو، ليعود معها
+            for (android.service.notification.StatusBarNotification sb : ((android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE)).getActiveNotifications()) {
+                if (sb.getId() != noteId) continue;
+                CharSequence a = sb.getNotification().extras.getCharSequence(android.app.Notification.EXTRA_TITLE);
+                CharSequence b = sb.getNotification().extras.getCharSequence(android.app.Notification.EXTRA_BIG_TEXT);
+                if (b == null) b = sb.getNotification().extras.getCharSequence(android.app.Notification.EXTRA_TEXT);
+                title = a == null ? null : a.toString(); text = b == null ? null : b.toString();
+            }
+        } catch (Exception ignored) {}
         Intent i = new Intent(ctx, PopupReceiver.class);
         i.putExtra(CardPopupActivity.EXTRA_JSON, json);
         i.putExtra(CardPopupActivity.EXTRA_CARD_ID, cardId);
         i.putExtra("back", n);
         i.putExtra(NOTE, noteId);
+        if (text != null) { i.putExtra("nTitle", title); i.putExtra("nText", text); }
         PendingIntent pi = PendingIntent.getBroadcast(ctx, BASE - 3, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         ((AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE)).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        return text != null;
+    }
+
+    /** يعيد إشعار البطاقة مع الفقاعة العائدة، صامتًا (قناة بلا صوت ولا اهتزاز)، ولمسه يفتح البطاقة في التطبيق */
+    public static void repostQuiet(Context ctx, int noteId, String cardId, String title, String text) {
+        if (noteId <= 0 || text == null) return;
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm.getNotificationChannel("cards_quiet") == null) {
+                android.app.NotificationChannel ch = new android.app.NotificationChannel("cards_quiet", "بطاقة تعود مع الفقاعة", android.app.NotificationManager.IMPORTANCE_LOW);
+                ch.setDescription("إشعار البطاقة يعود صامتًا مع الفقاعة بعد ساعتين");
+                nm.createNotificationChannel(ch);
+            }
+            Intent open = new Intent(ctx, MainActivity.class).putExtra(CardWidget.EXTRA_OPEN, cardId).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pi = PendingIntent.getActivity(ctx, BASE - 4, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            android.app.Notification.Builder nb = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? new android.app.Notification.Builder(ctx, "cards_quiet") : new android.app.Notification.Builder(ctx);
+            nb.setSmallIcon(R.drawable.ic_stat_habibuna).setColor(0xFF0F5C4D).setContentText(text)
+                .setStyle(new android.app.Notification.BigTextStyle().bigText(text)).setContentIntent(pi).setAutoCancel(true);
+            if (title != null) nb.setContentTitle(title);
+            nm.notify(noteId, nb.build());
+        } catch (Exception ignored) {}
     }
 
     public static void cancelBubbleBack(Context ctx) {

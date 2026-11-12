@@ -17,8 +17,10 @@ public class PopupReceiver extends BroadcastReceiver {
         int back = intent.getIntExtra("back", 0);
         if (back > 0) {
             String id = intent.getStringExtra(CardPopupActivity.EXTRA_CARD_ID);
-            if (!"bubble".equals(PopupScheduler.mode(ctx)) || PopupScheduler.doNotDisturb(ctx)
-                || id == null || !id.equals(BubbleService.lastCard(ctx))) return;
+            if (id == null || !id.equals(BubbleService.lastCard(ctx))) return;
+            // الإشعار الذي حُذف مع الفقاعة يعود صامتًا في كل حال (حتى إن لم تظهر الفقاعة)، فلا تضيع البطاقة
+            PopupScheduler.repostQuiet(ctx, intent.getIntExtra(PopupScheduler.NOTE, 0), id, intent.getStringExtra("nTitle"), intent.getStringExtra("nText"));
+            if (!"bubble".equals(PopupScheduler.mode(ctx)) || PopupScheduler.doNotDisturb(ctx)) return;
             try { BubbleService.show(ctx, intent.getStringExtra(CardPopupActivity.EXTRA_JSON), id, back, intent.getIntExtra(PopupScheduler.NOTE, 0)); } catch (Exception ignored) {}
             return;
         }

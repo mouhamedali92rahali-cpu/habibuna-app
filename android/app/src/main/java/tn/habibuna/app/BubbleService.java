@@ -150,7 +150,8 @@ public class BubbleService extends Service {
                         if (cy > tp.y - dp(app, 40) && Math.abs(cx - dm.widthPixels / 2) < dp(app, 90)) {
                             String j = json, id = cardId; int n = back + 1, nid = noteId;
                             dismiss(app);
-                            if (j != null) PopupScheduler.bubbleBack(app, j, id, n, nid); // تعود بعد ساعتين مرة واحدة
+                            // تعود بعد ساعتين مرة واحدة، ومعها إشعارها صامتًا؛ وإن لم تكن ستعود بقي الإشعار (قرار المستخدم 2026-11-12)
+                            if (j != null && PopupScheduler.bubbleBack(app, j, id, n, nid)) PopupScheduler.cancelNote(app, nid);
                             return true;
                         }
                         // وإلا تلتصق بأقرب حافّة
