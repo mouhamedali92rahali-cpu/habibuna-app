@@ -304,6 +304,8 @@ export default function App() {
     }).filter((g) => g.cards.length > 0);
   }, [pool, times, dayNo, intro, introCards, hist]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const lastCard: CardData | undefined = past.length > 0 ? past[0].cards[past[0].cards.length - 1] : undefined;
+
   // مراجعة الأسبوع: كل أحد من 11:00 وتبقى متاحة طوال الأسبوع حتى تُنجز.
   // أسئلتها من بطاقات الأيام السبعة قبل الأحد وبطاقة صباح الأحد، كما وصلت صاحبها (العدّ من التثبيت)
   const qKey = weekKey(dayNo);
@@ -523,7 +525,15 @@ export default function App() {
                 {introToday.map((c) => <CardBlock key={c.id} c={c} fav={favs.includes(c.id)} onFav={() => toggleFav(c.id)} onShare={() => doShare(c)} />)}
               </>
             )}
-            {feed.length === 0 && introToday.length === 0 && pool.length > 0 && (
+            {feed.length === 0 && introToday.length === 0 && lastCard && (
+              <>
+                {/* قبل أول بطاقة في اليوم: آخر بطاقة وصلت بدل الرسالة التعريفية (اقتراحي، قبله المستخدم 2026-11-12) */}
+                <h2 className="today">{past[0].label === 'أمس' ? 'آخر بطاقة وصلتك أمس' : 'آخر بطاقة وصلتك'}</h2>
+                <CardBlock key={lastCard.id} c={lastCard} fav={favs.includes(lastCard.id)} onFav={() => toggleFav(lastCard.id)} onShare={() => doShare(lastCard)} onPray={pray} />
+                <p className="muted next">{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</p>
+              </>
+            )}
+            {feed.length === 0 && introToday.length === 0 && !lastCard && pool.length > 0 && (
               <div className="waiting">
                 <p>«حبيبنا» مواقف صغيرة موثّقة تكشف لك عظمة شخصيته ﷺ، تصلك ثلاث بطاقات كل يوم: العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً.</p>
                 <b>{nextAt !== undefined ? `البطاقة القادمة اليوم عند ${fmt(nextAt)}` : `البطاقة القادمة غدًا عند ${fmt(times[0])} بإذن الله`}</b>
