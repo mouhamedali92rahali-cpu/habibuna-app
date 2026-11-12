@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { CardData } from '../lib/types';
+import { openZoom, type Art } from '../lib/art';
 import { Corner, Divider, Mihrab } from './Ornaments';
 
 const MARK: Record<string, string> = {
@@ -35,7 +36,8 @@ function useFitText() {
   return ref;
 }
 
-export function CardFront({ card }: { card: CardData }) {
+/** thumb: رسم البطاقة أو خريطتها صغيرًا داخل البطاقة بجانب المصدر (طلب المستخدم 2026-11-12: زرّ «صورة» لا ينتبه إليه الناس)؛ لمسه يكبّره */
+export function CardFront({ card, thumb }: { card: CardData; thumb?: Art }) {
   const ref = useFitText();
   return (
     <div ref={ref} className={`card face front t-${card.theme}${card.long ? ' long' : ''}`}>
@@ -45,12 +47,17 @@ export function CardFront({ card }: { card: CardData }) {
         <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : '✦'}</span></div>
         <p className="ctext"><span>{card.text}</span></p>
         <Divider />
+        <div className={thumb ? 'srcrow' : undefined}>
+        {thumb && <button className="thumb" onClick={() => openZoom(thumb)} aria-label={'صورة: ' + thumb.caption}>
+          <img src={thumb.src} alt="" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(thumb.fallback)) i.src = thumb.fallback; }} />
+        </button>}
         <div className="src">
           {card.qalu && <div className="who">{card.title}</div>}
           {card.qalu ? <><div>المصدر:</div><div dir={/[A-Za-z]/.test(card.source) ? 'ltr' : 'rtl'} className={/[A-Za-z]/.test(card.source) ? 'ltr' : undefined}>{card.source}</div></> : <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>}
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
           {card.abridged && !card.same && <div className="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div>}
+        </div>
         </div>
         <div className="chip"><b aria-hidden="true">{markOf(card.chapter)}</b> {card.chapter}</div>
       </div>
