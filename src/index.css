@@ -473,3 +473,6 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 .adjrow{display:grid;grid-template-columns:1fr auto 34px 34px 34px;align-items:center;gap:6px}
 .adjrow button{width:34px;height:30px;border-radius:9px;border:1px solid var(--gold);background:none;color:inherit;font-size:1.05rem;cursor:pointer}
 .adjrow small{text-align:center}
+
+/* بلا زرّ نص الحديث ولا شرح: المفضلة والمشاركة في الوسط (طلب المستخدم 2026-11-12) */
+.under.alone{justify-content:center}

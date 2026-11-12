@@ -67,7 +67,7 @@ function CardBlock({ c, fav, onFav, onShare, onPray }: { c: CardData; fav: boole
         <CardFront card={c} thumb={art ?? map} />
         {c.athar && <p className="athar"><b>✦ جرّب:</b> {c.athar}</p>}
         {onPray && c.chapter === REMINDER && <button className="praybtn" onClick={onPray}>اللهم صلِّ وسلِّم على نبيّنا محمد</button>}
-        <div className="under">
+        <div className={'under' + ((c.hadith && !c.same) || c.sharh || (art && map) ? '' : ' alone')}>
           {c.hadith && !c.same && <button className={'srcbtn' + (showSrc ? ' on' : '')} onClick={() => setShowSrc((v) => !v)} aria-expanded={showSrc}>
             {showSrc ? 'إخفاء نص الحديث' : 'نص الحديث كاملًا'}
           </button>}
