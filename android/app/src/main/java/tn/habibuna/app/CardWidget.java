@@ -191,13 +191,20 @@ public class CardWidget extends AppWidgetProvider {
         // الطول بلا تشكيل: القصيرة (سطر أو سطران) تنزل إلى الوسط، والطويلة تصعد بخط أصغر فوق المصدر
         int plain = text.replaceAll("[\u064B-\u0652\u0670]", "").length();
         boolean longT = !src.isEmpty() && plain >= 48;
-        // تجربة: سطر واحد متحرّك بدل السطرين أو الثلاثة (MARQUEE = false يعيد الشكل السابق)
-        int tv = MARQUEE ? R.id.wtextM : longT ? R.id.wtextL : R.id.wtext;
-        v.setViewVisibility(R.id.wtextM, MARQUEE ? View.VISIBLE : View.GONE);
+        // تجربة: الجملة تدخل متحرّكة من اليمين كل بضع ثوانٍ (ViewFlipper بنسختين؛ MARQUEE = false يعيد الشكل الثابت)
+        float sz = src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f);
+        int tv = longT ? R.id.wtextL : R.id.wtext;
+        v.setViewVisibility(R.id.wflip, MARQUEE ? View.VISIBLE : View.GONE);
         v.setViewVisibility(R.id.wtext, !MARQUEE && !longT ? View.VISIBLE : View.GONE);
         v.setViewVisibility(R.id.wtextL, !MARQUEE && longT ? View.VISIBLE : View.GONE);
         v.setTextViewText(tv, text);
-        if (!MARQUEE) v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f));
+        v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, sz);
+        for (int f : new int[] { R.id.wf1, R.id.wf2 }) {
+            v.setTextViewText(f, text);
+            v.setTextViewTextSize(f, android.util.TypedValue.COMPLEX_UNIT_SP, sz);
+            float dp = ctx.getResources().getDisplayMetrics().density;
+            v.setViewPadding(f, (int) (4 * dp), (int) ((longT ? 0 : 3) * dp), (int) (6 * dp), (int) ((longT ? 12 : 0) * dp));
+        }
         v.setTextViewText(R.id.wcount, count);
         v.setInt(R.id.wframe, "setColorFilter", frameColor(theme));
         v.setViewVisibility(R.id.wroot, vis);
@@ -208,7 +215,8 @@ public class CardWidget extends AppWidgetProvider {
             PendingIntent op = PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             v.setOnClickPendingIntent(R.id.wtext, op);
             v.setOnClickPendingIntent(R.id.wtextL, op);
-            v.setOnClickPendingIntent(R.id.wtextM, op);
+            v.setOnClickPendingIntent(R.id.wf1, op);
+            v.setOnClickPendingIntent(R.id.wf2, op);
         }
         m.updateAppWidget(ids, v);
         scheduleNext(ctx, nextAt);

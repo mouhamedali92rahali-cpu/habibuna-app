@@ -134,30 +134,48 @@
                 android:textDirection="rtl"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-            <!-- تجربة (2026-11-12، طلب المستخدم): الجملة في سطر واحد يتحرّك كما يتحرّك التاريخ -->
-            <TextView
-                android:id="@+id/wtextM"
+            <!-- تجربة (2026-11-12، طلب المستخدم): الجملة تدخل متحرّكة من اليمين وتستقرّ، كما يتحرّك التاريخ.
+                 حركة النص (marquee) لا تعمل في أدوات الشاشة الرئيسية عند أكثر الهواتف، فاستُعمل ViewFlipper بنسختين من الجملة -->
+            <ViewFlipper
+                android:id="@+id/wflip"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_height="match_parent"
                 android:layout_marginBottom="4dp"
-                android:fontFamily="serif"
-                android:gravity="center"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:duplicateParentState="true"
-                android:paddingLeft="4dp"
-                android:paddingRight="6dp"
-                android:text="اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"
-                android:textColor="#14211F"
-                android:textDirection="rtl"
-                android:textSize="18sp"
-                android:textStyle="bold">
-                <requestFocus />
-            </TextView>
+                android:autoStart="true"
+                android:flipInterval="9000"
+                android:inAnimation="@anim/wslide_in"
+                android:outAnimation="@anim/wslide_out">
+                <TextView
+                    android:id="@+id/wf1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:lineSpacingMultiplier="0.9"
+                    android:maxLines="3"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="6dp"
+                    android:textColor="#14211F"
+                    android:textDirection="rtl"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/wf2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:lineSpacingMultiplier="0.9"
+                    android:maxLines="3"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="6dp"
+                    android:textColor="#14211F"
+                    android:textDirection="rtl"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </ViewFlipper>
             </FrameLayout>
 
             <ImageView
