@@ -434,6 +434,7 @@ main.withfab{padding-bottom:calc(max(180px, 30vh + 80px) + var(--sb))}
 /* رسم البطاقة صغيرًا داخلها بجانب المصدر (2026-11-12) */
 .srcrow { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .srcrow .src { align-items: center; }
-.thumb { flex: none; width: 60px; height: 60px; border-radius: 50%; padding: 5px; background: #fffaf0; border: 1.5px solid var(--gold); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px color-mix(in srgb, var(--gold) 45%, transparent); cursor: zoom-in; display: grid; place-items: center; }
+.thumb { flex: none; align-self: center; margin: 4px auto 10px; width: 92px; height: 92px; border-radius: 50%; padding: 5px; background: #fffaf0; border: 1.5px solid var(--gold); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px color-mix(in srgb, var(--gold) 45%, transparent); cursor: zoom-in; display: grid; place-items: center; }
 .thumb { overflow: hidden; }
-.thumb img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.55); }
+.thumb img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.35); }
+.thumb.sm { width: 74px; height: 74px; margin: 0 auto 6px; }

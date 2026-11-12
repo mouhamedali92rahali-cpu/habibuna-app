@@ -46,18 +46,16 @@ export function CardFront({ card, thumb }: { card: CardData; thumb?: Art }) {
         <div className="kicker">{card.dalail ? 'من دلائل الخيرات' : card.chapter === 'الصلاة عليه' ? 'تذكير' : card.qalu ? 'قالوا عنه ﷺ' : card.chapter === 'سيرته في سطور' ? 'تعرّف عليه ﷺ' : 'من مواقف النبي ﷺ'}</div>
         <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : '✦'}</span></div>
         <p className="ctext"><span>{card.text}</span></p>
-        <Divider />
-        <div className={thumb ? 'srcrow' : undefined}>
-        {thumb && <button className="thumb" onClick={() => openZoom(thumb)} aria-label={'صورة: ' + thumb.caption}>
+        {thumb && <button className={card.text.length > 150 ? "thumb sm" : "thumb"} onClick={() => openZoom(thumb)} aria-label={'صورة: ' + thumb.caption}>
           <img src={thumb.src} alt="" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(thumb.fallback)) i.src = thumb.fallback; }} />
         </button>}
+        <Divider />
         <div className="src">
           {card.qalu && <div className="who">{card.title}</div>}
           {card.qalu ? <><div>المصدر:</div><div dir={/[A-Za-z]/.test(card.source) ? 'ltr' : 'rtl'} className={/[A-Za-z]/.test(card.source) ? 'ltr' : undefined}>{card.source}</div></> : <div>المصدر: {card.source}{narrOnCard(card) && <> <span className="nw">— عن {card.hadith!.narrator}</span></>}</div>}
           <div className={card.weak ? "grade weak" : "grade"}>{card.grade}</div>
           {card.shifa && <div className="grade weak">ذكره القاضي عياض في الشفا</div>}
           {card.abridged && !card.same && <div className="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div>}
-        </div>
         </div>
         <div className="chip"><b aria-hidden="true">{markOf(card.chapter)}</b> {card.chapter}</div>
       </div>
