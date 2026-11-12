@@ -19,6 +19,8 @@ interface PhoneSettingsPlugin {
   popupState(): Promise<{ inCall: boolean; media: boolean; dnd: boolean; ringing?: boolean; bubble?: boolean }>;
   takeOpenCard(): Promise<{ id: string | null }>;
   takePrays(): Promise<{ days: string }>;
+  setFavIds(o: { ids: string }): Promise<void>;
+  takeFavs(): Promise<{ ops: string }>;
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
   shareImage(o: { base64: string; text: string }): Promise<void>;
   setWidget(o: { items: string }): Promise<void>;

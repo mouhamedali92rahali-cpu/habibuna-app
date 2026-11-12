@@ -74,6 +74,8 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .sheet .row{display:flex;gap:10px;justify-content:center;margin-top:6px}
 .sheet .row button{border:none;border-radius:12px;padding:10px 16px;font:500 .92rem Tajawal,sans-serif;cursor:pointer;background:var(--soft);color:var(--frame)}
 .t-ivory .sheet .row button{color:#6e5518}
+.row2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.fav.on{background:rgba(233,201,122,.22);color:#ffe2a0}
 .x{position:absolute;top:max(12px,env(safe-area-inset-top));left:14px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#f3e7c4;font-size:1.3rem;cursor:pointer;z-index:3}
 .bye .card{animation:out .55s ease-in both}.bye .greet,.bye .actions{animation:fadeout .4s ease-in both}
 .bye .stage{animation:fadeout .6s .15s ease-in both}
@@ -116,7 +118,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   </article>
   <div class="actions">
     <button class="pray" id="pray">اللهم صلِّ وسلِّم على نبيّنا محمد</button>
-    <button class="more" id="more">نص الحديث والشرح</button>
+    <div class="row2"><button class="more" id="more">نص الحديث والشرح</button><button class="more fav" id="fav">♡ المفضلة</button></div>
   </div>
 </div>
 <div class="sheet" id="sheet" hidden><div class="box"><div class="in" id="sin"></div></div></div>
@@ -194,6 +196,12 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   // الضغط على الصلاة عليه ﷺ يُحسب في عدّاد المستخدم (في هاتفه وحده)، ثم تُغلق النافذة
   $('pray').onclick = function () { leave('pray', true); };
   $('x').onclick = function () { leave('close'); };
+  // ♡ المفضلة من النافذة نفسها (اقتراح مستخدمة): لا تُغلق النافذة، ويأخذها التطبيق عند فتحه
+  var fav = /[?&]fav=1/.test(location.search);
+  var favLabel = function () { $('fav').textContent = fav ? '♥ في المفضلة' : '♡ المفضلة'; $('fav').classList.toggle('on', fav); };
+  favLabel();
+  $('fav').style.display = c.id ? '' : 'none';
+  $('fav').onclick = function () { fav = !fav; favLabel(); send(fav ? 'fav/1' : 'fav/0'); };
   $('more').onclick = function () { if (c.matn || c.sharhText) openSheet(); else send('open'); };
   // نص البطاقة قد يُصحَّح بعد جدولة النافذة (تُجدول لثلاثين يومًا): نأخذ أحدث نص من الموقع إن أمكن، وإلا بقي المحفوظ
   if (c.id && window.fetch) {

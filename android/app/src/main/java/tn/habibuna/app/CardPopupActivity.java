@@ -52,6 +52,7 @@ public class CardPopupActivity extends Activity {
                 Uri u = req.getUrl();
                 if (!"habibuna".equals(u.getScheme())) return false;
                 if ("open".equals(u.getHost())) openApp();
+                else if ("fav".equals(u.getHost())) recordFav("/1".equals(u.getPath()));
                 else { if ("pray".equals(u.getHost())) recordPray(); finish(); }
                 return true;
             }
@@ -74,7 +75,7 @@ public class CardPopupActivity extends Activity {
         noteId = i.getIntExtra(PopupScheduler.NOTE, 0);
         if (json == null) { finish(); return; }
         // معامل t يجبر الصفحة على إعادة التحميل حين تصل بطاقة جديدة والنافذة مفتوحة
-        web.loadUrl("file:///android_asset/public/popup.html?t=" + System.currentTimeMillis() + "#" + Uri.encode(json));
+        web.loadUrl("file:///android_asset/public/popup.html?t=" + System.currentTimeMillis() + (isFav() ? "&fav=1" : "") + "#" + Uri.encode(json));
     }
 
     /** عدّاد الصلاة على النبي ﷺ: عدد الضغطات لكل يوم محلي (نفس dayNumber في التطبيق)، يأخذه التطبيق بـ takePrays */
@@ -86,6 +87,30 @@ public class CardPopupActivity extends Activity {
             JSONObject o = new JSONObject(p.getString("prays", "{}"));
             o.put(k, o.optInt(k, 0) + 1);
             p.edit().putString("prays", o.toString()).apply();
+        } catch (Exception ignored) { }
+    }
+
+    /** هل البطاقة في المفضلة؟ (القائمة يرسلها التطبيق بـ setFavIds، وتُحدَّث هنا عند الضغط) */
+    private boolean isFav() {
+        if (cardId == null) return false;
+        try {
+            org.json.JSONArray a = new org.json.JSONArray(getSharedPreferences(PopupScheduler.PREFS, MODE_PRIVATE).getString("favIds", "[]"));
+            for (int k = 0; k < a.length(); k++) if (cardId.equals(a.optString(k))) return true;
+        } catch (Exception ignored) { }
+        return false;
+    }
+
+    /** ♡ في النافذة: يُسجَّل {رقم البطاقة: محفوظة؟} ويأخذه التطبيق بـ takeFavs (آخر ضغطة هي المعتبرة) */
+    private void recordFav(boolean on) {
+        if (cardId == null) return;
+        SharedPreferences p = getSharedPreferences(PopupScheduler.PREFS, MODE_PRIVATE);
+        try {
+            JSONObject o = new JSONObject(p.getString("favOps", "{}"));
+            o.put(cardId, on);
+            org.json.JSONArray a = new org.json.JSONArray(p.getString("favIds", "[]")), b = new org.json.JSONArray();
+            for (int k = 0; k < a.length(); k++) if (!cardId.equals(a.optString(k))) b.put(a.optString(k));
+            if (on) b.put(cardId);
+            p.edit().putString("favOps", o.toString()).putString("favIds", b.toString()).apply();
         } catch (Exception ignored) { }
     }
 

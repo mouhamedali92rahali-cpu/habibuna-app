@@ -196,7 +196,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards]);
 
-  useEffect(() => { save('favs', favs); }, [favs]);
+  useEffect(() => { save('favs', favs); if (isNative) void PhoneSettings.setFavIds({ ids: JSON.stringify(favs) }).catch(() => {}); }, [favs]);
   useEffect(() => { save('settings', settings); }, [settings]);
   useEffect(() => { document.documentElement.style.setProperty('--fz', String(settings.fontScale ?? 1)); }, [settings.fontScale]);
   // طريقة ظهور البطاقة تُحفظ أصليًّا أيضًا، لأن الموعد يقرؤها في أندرويد والتطبيق مغلق
@@ -360,6 +360,11 @@ export default function App() {
         .map((x) => { const at = new Date(); at.setHours(Math.floor(x.m / 60), x.m % 60, 0, 0); return { at: at.getTime(), k: x.k, card: cardAtRef.current(dNow, x.k) }; });
       void sendWidget([...todaySlots, ...weekSlots(settings, pool).map((e) => ({ at: e.at.getTime(), k: e.k, card: e.card }))]).catch(() => {});
       PhoneSettings.bgPopupState().then(({ state }) => setBgPopup(state)).catch(() => setBgPopup('unknown'));
+      // ♡ من النافذة على الشاشة: آخر ضغطة لكل بطاقة (اقتراح مستخدمة 2026-11-12)
+      PhoneSettings.takeFavs().then(({ ops }) => {
+        const o = JSON.parse(ops || '{}') as Record<string, boolean>;
+        if (Object.keys(o).length) setFavs((f) => { let r = f.filter((x) => !(x in o)); for (const [id, on] of Object.entries(o)) if (on) r = [...r, id]; return r; });
+      }).catch(() => {});
       PhoneSettings.takePrays().then(({ days }) => { const d = JSON.parse(days || '{}') as Record<string, number>; if (Object.keys(d).length) addPrays(d); }).catch(() => {});
       PhoneSettings.takeOpenCard().then(({ id }) => { const e = id ? byId.get(id) : undefined; if (e) setOpen(e.c); }).catch(() => {});
     };
@@ -373,6 +378,7 @@ export default function App() {
     const onMsg = (e: MessageEvent) => {
       const what = (e.data as { habibunaPopup?: string } | null)?.habibunaPopup;
       if (!what || !preview) return;
+      if (what.startsWith('fav/')) { const id = (JSON.parse(preview) as { card: { id: string } }).card.id; const on = what === 'fav/1'; setFavs((f) => f.filter((x) => x !== id).concat(on ? [id] : [])); return; }
       if (what === 'open') { const id = (JSON.parse(preview) as { card: { id: string } }).card.id; const c = byId.get(id)?.c; if (c) setOpen(c); }
       setPreview(null);
     };

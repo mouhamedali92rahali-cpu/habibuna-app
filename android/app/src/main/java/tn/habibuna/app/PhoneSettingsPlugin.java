@@ -199,6 +199,23 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** قائمة المفضلة من التطبيق، لتعرف النافذة إن كانت بطاقتها محفوظة */
+    @PluginMethod
+    public void setFavIds(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putString("favIds", call.getString("ids", "[]")).apply();
+        call.resolve();
+    }
+
+    /** ضغطات ♡ في النافذة منذ آخر قراءة: {رقم البطاقة: محفوظة؟}، ثم تُمسح */
+    @PluginMethod
+    public void takeFavs(PluginCall call) {
+        android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
+        JSObject r = new JSObject();
+        r.put("ops", p.getString("favOps", "{}"));
+        p.edit().remove("favOps").apply();
+        call.resolve(r);
+    }
+
     /** ضغطات «اللهم صلِّ وسلِّم» في نافذة البطاقة منذ آخر قراءة: {يوم: عدد}، ثم تُمسح (يحفظها التطبيق عنده) */
     @PluginMethod
     public void takePrays(PluginCall call) {
