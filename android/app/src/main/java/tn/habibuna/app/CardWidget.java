@@ -26,7 +26,7 @@ import java.util.TimeZone;
  * والعدد المعروض = ما في التطبيق للأيام السبعة (prayBase) + ما لم يأخذه التطبيق بعد.
  */
 public class CardWidget extends AppWidgetProvider {
-    static final boolean MARQUEE = true;
+    static final boolean MARQUEE = false;
     static final String PRAY = "tn.habibuna.app.WIDGET_PRAY";
     static final String TICK = "tn.habibuna.app.WIDGET_TICK";
     static final String GLOW = "tn.habibuna.app.WIDGET_GLOW";
