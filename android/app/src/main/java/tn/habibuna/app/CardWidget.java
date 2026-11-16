@@ -210,13 +210,7 @@ public class CardWidget extends AppWidgetProvider {
         v.setViewVisibility(R.id.wroot, vis);
         if (!hidden) {
             v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-            Intent open = new Intent(ctx, MainActivity.class);
-            open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent op = PendingIntent.getActivity(ctx, 7000, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            v.setOnClickPendingIntent(R.id.wtext, op);
-            v.setOnClickPendingIntent(R.id.wtextL, op);
-            v.setOnClickPendingIntent(R.id.wf1, op);
-            v.setOnClickPendingIntent(R.id.wf2, op);
+            // لا يُفتح التطبيق من الشريط أصلًا (قرار المستخدم 2026-11-12/16): الجملة والمصدر والنجمة بلا لمس، و«ﷺ» للعدّ وحده
         }
         m.updateAppWidget(ids, v);
         scheduleNext(ctx, nextAt);

@@ -494,3 +494,15 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 .trow button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gold);background:none;color:inherit;font-size:1.2rem;cursor:pointer}
 .trow button:disabled{opacity:.35}
 .startbtn{display:block;margin:18px auto 8px;width:min(86vw,340px);padding:14px;font-size:1.08rem}
+
+/* إطارات الإعدادات المطويّة (2026-11-16): العنوان وتحته الاختيار الحالي، ولمسه يفتح الإطار */
+.foldhead{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;position:relative}
+.foldhead .ptitle{margin-bottom:0;align-self:stretch}
+.fold:not(.open) .foldhead{padding-bottom:2px}
+.foldsum{color:#6b6553;font-size:.88rem;margin-top:2px}
+.foldchev{position:absolute;inset-inline-start:-4px;top:50%;transform:translateY(-50%) rotate(0deg);font-style:normal;color:#b58a3a;font-size:1.4rem;transition:transform .2s}
+.fold.open .foldchev{transform:translateY(-50%) rotate(-90deg)}
+.fold.open .foldhead{margin-bottom:10px}
+/* الأسطر الصغيرة داخل الإطار العاجي بلون النص لا بلون الخلفية الخضراء */
+.panel.framed .sline{color:#5d5a4c;margin:8px 0}
+@media (prefers-reduced-motion: reduce){ .foldchev{transition:none} }

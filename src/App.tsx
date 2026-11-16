@@ -1,5 +1,5 @@
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps, testTaskNote } from './lib/notify';
@@ -25,12 +25,24 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'feed', label: 'البطاقات', icon: '✦' }, { id: 'favs', label: 'المفضلة', icon: '♡' }, { id: 'settings', label: 'الإعدادات', icon: '⚙' },
 ];
 // إطار بشكل البطاقة (وجه عاجي وإطار زمردي وزخارف ذهبية) لصفحات الإعدادات والمساعدة
-function Frame({ title, className, children }: { title?: string; className?: string; children: React.ReactNode }) {
+/** إطارات الإعدادات المطويّة (طلب المستخدم 2026-11-16): العنوان وتحته الاختيار الحالي، ولمسه يفتح الإطار؛
+ *  إطار واحد مفتوح في كل مرة، وكلها تعود مغلقة عند الخروج من الإعدادات أو من التطبيق */
+const FoldCtx = createContext<{ open: string | null; set: (id: string | null) => void } | null>(null);
+function Frame({ title, className, children, fold, sum }: { title?: string; className?: string; children: React.ReactNode; fold?: string; sum?: React.ReactNode }) {
+  const f = useContext(FoldCtx);
+  const folded = !!fold && !!f;
+  const isOpen = !folded || f!.open === fold;
   return (
-    <div className={'panel framed' + (className ? ' ' + className : '')}>
+    <div className={'panel framed' + (className ? ' ' + className : '') + (folded ? ' fold' + (isOpen ? ' open' : '') : '')}>
       <Corner className="corner tl" /><Corner className="corner tr" /><Corner className="corner bl" /><Corner className="corner br" />
-      {title && <h2 className="ptitle">{title}</h2>}
-      {children}
+      {folded ? (
+        <button className="foldhead" aria-expanded={isOpen} onClick={() => f!.set(isOpen ? null : fold!)}>
+          <h2 className="ptitle">{title}</h2>
+          {!isOpen && sum && <small className="foldsum">{sum}</small>}
+          <i className="foldchev" aria-hidden="true">‹</i>
+        </button>
+      ) : title && <h2 className="ptitle">{title}</h2>}
+      {isOpen && children}
     </div>
   );
 }
@@ -144,6 +156,9 @@ export default function App() {
   const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
   const donePhoneStep = () => { setPhoneStep(false); save('guideSeen', true); };
   const [sub, setSub] = useState<'main' | 'help'>('main');
+  const [fold, setFold] = useState<string | null>(null);
+  useEffect(() => { setFold(null); }, [tab, sub]);
+  useEffect(() => { const h = () => { if (document.visibilityState === 'hidden') setFold(null); }; document.addEventListener('visibilitychange', h); return () => document.removeEventListener('visibilitychange', h); }, []);
   // عدّاد الصلاة على النبي ﷺ (اقتراح وافق عليه المستخدم): {رقم اليوم: عدد} في الهاتف وحده، لا يُرسل لأحد.
   // يُحسب من زرّ النافذة على الشاشة (يُؤخذ من الجزء الأصلي بـ takePrays) ومن الزرّ تحت بطاقة التذكير
   const [prays, setPrays] = useState<Record<string, number>>(() => load('prays', {}));
@@ -304,7 +319,7 @@ export default function App() {
   }, [tasks, say]);
   useEffect(() => {
     if (!tasks.length) return;
-    return listenTaskTaps((day, done) => { setTab('feed'); setOpen(null); if (done) doTask(day); });
+    return listenTaskTaps((day, done) => { setTab('feed'); setOpen(null); setTaskForce(true); if (done) doTask(day); else void clearTaskNote().catch(() => {}); });
   }, [tasks, doTask]);
   const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
   const introToday = intro && intro.day === dayNo ? introCards : [];
@@ -644,6 +659,7 @@ export default function App() {
         )}
 
         {tab === 'settings' && sub === 'main' && (
+          <FoldCtx.Provider value={{ open: fold, set: setFold }}>
           <section className="page settings">
             <h1><span>✦</span> الإعدادات <span>✦</span></h1>
             {firstRun ? <p className="sline">اختر ما يناسبك، وكل شيء هنا يمكنك تغييره متى شئت</p> : <p className="sline">تصلك البطاقات كل يوم في {times.map(fmt).join(' و ')}</p>}
@@ -661,7 +677,7 @@ export default function App() {
               </Frame>
             )}
             <PrayerSettings />
-            <Frame title="البطاقة على شاشتك">
+            <Frame title="البطاقة على شاشتك" fold="popup" sum={!isNative ? undefined : settings.popupOn === false ? 'الإشعار وحده' : (settings.popupMode === 'bubble' ? 'فقاعة صغيرة' : 'نافذة كاملة') + (overlay === false ? ' — تحتاج إذنك' : '')}>
               {isNative ? (
                 <label className="row">
                   <span><b>إظهار البطاقة على الشاشة</b><small>تنفتح البطاقة على شاشتك في موعدها</small></span>
@@ -699,14 +715,14 @@ export default function App() {
               )}
               <button className="ghost" onClick={() => void previewPopup()}>جرّبها الآن</button>
             </Frame>
-            <Frame title="أوقات البطاقات">
+            <Frame title="أوقات البطاقات" fold="times" sum={<bdi dir="ltr">{times.map(fmt).join(' · ')}</bdi>}>
               {(['الصباح', 'الظهر', 'المساء'] as const).map((name, k) => (
                 <TimeRow key={k} label={name} m={times[k]} min={RANGES[k][0]} max={RANGES[k][1]} onChange={(m) => { const t = [...times]; t[k] = m; setSettings({ ...settings, times: t }); }} />
               ))}
               {settings.times && settings.times.some((m, k) => m !== TIMES[k]) && <button className="linkbtn" onClick={() => setSettings({ ...settings, times: undefined })}>الأوقات الأصلية: {TIMES.map(fmt).join(' و ')}</button>}
               <p className="muted small">لكل بطاقة وقتها: الصباح بين 6:00 و11:30، والظهر بين 12:00 و17:30، والمساء بين 18:00 و23:00.</p>
             </Frame>
-            <Frame title="المهام الخفيّة">
+            <Frame title="المهام الخفيّة" fold="tasks" sum={settings.taskOn === false ? 'مطفأة' : settings.taskAt == null ? 'في وقت مختلف كل يوم' : `كل يوم في ${fmt(settings.taskAt)}`}>
               <label className="row">
                 <span><b>مهمة خير صغيرة كل يوم</b><small>بينك وبين الله، تصلك في إشعار هادئ بلا صوت، وبجانبها «فعلتُها»</small></span>
                 <input type="checkbox" checked={settings.taskOn !== false} onChange={(e) => setSettings({ ...settings, taskOn: e.target.checked })} />
@@ -727,8 +743,8 @@ export default function App() {
                 </div>
               )}
             </Frame>
-            {isNative && widget && (
-              <Frame title="زرّ الصلاة على شاشتك الرئيسية">
+            {isNative && widget && firstRun && (
+              <Frame title="زرّ الصلاة على شاشتك الرئيسية" fold="widget" sum={widget.placed && !widget.hidden ? 'موضوع على شاشتك ✓' : 'غير موضوع'}>
                 <p className="muted small">اضغطه كلما صلّيت على النبي ﷺ، ومعه آية أو حديث يتبدّل ثلاث مرات في اليوم.</p>
                 {widget.placed && !widget.hidden ? <p className="sline">✓ موضوع على شاشتك الرئيسية</p> : <button className="ghost" onClick={() => void widgetOn(widget, setWidget, say)}>ضعه على شاشتي</button>}
               </Frame>
@@ -736,6 +752,7 @@ export default function App() {
             {firstRun && <button className="primary startbtn" onClick={() => { setFirstRun(false); if (maker !== 'normal') donePhoneStep(); setTab('feed'); }}>ابدأ الآن ✦ وصلِّ عليه ﷺ</button>}
             <button className="helplink" onClick={() => setSub('help')}>لا تصلك البطاقات؟ المساعدة وتجربة الإشعارات ‹</button>
           </section>
+          </FoldCtx.Provider>
         )}
 
         {tab === 'settings' && sub === 'help' && (
@@ -1044,7 +1061,7 @@ function PrayerSettings() {
   const t = sel ? dayTimes(sel, new Date(), adj) : null;
   const step = (p: Prayer, d: number) => { const a = { ...adj, [p]: Math.max(-30, Math.min(30, (adj[p] ?? 0) + d)) }; saveAdj(a); prayerChanged(); };
   return (
-    <Frame title="مواقيت الصلاة">
+    <Frame title="مواقيت الصلاة" fold="prayer" sum={g ? (sel?.city ? sel.city : `${g.name} عمومًا`) : 'اختر مدينتك'}>
       <button className="ghost" onClick={() => setPick(true)}>{g ? (sel?.city ? `${sel.city}، ${g.name}` : `${g.name} عمومًا`) : 'اختر مدينتك'} — تغيير</button>
       {t && (
         <>
@@ -1054,7 +1071,7 @@ function PrayerSettings() {
               <div key={p} className="adjrow">
                 <span>{PNAME[p]}</span><b>{hhmm(t[p])}</b>
                 <button onClick={() => step(p, -1)} aria-label="دقيقة إلى الوراء">−</button>
-                <small>{adj[p] ? (adj[p]! > 0 ? '+' : '') + adj[p] : '0'}</small>
+                <small dir="ltr">{adj[p] ? (adj[p]! > 0 ? '+' : '−') + Math.abs(adj[p]!) : '0'}</small>
                 <button onClick={() => step(p, 1)} aria-label="دقيقة إلى الأمام">+</button>
               </div>
             ))}

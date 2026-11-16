@@ -295,12 +295,14 @@ async function ensureTaskChannel() {
   await LocalNotifications.createChannel({ id: TASK_CHANNEL, name: 'المهام الخفيّة', description: 'مهمة خير صغيرة كل يوم، بلا صوت', importance: 2, visibility: 1, lightColor: '#B8892E' });
   await LocalNotifications.registerActionTypes({ types: [{ id: 'TASK', actions: [{ id: 'done', title: 'فعلتُها' }] }] });
 }
-/** يُزيل إشعار مهمة اليوم إن كان ظاهرًا (بعد «فعلتُها» في التطبيق) */
+/** يُزيل إشعار مهمة اليوم إن كان ظاهرًا، ويلغيه إن لم يصل بعد (بعد «فعلتُها» أو فتح المهمة) */
 export async function clearTaskNote(): Promise<void> {
   if (!isNative) return;
   const { notifications } = await LocalNotifications.getDeliveredNotifications();
   const mine = notifications.filter((n) => n.id >= TASK_ID && n.id <= TASK_TEST_ID);
   if (mine.length) await LocalNotifications.removeDeliveredNotifications({ notifications: mine });
+  // وإن لم يصل إشعار اليوم بعد (فعلها قبل موعده) يُلغى، وكذلك إشعار التجربة
+  await LocalNotifications.cancel({ notifications: [{ id: TASK_ID }, { id: TASK_TEST_ID }] }).catch(() => {});
 }
 /** تجربة مؤقتة (للمستخدم وحده، تُحذف قبل النشر): إشعار مهمة اليوم بعد دقيقة */
 export async function testTaskNote(t: { id: string; text: string }): Promise<void> {
