@@ -2,7 +2,8 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots } from './lib/notify';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps } from './lib/notify';
+import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
@@ -111,7 +112,9 @@ export default function App() {
   const [deck, setDeck] = useState<Deck | null>(() => load<Deck | null>('deck', null));
   const [favs, setFavs] = useState<string[]>(() => load('favs', []));
   const [settings, setSettings] = useState<Settings>(() => {
-    const s = { ...defaultSettings, ...load<Partial<Settings>>('settings', {}) };
+    const saved = load<Partial<Settings> | null>('settings', null);
+    // من حفظ إعداداته قبل 2026-11-16 ولم يختر الطريقة كانت نافذته كاملة؛ الفقاعة اختيار جاهز للمثبّت حديثًا وحده
+    const s = { ...defaultSettings, ...(saved ? { popupMode: 'full' as const, ...saved } : {}) };
     return { ...s, perDay: PER_DAY };
   });
   const [hidden, setHidden] = useState<string[]>(() => load('hiddenChapters', []));
@@ -133,7 +136,9 @@ export default function App() {
   // بعد الترحيب: شاومي وأمثالها إلى الإعدادات (خطوة البطارية)، وبقية الهواتف إلى البطاقات مباشرة
   const closeWelcome = (granted = settings.notifyOn) => {
     setWelcome(0); save('welcomeSeen', true);
-    if (isNative && maker !== 'normal' && granted && !load('guideSeen', false)) { setTab('settings'); setFirstRun(true); }
+    // صفحة الإعدادات الأولى لكل هاتف (قرار المستخدم 2026-11-16): الفقاعة والأوقات والمهام وزرّ الصلاة، ولكلٍّ اختيار جاهز
+    if (isNative) { setTab('settings'); setFirstRun(true); }
+    void granted;
   };
   // خطوة البطارية لشاومي وأمثالها: في صفحة الإعدادات الأولى حتى يضغط «تم»
   const [phoneStep, setPhoneStep] = useState(() => !load('guideSeen', false));
@@ -168,14 +173,19 @@ export default function App() {
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
   // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
   const [updLater, setUpdLater] = useState(() => load<number>('updateLater', 0));
-  const [offer, setOffer] = useState<'ask' | 'done' | null>(() => (load('popupOffer', false) ? null : 'ask'));
+  const [offer, setOffer] = useState<'ask' | 'done' | null>(() => (load('popupOffer', false) || isNew ? null : 'ask'));
   const closeOffer = () => { setOffer(null); save('popupOffer', true); };
   const [preview, setPreview] = useState<string | null>(null);
   const previewSrc = useMemo(() => (preview ? `popup.html?t=${Date.now()}#${encodeURIComponent(preview)}` : null), [preview]);
   useEffect(() => { void phoneMaker().then(setMaker); }, []);
   const toastT = useRef<number | undefined>(undefined);
 
+  // المهام الخفيّة (2026-11-16)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskDone, setTaskDone] = useState<Record<string, string>>(() => taskDoneMap());
+  const [taskShow, setTaskShow] = useState(false);
   useEffect(() => {
+    void loadTasks(isNative).then(setTasks);
     loadCards().then(setCards).catch(() => setErr(true));
     loadQuiz().then(setBank).catch(() => {});
   }, []);
@@ -281,6 +291,20 @@ export default function App() {
     void PhoneSettings.setPrayBase({ days: JSON.stringify(base) }).catch(() => {});
   }, [prays, dayNo]);
   const pray = () => { addPrays({ [dayNo]: 1 }); say('صلّى الله عليه وسلّم ✦'); };
+  // مهمة اليوم تظهر من وقت إشعارها (كالبطاقات: لا شيء قبل موعده)
+  const todayTask = settings.taskOn !== false && tasks.length ? taskFor(tasks, dayNo) : null;
+  const taskAtToday = taskTime(settings, dayNo);
+  const taskVisible = !!todayTask && nowMin >= taskAtToday;
+  const doTask = useCallback((day: number) => {
+    if (!tasks.length) return;
+    setTaskDone(markTaskDone(day, taskFor(tasks, day).id));
+    void clearTaskNote().catch(() => {});
+    say('عَلِمها الله، وكفى ✦', 3500);
+  }, [tasks, say]);
+  useEffect(() => {
+    if (!tasks.length) return;
+    return listenTaskTaps((day, done) => { setTab('feed'); setOpen(null); if (done) doTask(day); });
+  }, [tasks, doTask]);
   const introCards = useMemo(() => (intro ? intro.ids.map((id) => byId.get(id)?.c).filter((c): c is CardData => !!c) : []), [intro, byId]);
   const introToday = intro && intro.day === dayNo ? introCards : [];
   const nextAt = times.find((m) => m > nowMin);
@@ -342,7 +366,7 @@ export default function App() {
   useEffect(() => {
     if (!isNative || pool.length === 0) return;
     const run = () => {
-      scheduleWeek(settings, pool).then(setPlanned).catch(() => setPlanned(0));
+      scheduleWeek(settings, pool, tasks).then(setPlanned).catch(() => setPlanned(0));
       exactAllowed().then(setExact).catch(() => {});
       PhoneSettings.widgetState().catch(() => null).then((ws) => {
         if (ws) setWidget(ws);
@@ -374,7 +398,7 @@ export default function App() {
     const onVis = () => { if (document.visibilityState === 'visible') run(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [pool, settings, byId, addPrays]);
+  }, [pool, settings, byId, addPrays, tasks, taskDone]);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -471,6 +495,31 @@ export default function App() {
         {tab === 'feed' && (
           <section className="page feed">
             <DateTicker onSettings={() => setTab('settings')} />
+            {taskVisible && todayTask && (
+              taskDone[dayNo] ? (
+                <p className="taskdone">✉ عَلِمها الله، وكفى ✦</p>
+              ) : (
+                <div className="task">
+                  <button className="tbody" onClick={() => setTaskShow(true)}>
+                    <small>✉ مهمّتك الخفيّة اليوم</small>
+                    <span>{todayTask.text}</span>
+                  </button>
+                  <button className="tdone" onClick={() => doTask(dayNo)}>فعلتُها</button>
+                </div>
+              )
+            )}
+            {taskShow && todayTask && (
+              <div className="modal" onClick={() => setTaskShow(false)}>
+                <div className="psheet" onClick={(e) => e.stopPropagation()}>
+                  <h3>✉ مهمّتك الخفيّة اليوم</h3>
+                  <p className="pmatn">{todayTask.text}</p>
+                  {todayTask.origin && <p className="pnarr">أصلها: {todayTask.origin}</p>}
+                  {todayTask.source && <p className="psrc">المصدر: {todayTask.source}{todayTask.grade && <><br /><small>{todayTask.grade}</small></>}</p>}
+                  <p className="psub">بينك وبين الله؛ لا تخبر بها أحدًا.</p>
+                  <button className="ghost" onClick={() => setTaskShow(false)}>رجوع</button>
+                </div>
+              </div>
+            )}
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
                 <b>الإشعارات غير مفعّلة</b>
@@ -608,7 +657,7 @@ export default function App() {
         {tab === 'settings' && sub === 'main' && (
           <section className="page settings">
             <h1><span>✦</span> الإعدادات <span>✦</span></h1>
-            <p className="sline">تصلك البطاقات كل يوم في {slots().map(fmt).join(' و ')}</p>
+            {firstRun ? <p className="sline">اختر ما يناسبك، وكل شيء هنا يمكنك تغييره متى شئت</p> : <p className="sline">تصلك البطاقات كل يوم في {times.map(fmt).join(' و ')}</p>}
             {isNative && maker !== 'normal' && phoneStep && settings.notifyOn && (
               <Frame title="خطوة خاصة بهاتفك" className="hl">
                 <p>{maker === 'xiaomi' ? 'هواتف شاومي' : maker === 'huawei' ? 'هواتف هواوي' : 'بعض الهواتف'} توقف التطبيقات المغلقة توفيرًا للبطارية، فقد لا تصلك البطاقات. يكفي أن تغيّر مرةً واحدة:</p>
@@ -619,7 +668,7 @@ export default function App() {
                 </ul>)}
                 <div className="safe"><p>لن يعمل التطبيق في الخلفية ولن يستهلك بطاريتك؛ فقط تبقى مواعيد البطاقات محفوظة.</p></div>
                 <button className="primary" onClick={() => void (maker === 'huawei' ? PhoneSettings.openAutostart() : PhoneSettings.openAppSettings()).catch(() => {})}>افتح إعدادات الهاتف</button>
-                <button className="ghost" onClick={() => { donePhoneStep(); if (firstRun) { setFirstRun(false); setTab('feed'); } }}>{firstRun ? 'تم، ابدأ الآن ✦ وصلِّ عليه ﷺ' : 'تم'}</button>
+                <button className="ghost" onClick={donePhoneStep}>تم</button>
               </Frame>
             )}
             <PrayerSettings />
@@ -661,6 +710,40 @@ export default function App() {
               )}
               <button className="ghost" onClick={() => void previewPopup()}>جرّبها الآن</button>
             </Frame>
+            <Frame title="أوقات البطاقات">
+              {(['الصباح', 'الظهر', 'المساء'] as const).map((name, k) => (
+                <TimeRow key={k} label={name} m={times[k]} min={RANGES[k][0]} max={RANGES[k][1]} onChange={(m) => { const t = [...times]; t[k] = m; setSettings({ ...settings, times: t }); }} />
+              ))}
+              {settings.times && settings.times.some((m, k) => m !== TIMES[k]) && <button className="linkbtn" onClick={() => setSettings({ ...settings, times: undefined })}>الأوقات الأصلية: {TIMES.map(fmt).join(' و ')}</button>}
+              <p className="muted small">لكل بطاقة وقتها: الصباح بين 6:00 و11:30، والظهر بين 12:00 و17:30، والمساء بين 18:00 و23:00.</p>
+            </Frame>
+            <Frame title="المهام الخفيّة">
+              <label className="row">
+                <span><b>مهمة خير صغيرة كل يوم</b><small>بينك وبين الله، تصلك في إشعار هادئ بلا صوت، وبجانبها «فعلتُها»</small></span>
+                <input type="checkbox" checked={settings.taskOn !== false} onChange={(e) => setSettings({ ...settings, taskOn: e.target.checked })} />
+              </label>
+              {settings.taskOn !== false && (
+                <div className="pmode" role="radiogroup" aria-label="متى تصلك المهمة؟">
+                  <p className="muted small">متى تصلك؟</p>
+                  <label className={'pm' + (settings.taskAt == null ? ' on' : '')}>
+                    <input type="radio" name="tmode" checked={settings.taskAt == null} onChange={() => setSettings({ ...settings, taskAt: null })} />
+                    <span><b>في وقت مختلف كل يوم</b><small>بين 8:00 و21:30، بعيدًا عن أوقات البطاقات</small></span>
+                  </label>
+                  <label className={'pm' + (settings.taskAt != null ? ' on' : '')}>
+                    <input type="radio" name="tmode" checked={settings.taskAt != null} onChange={() => setSettings({ ...settings, taskAt: 8 * 60 })} />
+                    <span><b>في وقت ثابت</b><small>تختار ساعته</small></span>
+                  </label>
+                  {settings.taskAt != null && <TimeRow label="الوقت" m={settings.taskAt} min={TASK_FIXED[0]} max={TASK_FIXED[1]} onChange={(m) => setSettings({ ...settings, taskAt: m })} />}
+                </div>
+              )}
+            </Frame>
+            {isNative && widget && (
+              <Frame title="زرّ الصلاة على شاشتك الرئيسية">
+                <p className="muted small">اضغطه كلما صلّيت على النبي ﷺ، ومعه آية أو حديث يتبدّل ثلاث مرات في اليوم.</p>
+                {widget.placed && !widget.hidden ? <p className="sline">✓ موضوع على شاشتك الرئيسية</p> : <button className="ghost" onClick={() => void widgetOn(widget, setWidget, say)}>ضعه على شاشتي</button>}
+              </Frame>
+            )}
+            {firstRun && <button className="primary startbtn" onClick={() => { setFirstRun(false); if (maker !== 'normal') donePhoneStep(); setTab('feed'); }}>ابدأ الآن ✦ وصلِّ عليه ﷺ</button>}
             <button className="helplink" onClick={() => setSub('help')}>لا تصلك البطاقات؟ المساعدة وتجربة الإشعارات ‹</button>
           </section>
         )}
@@ -819,6 +902,19 @@ function HuaweiSteps() {
       <li>أوقف <Sys k="hwAuto" /></li>
       <li>فعّل الخيارات الثلاثة: <Sys k="hwOptions" /></li>
     </ul>
+  );
+}
+
+/** سطر وقت بزرّين −/+ بخطوة ربع ساعة داخل مجاله (أوضح من منتقي الوقت في الهاتف) */
+function TimeRow({ label, m, min, max, onChange }: { label: string; m: number; min: number; max: number; onChange: (m: number) => void }) {
+  const step = (d: number) => onChange(Math.min(max, Math.max(min, Math.round((m + d) / 15) * 15)));
+  return (
+    <div className="adjrow trow">
+      <span>{label}</span>
+      <button onClick={() => step(-15)} disabled={m <= min} aria-label="ربع ساعة أبكر">−</button>
+      <b dir="ltr">{fmt(m)}</b>
+      <button onClick={() => step(15)} disabled={m >= max} aria-label="ربع ساعة أبعد">+</button>
+    </div>
   );
 }
 

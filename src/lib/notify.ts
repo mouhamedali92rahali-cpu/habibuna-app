@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
-import { LocalNotifications } from '@capacitor/local-notifications';
+import { LocalNotifications, type LocalNotificationSchema } from '@capacitor/local-notifications';
 import type { CardData, Settings } from './types';
+import { taskFor, taskTime, taskDoneMap, type Task } from './tasks';
 
 /** نسخة الهاتف (Capacitor): إشعارات محلية يجدولها النظام وتصل والتطبيق مغلق */
 export const isNative = Capacitor.isNativePlatform();
@@ -32,7 +33,7 @@ const short = (t: string) => (t.length > 160 ? t.slice(0, 157) + '…' : t);
 async function ensureChannel() {
   if (Capacitor.getPlatform() !== 'android') return;
   await LocalNotifications.deleteChannel({ id: 'cards' }).catch(() => {});
-  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'ثلاث بطاقات كل يوم: 10:00 و15:00 و20:00', importance: 4, visibility: 1 });
+  await LocalNotifications.createChannel({ id: CHANNEL, name: 'بطاقات حبيبنا', description: 'ثلاث بطاقات كل يوم', importance: 4, visibility: 1 });
 }
 
 /**
@@ -109,10 +110,14 @@ export async function showCard(card: CardData): Promise<string | null> {
   return null;
 }
 
-/** أوقات ثابتة للبطاقات الثلاث (قرار المستخدم): العاشرة صباحًا، والثالثة ظهرًا، والثامنة مساءً */
-const TIMES = [10 * 60, 15 * 60, 20 * 60];
-export function slots(_s?: Settings): number[] {
-  return TIMES;
+/** أوقات البطاقات الثلاث: الأصل العاشرة والثالثة والثامنة، ومن أراد يغيّرها داخل مجال كل موعد (قرار المستخدم 2026-11-16) */
+export const TIMES = [10 * 60, 15 * 60, 20 * 60];
+/** مجال كل موعد: الصباح 6:00–11:30، والظهر 12:00–17:30، والمساء 18:00–23:00 (فتبقى تحية النافذة والأدعية في مواضعها) */
+export const RANGES: [number, number][] = [[6 * 60, 11 * 60 + 30], [12 * 60, 17 * 60 + 30], [18 * 60, 23 * 60]];
+export function slots(s?: Settings): number[] {
+  const t = s?.times;
+  if (!t || t.length !== 3) return TIMES;
+  return t.map((m, k) => (Number.isFinite(m) ? Math.min(RANGES[k][1], Math.max(RANGES[k][0], Math.round(m))) : TIMES[k]));
 }
 export const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
@@ -242,7 +247,7 @@ export function weekSlots(s: Settings, pool: CardData[]): WeekSlot[] {
  * الترتيب الثابت للبطاقات، فلا تتغيّر ولا تتكرّر عند إعادة الجدولة في الأيام التالية.
  * تُلغى الجدولة السابقة أولًا، فاستدعاؤها عند كل فتح للتطبيق يعيد الجدولة.
  */
-export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<number> {
+export async function scheduleWeek(s: Settings, pool: CardData[], tasks: Task[] = []): Promise<number> {
   if (!isNative) return 0;
   const pending = await LocalNotifications.getPending();
   const old = pending.notifications.filter((n) => n.id !== TEST_ID && n.id !== TEST_ID - 1);
@@ -252,7 +257,7 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
   await ensureChannel();
   const exact = await exactAllowed().catch(() => false);
 
-  const list: ReturnType<typeof nativeNote>[] = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
+  const list: LocalNotificationSchema[] = weekSlots(s, pool).map((e) => nativeNote(e.id, e.card, e.at, exact));
   // إشعار «مراجعة الأسبوع» كل أحد 11:00 (قرار المستخدم)، بدءًا من الأحد الذي يسبقه ثلاثة أيام من التثبيت على الأقل
   const installed = Number(localStorage.getItem('firstOpen') ?? 0) || Date.now();
   for (let d = 0; d <= WEEK; d++) {
@@ -260,10 +265,47 @@ export async function scheduleWeek(s: Settings, pool: CardData[]): Promise<numbe
     if (dayNumber(at) % 7 !== 3 || at.getTime() < Date.now() + 60_000 || at.getTime() - installed < 3 * 86_400_000) continue;
     list.push({ id: QUIZ_ID + d, title: TITLE, body: 'مراجعة الأسبوع جاهزة: اختبر نفسك فيما مرّ بك من بطاقات ✦', largeBody: 'مراجعة الأسبوع جاهزة: أسئلة قصيرة عمّا مرّ بك من بطاقات هذا الأسبوع، وبعد كل جواب تظهر البطاقة نفسها ✦', channelId: CHANNEL, extra: { cardId: 'quiz' }, isExactNotification: exact, schedule: { at, allowWhileIdle: true } });
   }
+  // المهام الخفيّة (2026-11-16): إشعار هادئ مستقلّ، بأيقونة الرسالة ولون ذهبي وزرّ «فعلتُها»
+  if (s.taskOn !== false && tasks.length) {
+    await ensureTaskChannel();
+    const done = taskDoneMap();
+    for (let d = 0; d <= WEEK; d++) {
+      const day = dayNumber(new Date(Date.now() + d * 86_400_000));
+      const m = taskTime(s, day);
+      const at = new Date(); at.setDate(at.getDate() + d); at.setHours(Math.floor(m / 60), m % 60, 0, 0);
+      if (at.getTime() < Date.now() + 60_000 || done[day]) continue;
+      const t = taskFor(tasks, day);
+      list.push({ id: TASK_ID + d, title: '✉ مهمّتك الخفيّة اليوم', body: t.text, largeBody: t.text, summaryText: 'بينك وبين الله', channelId: TASK_CHANNEL, smallIcon: 'ic_stat_task', iconColor: '#B8892E', actionTypeId: 'TASK', extra: { task: t.id, day }, isExactNotification: exact, schedule: { at, allowWhileIdle: true } });
+    }
+  }
   const keep = new Date(); keep.setDate(keep.getDate() + WEEK - 2); keep.setHours(12, 30, 0, 0);
   list.push({ id: KEEP_ID, title: TITLE, body: 'اضغط هنا لتستمر بطاقاتك في الوصول ✦', largeBody: 'لم تفتح «حبيبنا» منذ مدة؛ اضغط هنا مرة واحدة لتستمر بطاقاتك في الوصول ✦', channelId: CHANNEL, extra: { cardId: '' }, isExactNotification: false, schedule: { at: keep, allowWhileIdle: true } });
   if (list.length) await LocalNotifications.schedule({ notifications: list });
   return list.filter((n) => n.id < QUIZ_ID).length;
+}
+
+/** إشعارات المهام الخفيّة: 7000 + رقم اليوم من الآن */
+export const TASK_ID = 7000;
+const TASK_CHANNEL = 'tasks';
+async function ensureTaskChannel() {
+  if (Capacitor.getPlatform() !== 'android') return;
+  // أهمية 2: يظهر في الإشعارات بلا صوت ولا اهتزاز (طلب المستخدم: هادئ)
+  await LocalNotifications.createChannel({ id: TASK_CHANNEL, name: 'المهام الخفيّة', description: 'مهمة خير صغيرة كل يوم، بلا صوت', importance: 2, visibility: 1, lightColor: '#B8892E' });
+  await LocalNotifications.registerActionTypes({ types: [{ id: 'TASK', actions: [{ id: 'done', title: 'فعلتُها' }] }] });
+}
+/** يُزيل إشعار مهمة اليوم إن كان ظاهرًا (بعد «فعلتُها» في التطبيق) */
+export async function clearTaskNote(): Promise<void> {
+  if (!isNative) return;
+  const { notifications } = await LocalNotifications.getDeliveredNotifications();
+  const mine = notifications.filter((n) => n.id >= TASK_ID && n.id <= TASK_ID + WEEK);
+  if (mine.length) await LocalNotifications.removeDeliveredNotifications({ notifications: mine });
+}
+let taskTapped: { day: number; done: boolean } | null = null;
+let onTaskTap: ((day: number, done: boolean) => void) | null = null;
+export function listenTaskTaps(cb: (day: number, done: boolean) => void): () => void {
+  onTaskTap = cb;
+  if (taskTapped) { cb(taskTapped.day, taskTapped.done); taskTapped = null; }
+  return () => { onTaskTap = null; };
 }
 
 /** الضغط على الإشعار يفتح البطاقة نفسها؛ يُحفظ الطلب إن وصل قبل تحميل البطاقات */
@@ -271,7 +313,13 @@ let tapped: string | null = null;
 let onTap: ((id: string) => void) | null = null;
 if (isNative) {
   void LocalNotifications.addListener('localNotificationActionPerformed', (e) => {
-    const id = (e.notification.extra as { cardId?: string } | undefined)?.cardId;
+    const ex = e.notification.extra as { cardId?: string; task?: string; day?: number } | undefined;
+    if (ex?.task) {
+      const v = { day: Number(ex.day), done: e.actionId === 'done' };
+      if (onTaskTap) onTaskTap(v.day, v.done); else taskTapped = v;
+      return;
+    }
+    const id = ex?.cardId;
     if (!id) return;
     if (onTap) onTap(id); else tapped = id;
   });

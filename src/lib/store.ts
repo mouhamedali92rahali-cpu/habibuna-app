@@ -6,7 +6,8 @@ export function load<T>(key: string, fallback: T): T {
 export function save(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* التخزين غير متاح */ }
 }
-export const defaultSettings: Settings = { perDay: 3, from: '09:00', to: '21:00', notifyOn: false, popupOn: false };
+// popupOn وpopupMode لا يمسّان إلا من لم يحفظ إعداداته بعد (المثبّت حديثًا): الفقاعة اختيار جاهز يُعرض في صفحة الإعدادات الأولى (قرار المستخدم 2026-11-16)
+export const defaultSettings: Settings = { perDay: 3, from: '09:00', to: '21:00', notifyOn: false, popupOn: true, popupMode: 'bubble', taskOn: true, taskAt: null };
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();

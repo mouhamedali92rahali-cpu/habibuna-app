@@ -477,3 +477,20 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 
 /* بلا زرّ نص الحديث ولا شرح: المفضلة والمشاركة في الوسط (طلب المستخدم 2026-11-12) */
 .under.alone{justify-content:center}
+
+/* المهام الخفيّة (2026-11-16): سطر تحت التاريخ وخط الصلاة، والمهمة ظاهرة وبجانبها «فعلتُها» */
+.task{display:flex;align-items:center;gap:10px;margin:8px auto 4px;width:min(92vw,380px);padding:10px 12px;border:1.5px solid var(--gold);border-radius:14px;background:color-mix(in srgb,var(--gold) 9%,var(--paper))}
+.task .tbody{flex:1;min-width:0;background:none;border:0;padding:0;text-align:right;color:var(--ink);font:inherit;cursor:pointer}
+.task .tbody small{display:block;color:#8a6a1f;font-weight:700;font-size:.82rem;margin-bottom:3px}
+.task .tbody span{display:block;font-family:var(--font-body,inherit);font-size:1.02rem;line-height:1.55}
+.task .tdone{flex:none;background:var(--emerald);color:#fff;border:0;border-radius:20px;padding:8px 14px;font:700 .95rem var(--font-ui);cursor:pointer}
+.taskdone{margin:6px auto 2px;text-align:center;color:#8a6a1f;font-size:.92rem}
+@media (prefers-color-scheme: dark){ :where(:root:not([data-theme=light])) .task .tbody small, :where(:root:not([data-theme=light])) .taskdone{color:var(--gold)} :where(:root:not([data-theme=light])) .task .tdone{background:var(--gold);color:#12201c} }
+:where(:root[data-theme=dark]) .task .tbody small, :where(:root[data-theme=dark]) .taskdone{color:var(--gold)}
+:where(:root[data-theme=dark]) .task .tdone{background:var(--gold);color:#12201c}
+.trow{display:flex;align-items:center;gap:10px;margin:6px 0}
+.trow span{flex:1}
+.trow b{min-width:58px;text-align:center;font-size:1.1rem}
+.trow button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gold);background:none;color:inherit;font-size:1.2rem;cursor:pointer}
+.trow button:disabled{opacity:.35}
+.startbtn{display:block;margin:18px auto 8px;width:min(86vw,340px);padding:14px;font-size:1.08rem}
