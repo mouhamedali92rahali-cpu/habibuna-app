@@ -6,7 +6,7 @@ import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, W
 import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
-import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, stripLines, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
@@ -18,6 +18,7 @@ import { App as NativeApp } from '@capacitor/app';
 import { useArt, useMaps, openZoom, startArt, type ZoomReq } from './lib/art';
 import { GROUPS, PNAME, PRAYERS, dayTimes, hhmm, loadAdj, loadSel, nextPrayer, saveAdj, saveSel, untilText, type Adj, type Prayer, type PrayerSel } from './lib/prayer';
 import { isRamadan, sunanFor, type Sunna } from './lib/sunan';
+import { stripPlan, stripNow } from './lib/strip';
 import { Zoom } from './components/Zoom';
 
 type Tab = 'feed' | 'favs' | 'settings';
@@ -372,6 +373,12 @@ export default function App() {
     setQuizMiss(wrong); save('quizMiss', wrong);
   };
   const qStreak = streak(quizDone, qKey - 7);
+  // تغيّرت المدينة أو ضبط المواقيت: يُعاد حساب أوقات الشريط على الشاشة الرئيسية
+  useEffect(() => {
+    const f = () => { void sendFormulas(cards ?? []).catch(() => {}); };
+    window.addEventListener('hb-prayer', f);
+    return () => window.removeEventListener('hb-prayer', f);
+  }, [cards]);
 
   useEffect(() => {
     if (pool.length === 0) return;
@@ -982,7 +989,14 @@ function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record
   const [rot, setRot] = useState(0);
   const [show, setShow] = useState<Sunna | null>(null);
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 20_000); return () => clearInterval(t); }, []);
-  const sunan = useMemo(() => sunanFor(now, fix), [now.toDateString(), JSON.stringify(fix)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const days = useMemo(() => sunanFor(now, fix), [now.toDateString(), JSON.stringify(fix)]); // eslint-disable-line react-hooks/exhaustive-deps
+  // تذكير الوقت (أذكار الصباح، الضحى، أذكار المساء، الوتر) هو نفسه في الشريط على الشاشة الرئيسية؛ وأيام السنن قبله (2026-11-16)
+  const plan = useMemo(() => { const y = new Date(now); y.setDate(y.getDate() - 1); return stripPlan(stripLines(), sel, adj, fix, y, 2); },
+    [now.toDateString(), JSON.stringify(fix), JSON.stringify(sel), JSON.stringify(adj)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cur = stripNow(plan, now.getTime());
+  const timed: Sunna | null = cur && ['morning', 'duha', 'evening', 'witr'].includes(cur.kind)
+    ? { id: 't-' + cur.at, line: cur.t.replace(/^﴿|﴾$/g, ''), matn: cur.full ?? '', narr: '', source: (cur.t.startsWith('﴿') ? 'سورة ' : '') + cur.s, grade: cur.g ?? '' } : null;
+  const sunan = timed ? [...days, timed] : days;
   useEffect(() => { if (sunan.length < 2) return; const t = setInterval(() => setRot((r) => r + 1), 6000); return () => clearInterval(t); }, [sunan.length]);
   const n = sel ? nextPrayer(sel, now, adj) : null;
   const su = sunan.length ? sunan[rot % sunan.length] : null;
@@ -1001,9 +1015,9 @@ function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record
         <div className="modal" onClick={() => setShow(null)}>
           <div className="psheet" onClick={(e) => e.stopPropagation()}>
             <h3>{show.line}</h3>
-            <p className="pnarr">عن {show.narr}</p>
-            <p className="pmatn">{show.matn}</p>
-            <p className="psrc">المصدر: {show.source}<br /><small>{show.grade}</small></p>
+            {show.narr && <p className="pnarr">عن {show.narr}</p>}
+            {show.matn && <p className="pmatn">{show.matn}</p>}
+            <p className="psrc">المصدر: {show.source}{show.grade && <><br /><small>{show.grade}</small></>}</p>
             <button className="ghost" onClick={() => setShow(null)}>رجوع</button>
           </div>
         </div>

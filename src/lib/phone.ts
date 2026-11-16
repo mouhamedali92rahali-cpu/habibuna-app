@@ -3,7 +3,10 @@ import { registerPlugin } from '@capacitor/core';
 import { isNative, type WeekSlot } from './notify';
 import type { CardData } from './types';
 import { WIDGET_LINES } from './widgetLines';
-import { widgetLines } from './cards';
+import { widgetLines, hijriFix } from './cards';
+import { stripPlan, type Lines } from './strip';
+import { loadSel, loadAdj } from './prayer';
+import { load } from './store';
 
 interface PhoneSettingsPlugin {
   info(): Promise<{ manufacturer: string; brand: string }>;
@@ -25,7 +28,7 @@ interface PhoneSettingsPlugin {
   bgPopupState(): Promise<{ state: 'allowed' | 'denied' | 'unknown' }>;
   shareImage(o: { base64: string; text: string }): Promise<void>;
   setWidget(o: { items: string }): Promise<void>;
-  setFormulas(o: { items: string; friday?: string; lines?: string }): Promise<void>;
+  setFormulas(o: { items: string; friday?: string; lines?: string; slots?: string }): Promise<void>;
   setWidgetHidden(o: { hidden: boolean }): Promise<void>;
   setPrayBase(o: { days: string }): Promise<void>;
   widgetState(): Promise<{ placed: boolean; canPin: boolean; hidden?: boolean }>;
@@ -71,7 +74,11 @@ export async function sendFormulas(cards: CardData[]): Promise<void> {
   if (!isNative) return;
   const items = cards.filter((c) => c.dalail).flatMap((c) => c.text.split('\n')).map((l) => l.trim()).filter((l) => l && l.length <= 90);
   const fri = cards.find((c) => c.friday);
-  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '', lines: JSON.stringify(widgetLines ?? WIDGET_LINES) });
+  const lines = stripLines();
+  // الشريط مع أوقات الصلاة (2026-11-16): 31 يومًا من أمس، فيبقى الشريط صحيحًا وإن لم يُفتح التطبيق شهرًا
+  const from = new Date(); from.setDate(from.getDate() - 1);
+  const slots = stripPlan(lines, loadSel(), loadAdj(), hijriNow(), from, 31).map((x) => ({ at: x.at, t: x.t, s: x.s }));
+  await PhoneSettings.setFormulas({ items: JSON.stringify(items), friday: fri ? fri.text : '', lines: JSON.stringify(lines), slots: JSON.stringify(slots) });
 }
 
 /** مواعيد البطاقات للزرّ على الشاشة الرئيسية: لون إطاره يتبع باب البطاقة الحالية ويتجدّد في الموعد القادم */
@@ -79,4 +86,21 @@ export async function sendWidget(entries: { at: number; k: number; card: CardDat
   if (!isNative) return;
   const items = entries.map((e) => ({ at: e.at, theme: e.card.theme, cardId: e.card.id }));
   await PhoneSettings.setWidget({ items: JSON.stringify(items) });
+}
+
+/** جمل الشريط: المنشورة في cards.json، ويُكمَّل ما ليس فيها من المرفقة (تذكيرات الأوقات والجمل الجديدة قبل نشرها) */
+export function stripLines(): Lines {
+  const B = WIDGET_LINES as unknown as Lines;
+  const P = (widgetLines ?? null) as Lines | null;
+  if (!P) return B;
+  const add = (a: Lines['q'], b: Lines['q']) => [...a, ...b.filter((x) => !a.some((y) => y.t === x.t))];
+  return { ...P, q: add(P.q, B.q), h: add(P.h, B.h), t: P.t ?? B.t };
+}
+
+/** تصحيحات التاريخ الهجري: الرسمية تغلب ما اختاره صاحب الهاتف */
+export function hijriNow(): Record<string, Record<string, string>> {
+  const m = load<Record<string, Record<string, string>>>('hijriMine', {});
+  const r = { ...m };
+  for (const k of Object.keys(hijriFix)) r[k] = { ...(m[k] ?? {}), ...hijriFix[k] };
+  return r;
 }
