@@ -140,7 +140,7 @@ public class CardWidget extends AppWidgetProvider {
         int[] ids = m.getAppWidgetIds(new ComponentName(ctx, CardWidget.class));
         long now = System.currentTimeMillis();
         // لون الإطار: باب البطاقة التي حان موعدها (يرسلها التطبيق: setWidget)، ويتبدّل في الموعد القادم
-        String theme = "emerald"; long nextAt = 0, curAt = -1;
+        String theme = "emerald"; long nextAt = 0, curAt = -1; stripNext = 0;
         try {
             JSONArray items = new JSONArray(p.getString("widget", "[]"));
             for (int k = 0; k < items.length(); k++) {
@@ -182,6 +182,15 @@ public class CardWidget extends AppWidgetProvider {
                                       : h.getJSONObject((int) Math.floorMod(slot / 2, (long) h.length()));
                 }
                 if (o != null) { text = o.optString("t", text); src = o.optString("s", ""); }
+                // الشريط مع أوقات الصلاة (2026-11-16): خطة يحسبها التطبيق لثلاثين يومًا {at, t, s}، تغلب الطريقة القديمة ما دامت فيها مواضع قادمة
+                JSONObject cur = null; long nxt = 0;
+                JSONArray sl = new JSONArray(p.getString("slots", "[]"));
+                for (int i = 0; i < sl.length(); i++) {
+                    JSONObject x = sl.getJSONObject(i); long at = x.optLong("at");
+                    if (at <= now) { if (cur == null || at > cur.optLong("at")) cur = x; }
+                    else if (nxt == 0 || at < nxt) nxt = at;
+                }
+                if (cur != null && nxt > 0) { text = cur.optString("t", text); src = cur.optString("s", ""); stripNext = nxt; }
                 // قوسا الآية ﴿ ﴾ يرسمهما خط الهاتف صغيرين بنقطة، فتُحذفان ويُكتب «سورة» قبل اسمها
                 if (text.startsWith("﴿") && text.endsWith("﴾")) { text = text.substring(1, text.length() - 1); src = "سورة " + src; }
             }
@@ -216,6 +225,9 @@ public class CardWidget extends AppWidgetProvider {
         scheduleNext(ctx, nextAt);
     }
 
+    /** موعد تبدّل جملة الشريط القادم من خطة أوقات الصلاة (0 = الطريقة القديمة) */
+    private static long stripNext = 0;
+
     private static PendingIntent tick(Context ctx, int extra) {
         return PendingIntent.getBroadcast(ctx, 7002, new Intent(ctx, CardWidget.class).setAction(TICK), extra | PendingIntent.FLAG_IMMUTABLE);
     }
@@ -227,8 +239,9 @@ public class CardWidget extends AppWidgetProvider {
         c.set(Calendar.HOUR_OF_DAY, 0); c.set(Calendar.MINUTE, 0); c.set(Calendar.SECOND, 5); c.set(Calendar.MILLISECOND, 0);
         long at = c.getTimeInMillis();
         if (nextAt > 0 && nextAt + 2000 < at) at = nextAt + 2000;
-        // ساعات تبدّل جملة الشريط
-        for (int hh : new int[]{11, 16, 21}) {
+        // ساعات تبدّل جملة الشريط: من خطة أوقات الصلاة إن وُجدت، وإلا 11 و16 و21
+        if (stripNext > System.currentTimeMillis() && stripNext + 2000 < at) at = stripNext + 2000;
+        if (stripNext == 0) for (int hh : new int[]{11, 16, 21}) {
             Calendar t = Calendar.getInstance();
             t.set(Calendar.HOUR_OF_DAY, hh); t.set(Calendar.MINUTE, 0); t.set(Calendar.SECOND, 5); t.set(Calendar.MILLISECOND, 0);
             if (t.getTimeInMillis() > System.currentTimeMillis() + 1000 && t.getTimeInMillis() < at) at = t.getTimeInMillis();
