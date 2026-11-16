@@ -2,8 +2,8 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps, testTaskNote } from './lib/notify';
-import { loadTasks, markTaskDone, taskUndo, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps } from './lib/notify';
+import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
@@ -183,7 +183,7 @@ export default function App() {
   const [bank, setBank] = useState<Question[]>([]);
   const [quizDone, setQuizDone] = useState<Record<string, QuizRecord>>(() => load('quizDone', {}));
   const [quizMiss, setQuizMiss] = useState<string[]>(() => load('quizMiss', []));
-  const [quizLater, setQuizLater] = useState(() => load<number>('quizLater', 0));
+  const [quizLater] = useState(() => load<number>('quizLater', 0));
   const [quiz, setQuiz] = useState<QuizItem[] | null>(null);
   const [firstOpen] = useState<number>(() => { const t = load<number>('firstOpen', 0) || Date.now(); save('firstOpen', t); return t; });
   // زرّ التحديث (طلب المستخدم): يظهر حين تكون في cards.json نسخة أحدث من نسخة التطبيق، و«لاحقًا» يخفيه حتى الغد
@@ -308,7 +308,7 @@ export default function App() {
   // مهمة اليوم تظهر من وقت إشعارها (كالبطاقات: لا شيء قبل موعده)
   const todayTask = settings.taskOn !== false && tasks.length ? taskFor(tasks, dayNo) : null;
   const taskAtToday = taskTime(settings, dayNo);
-  // زرّ التجربة المؤقت (للمستخدم وحده، يُحذف قبل النشر): يُظهر مهمة اليوم الآن ويرسل إشعارها بعد دقيقة
+  // لمس إشعار المهمة يُظهرها في التطبيق ولو قبل وقتها المحسوب
   const [taskForce, setTaskForce] = useState(false);
   const taskVisible = !!todayTask && (taskForce || nowMin >= taskAtToday);
   const doTask = useCallback((day: number) => {
@@ -510,19 +510,15 @@ export default function App() {
       <main onScroll={tab === 'feed' ? onMainScroll : undefined} className={tab === 'feed' && pool.length > 0 ? 'withfab' : undefined}>
         {tab === 'feed' && (
           <section className="page feed">
-            <DateTicker onSettings={() => setTab('settings')} />
-            {taskVisible && todayTask && (
-              taskDone[dayNo] ? (
-                <p className="taskdone">✉ عَلِمها الله، وكفى ✦</p>
-              ) : (
+            <DateTicker onSettings={() => setTab('settings')} hideSunna={taskVisible && !!todayTask && !taskDone[dayNo]} />
+            {/* المهمة وسنن الأيام في مكان واحد (قرار المستخدم 2026-11-16): المهمة ما لم تُنجز، وبعد «فعلتُها» تختفي ويعود سطر السنن */}
+            {taskVisible && todayTask && !taskDone[dayNo] && (
                 <div className="task">
                   <div className="tbody">
-                    <small>✉ مهمّتك الخفيّة اليوم</small>
-                    <span>{todayTask.text}</span>
+                    <span>✉ {todayTask.text}</span>
                   </div>
                   <button className="tdone" onClick={() => doTask(dayNo)}>فعلتُها</button>
                 </div>
-              )
             )}
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
@@ -559,13 +555,9 @@ export default function App() {
               </div>
             )}
             {quizAvail && quizLater !== dayNo && (
-              <div className="offer quizoffer">
-                <b>مراجعة الأسبوع جاهزة ✦</b>
-                <p>أسئلة قصيرة عمّا مرّ بك من بطاقات هذا الأسبوع. بعد كل جواب تظهر البطاقة نفسها بنصّها ومصدرها.</p>
-                <div className="btns">
-                  <button className="primary" onClick={startQuiz}>ابدأ المراجعة</button>
-                  <button className="linkbtn" onClick={() => { setQuizLater(dayNo); save('quizLater', dayNo); }}>لاحقًا</button>
-                </div>
+              <div className="offer quizoffer slim">
+                <b>✦ مراجعة الأسبوع جاهزة</b>
+                <button className="primary" onClick={startQuiz}>ابدأ ›</button>
               </div>
             )}
             {feed.length > 0 && <h2 className="today">{feed.length > 1 ? 'بطاقات اليوم' : 'بطاقة اليوم'}</h2>}
@@ -738,7 +730,6 @@ export default function App() {
                     <input type="radio" name="tmode" checked={settings.taskAt != null} onChange={() => setSettings({ ...settings, taskAt: 8 * 60 })} />
                     <span><b>في وقت ثابت</b><small>تختار ساعته</small></span>
                   </label>
-                  <button className="ghost" onClick={() => { if (!todayTask) { say('لم تصل المهام بعد؛ تأكّد من الإنترنت ثم أعد فتح التطبيق.'); return; } setTaskDone(taskUndo(dayNo)); setTaskForce(true); void testTaskNote(todayTask).catch(() => {}); say('مهمّة اليوم الآن في أعلى صفحة البطاقات، وإشعارها يأتيك بعد دقيقة ✦', 5000); }}>جرّب المهمة الآن<small className="btnnote">للتجربة فقط: يأتيك إشعارها بعد دقيقة</small></button>
                   {settings.taskAt != null && <TimeRow label="الوقت" m={settings.taskAt} min={TASK_FIXED[0]} max={TASK_FIXED[1]} onChange={(m) => setSettings({ ...settings, taskAt: m })} />}
                 </div>
               )}
@@ -984,7 +975,7 @@ function usePrayerSel() {
   }, []);
   return { sel, adj };
 }
-function PrayerLine({ fix, onSettings }: { fix: Record<string, Record<string, string>>; onSettings: () => void }) {
+function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record<string, string>>; onSettings: () => void; hideSunna?: boolean }) {
   const { sel, adj } = usePrayerSel();
   const [now, setNow] = useState(() => new Date());
   const [pick, setPick] = useState(false);
@@ -1005,7 +996,7 @@ function PrayerLine({ fix, onSettings }: { fix: Record<string, Record<string, st
         <button className="pgear" aria-label="إعدادات المواقيت" onClick={(e) => { e.stopPropagation(); onSettings(); }}>⚙</button>
       </div>
       {n?.p === 'fajr' && isRamadan(now, fix) && <p className="pnote">هذا وقت الصلاة، لا وقت الإمساك</p>}
-      {su && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
+      {su && !hideSunna && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
       {show && (
         <div className="modal" onClick={() => setShow(null)}>
           <div className="psheet" onClick={(e) => e.stopPropagation()}>
@@ -1084,7 +1075,7 @@ function PrayerSettings() {
   );
 }
 
-function DateTicker({ onSettings }: { onSettings: () => void }) {
+function DateTicker({ onSettings, hideSunna }: { onSettings: () => void; hideSunna?: boolean }) {
   type H = Record<string, Record<string, string>>;
   // ما اختاره صاحب الهاتف لبلده (يحلّ محلّه التصحيح الرسمي إن وصل)
   const [mine, setMine] = useState<H>(() => load<H>('hijriMine', {}));
@@ -1113,7 +1104,7 @@ function DateTicker({ onSettings }: { onSettings: () => void }) {
       <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
         <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
       </div>
-      <PrayerLine fix={fix} onSettings={onSettings} />
+      <PrayerLine fix={fix} onSettings={onSettings} hideSunna={hideSunna} />
       {showAsk && ask && (
         <div className="hijriask">
           <p>هل اليوم في بلدك:</p>

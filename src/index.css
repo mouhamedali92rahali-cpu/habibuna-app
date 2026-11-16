@@ -506,3 +506,10 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 /* الأسطر الصغيرة داخل الإطار العاجي بلون النص لا بلون الخلفية الخضراء */
 .panel.framed .sline{color:#5d5a4c;margin:8px 0}
 @media (prefers-reduced-motion: reduce){ .foldchev{transition:none} }
+/* تنبيه «مراجعة الأسبوع» في سطر واحد (2026-11-16) */
+.page.feed .offer.slim{display:flex;flex-direction:row;text-align:right;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px}
+.page.feed .offer.slim b{margin:0}
+.page.feed .offer.slim .primary{padding:7px 16px;font-size:.92rem;flex:none}
+.task{padding:7px 10px;margin:6px auto 2px}
+.task .tbody span{font-size:.97rem;line-height:1.5}
+.task .tdone{padding:6px 12px;font-size:.88rem}
