@@ -250,7 +250,7 @@ export function weekSlots(s: Settings, pool: CardData[]): WeekSlot[] {
 export async function scheduleWeek(s: Settings, pool: CardData[], tasks: Task[] = []): Promise<number> {
   if (!isNative) return 0;
   const pending = await LocalNotifications.getPending();
-  const old = pending.notifications.filter((n) => n.id !== TEST_ID && n.id !== TEST_ID - 1);
+  const old = pending.notifications.filter((n) => n.id !== TEST_ID && n.id !== TEST_ID - 1 && n.id !== TASK_TEST_ID);
   if (old.length) await LocalNotifications.cancel({ notifications: old.map((n) => ({ id: n.id })) });
   if (!s.notifyOn || pool.length === 0) return 0;
   if ((await LocalNotifications.checkPermissions()).display !== 'granted') return 0;
@@ -286,6 +286,8 @@ export async function scheduleWeek(s: Settings, pool: CardData[], tasks: Task[] 
 
 /** إشعارات المهام الخفيّة: 7000 + رقم اليوم من الآن */
 export const TASK_ID = 7000;
+/** زرّ التجربة المؤقت (لا يُنشر): إشعار المهمة بعد دقيقة */
+const TASK_TEST_ID = TASK_ID + WEEK + 1;
 const TASK_CHANNEL = 'tasks';
 async function ensureTaskChannel() {
   if (Capacitor.getPlatform() !== 'android') return;
@@ -297,8 +299,15 @@ async function ensureTaskChannel() {
 export async function clearTaskNote(): Promise<void> {
   if (!isNative) return;
   const { notifications } = await LocalNotifications.getDeliveredNotifications();
-  const mine = notifications.filter((n) => n.id >= TASK_ID && n.id <= TASK_ID + WEEK);
+  const mine = notifications.filter((n) => n.id >= TASK_ID && n.id <= TASK_TEST_ID);
   if (mine.length) await LocalNotifications.removeDeliveredNotifications({ notifications: mine });
+}
+/** تجربة مؤقتة (للمستخدم وحده، تُحذف قبل النشر): إشعار مهمة اليوم بعد دقيقة */
+export async function testTaskNote(t: { id: string; text: string }): Promise<void> {
+  if (!isNative) return;
+  await ensureTaskChannel();
+  const exact = await exactAllowed().catch(() => false);
+  await LocalNotifications.schedule({ notifications: [{ id: TASK_TEST_ID, title: '✉ مهمّتك الخفيّة اليوم', body: t.text, largeBody: t.text, summaryText: 'بينك وبين الله', channelId: TASK_CHANNEL, smallIcon: 'ic_stat_task', iconColor: '#B8892E', actionTypeId: 'TASK', extra: { task: t.id, day: dayNumber(new Date()) }, isExactNotification: exact, schedule: { at: new Date(Date.now() + 60_000), allowWhileIdle: true } }] });
 }
 let taskTapped: { day: number; done: boolean } | null = null;
 let onTaskTap: ((day: number, done: boolean) => void) | null = null;

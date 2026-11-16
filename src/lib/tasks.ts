@@ -102,3 +102,11 @@ export function markTaskDone(day: number, id: string): Record<string, string> {
   save('taskDone', m);
   return m;
 }
+
+/** للتجربة: يمحو «فعلتُها» لهذا اليوم حتى تُجرَّب المهمة من جديد */
+export function taskUndo(day: number): Record<string, string> {
+  const m: Record<string, string> = { ...taskDoneMap() };
+  delete m[day];
+  save('taskDone', m);
+  return m;
+}

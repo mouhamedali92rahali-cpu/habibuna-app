@@ -2,8 +2,8 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
-import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps } from './lib/notify';
-import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
+import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps, testTaskNote } from './lib/notify';
+import { loadTasks, markTaskDone, taskUndo, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, type Maker } from './lib/phone';
@@ -293,7 +293,9 @@ export default function App() {
   // مهمة اليوم تظهر من وقت إشعارها (كالبطاقات: لا شيء قبل موعده)
   const todayTask = settings.taskOn !== false && tasks.length ? taskFor(tasks, dayNo) : null;
   const taskAtToday = taskTime(settings, dayNo);
-  const taskVisible = !!todayTask && nowMin >= taskAtToday;
+  // زرّ التجربة المؤقت (للمستخدم وحده، يُحذف قبل النشر): يُظهر مهمة اليوم الآن ويرسل إشعارها بعد دقيقة
+  const [taskForce, setTaskForce] = useState(false);
+  const taskVisible = !!todayTask && (taskForce || nowMin >= taskAtToday);
   const doTask = useCallback((day: number) => {
     if (!tasks.length) return;
     setTaskDone(markTaskDone(day, taskFor(tasks, day).id));
@@ -720,6 +722,7 @@ export default function App() {
                     <input type="radio" name="tmode" checked={settings.taskAt != null} onChange={() => setSettings({ ...settings, taskAt: 8 * 60 })} />
                     <span><b>في وقت ثابت</b><small>تختار ساعته</small></span>
                   </label>
+                  <button className="ghost" onClick={() => { if (!todayTask) { say('لم تصل المهام بعد؛ تأكّد من الإنترنت ثم أعد فتح التطبيق.'); return; } setTaskDone(taskUndo(dayNo)); setTaskForce(true); void testTaskNote(todayTask).catch(() => {}); say('مهمّة اليوم الآن في أعلى صفحة البطاقات، وإشعارها يأتيك بعد دقيقة ✦', 5000); }}>جرّب المهمة الآن<small className="btnnote">للتجربة فقط: يأتيك إشعارها بعد دقيقة</small></button>
                   {settings.taskAt != null && <TimeRow label="الوقت" m={settings.taskAt} min={TASK_FIXED[0]} max={TASK_FIXED[1]} onChange={(m) => setSettings({ ...settings, taskAt: m })} />}
                 </div>
               )}
