@@ -1,6 +1,8 @@
 import type { Settings } from './types';
 import { load, save } from './store';
 import { slots } from './notify';
+import { hijriFix } from './cards';
+import { hijriDM } from './sunan';
 
 /**
  * المهام الخفيّة «حسنات بلا جمهور» (فكرة المستخدم 2026-11-12؛ قرارات 2026-11-16):
@@ -8,7 +10,8 @@ import { slots } from './notify';
  * وبجانبها «فعلتُها» ثم جملة هادئة. بلا نقاط ولا عدّاد ولا سلاسل. كل شيء في الهاتف وحده.
  * المهام في public/tasks.json (تُحمَّل مثل cards.json، فتصل الجديدة بلا تحديث التطبيق).
  */
-export interface Task { id: string; text: string; cat?: string; /** أصلها: آية أو حديث */ origin?: string; source?: string; grade?: string; }
+/** when: مهمة مناسبة لا تظهر إلا في وقتها (fri الجمعة، ramadan، last10 العشر الأواخر، eid العيدان، cold ديسمبر–فبراير، hot جوان–أوت، school سبتمبر) */
+export interface Task { id: string; text: string; when?: string; }
 interface TasksFile { version: number; tasks: Task[]; }
 
 const REMOTE = (import.meta.env.VITE_CARDS_URL ?? 'https://mouhamedali92rahali-cpu.github.io/habibuna-app/cards.json').replace(/cards\.json$/, 'tasks.json');
@@ -50,11 +53,28 @@ function hash(a: number, b: number): number {
   return (h ^ (h >>> 16)) >>> 0;
 }
 
-/** مهمة اليوم: ترتيب ثابت مخلوط بمعرّف المهمة، فلا تتغيّر عند إعادة الجدولة وتتمازج الأبواب */
+/**
+ * مهمة اليوم (قرار المستخدم 2026-11-16): العيدان مهمة العيد؛ في رمضان كل ثلاثة أيام مهمة من مهامه (والعشر الأواخر معها)؛
+ * كل جمعة إحدى مهمتي الجمعة بالتناوب؛ مهام البرد والحر والمدرسة كل ثلاثاء في موسمها؛ وبقية الأيام من المهام العامة
+ * بترتيب ثابت مخلوط بمعرّف المهمة، فلا تتغيّر عند إعادة الجدولة وتتمازج الأبواب.
+ */
+const idh = (id: string) => [...id].reduce((h, ch) => hash(h, ch.charCodeAt(0)), 7);
+const dateOfDay = (day: number) => { const t = new Date(day * 86_400_000 + 12 * 3_600_000); return new Date(t.getTime() + t.getTimezoneOffset() * 60_000); };
 export function taskFor(tasks: Task[], day: number): Task {
-  const idh = (id: string) => [...id].reduce((h, ch) => hash(h, ch.charCodeAt(0)), 7);
-  const order = [...tasks].sort((a, b) => idh(a.id) - idh(b.id));
-  return order[((day % order.length) + order.length) % order.length];
+  const of = (w: string) => tasks.filter((t) => t.when === w);
+  const rot = (l: Task[], i: number) => l[((i % l.length) + l.length) % l.length];
+  const d = dateOfDay(day);
+  const h = hijriDM(d, hijriFix);
+  if (h && ((h.m === 10 && h.d === 1) || (h.m === 12 && h.d === 10)) && of('eid').length) return of('eid')[0];
+  if (h?.m === 9 && day % 3 === 0) { const l = h.d >= 21 ? [...of('ramadan'), ...of('last10')] : of('ramadan'); if (l.length) return rot(l, Math.floor(day / 3)); }
+  if (day % 7 === 1 && of('fri').length) return rot(of('fri'), Math.floor(day / 7));
+  if (day % 7 === 5) {
+    const mo = d.getMonth() + 1;
+    const season = mo === 12 || mo <= 2 ? of('cold') : mo >= 6 && mo <= 8 ? of('hot') : mo === 9 ? of('school') : [];
+    if (season.length) return rot(season, Math.floor(day / 7));
+  }
+  const order = tasks.filter((t) => !t.when).sort((a, b) => idh(a.id) - idh(b.id));
+  return rot(order.length ? order : tasks, day);
 }
 
 /** المجال المسموح لإشعار المهمة: من 8:00 إلى 18:00، لا متأخرًا في الليل حتى يتّسع اليوم لفعلها (طلب المستخدم 2026-11-16) */

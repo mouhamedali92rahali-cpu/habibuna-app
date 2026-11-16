@@ -46,4 +46,6 @@ export function sunanFor(now: Date, over: Overrides = {}): Sunna[] {
 }
 
 /** رمضان اليوم؟ (لعبارة «هذا وقت الصلاة، لا وقت الإمساك» تحت الفجر) */
+/** اليوم والشهر الهجريان لتاريخ ما (null إن كان الشهر مشكوكًا فيه) */
+export const hijriDM = (d: Date, over: Overrides = {}) => dm(hijriToday(d, over).hijri);
 export const isRamadan = (now: Date, over: Overrides = {}) => dm(hijriToday(now, over).hijri)?.m === 9;

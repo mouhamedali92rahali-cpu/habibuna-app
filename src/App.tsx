@@ -183,7 +183,6 @@ export default function App() {
   // المهام الخفيّة (2026-11-16)
   const [tasks, setTasks] = useState<Task[]>([]);
   const [taskDone, setTaskDone] = useState<Record<string, string>>(() => taskDoneMap());
-  const [taskShow, setTaskShow] = useState(false);
   useEffect(() => {
     void loadTasks(isNative).then(setTasks);
     loadCards().then(setCards).catch(() => setErr(true));
@@ -500,25 +499,13 @@ export default function App() {
                 <p className="taskdone">✉ عَلِمها الله، وكفى ✦</p>
               ) : (
                 <div className="task">
-                  <button className="tbody" onClick={() => setTaskShow(true)}>
+                  <div className="tbody">
                     <small>✉ مهمّتك الخفيّة اليوم</small>
                     <span>{todayTask.text}</span>
-                  </button>
+                  </div>
                   <button className="tdone" onClick={() => doTask(dayNo)}>فعلتُها</button>
                 </div>
               )
-            )}
-            {taskShow && todayTask && (
-              <div className="modal" onClick={() => setTaskShow(false)}>
-                <div className="psheet" onClick={(e) => e.stopPropagation()}>
-                  <h3>✉ مهمّتك الخفيّة اليوم</h3>
-                  <p className="pmatn">{todayTask.text}</p>
-                  {todayTask.origin && <p className="pnarr">أصلها: {todayTask.origin}</p>}
-                  {todayTask.source && <p className="psrc">المصدر: {todayTask.source}{todayTask.grade && <><br /><small>{todayTask.grade}</small></>}</p>}
-                  <p className="psub">بينك وبين الله؛ لا تخبر بها أحدًا.</p>
-                  <button className="ghost" onClick={() => setTaskShow(false)}>رجوع</button>
-                </div>
-              </div>
             )}
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
