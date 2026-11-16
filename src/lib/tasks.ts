@@ -57,10 +57,10 @@ export function taskFor(tasks: Task[], day: number): Task {
   return order[((day % order.length) + order.length) % order.length];
 }
 
-/** المجال المسموح لإشعار المهمة: من 8:00 إلى 21:30 */
-export const TASK_RANGE: [number, number] = [8 * 60, 21 * 60 + 30];
-/** وقت ثابت يختاره صاحب الهاتف: من 6:00 إلى 22:00 */
-export const TASK_FIXED: [number, number] = [6 * 60, 22 * 60];
+/** المجال المسموح لإشعار المهمة: من 8:00 إلى 18:00، لا متأخرًا في الليل حتى يتّسع اليوم لفعلها (طلب المستخدم 2026-11-16) */
+export const TASK_RANGE: [number, number] = [8 * 60, 18 * 60];
+/** وقت ثابت يختاره صاحب الهاتف: من 6:00 إلى 19:00 */
+export const TASK_FIXED: [number, number] = [6 * 60, 19 * 60];
 /** لا يقترب من موعد بطاقة بأقل من 45 دقيقة (قرار المستخدم: لا يأتي مع الإشعارات العادية) */
 const GAP = 45;
 

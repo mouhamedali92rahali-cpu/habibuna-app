@@ -727,7 +727,7 @@ export default function App() {
                   <p className="muted small">متى تصلك؟</p>
                   <label className={'pm' + (settings.taskAt == null ? ' on' : '')}>
                     <input type="radio" name="tmode" checked={settings.taskAt == null} onChange={() => setSettings({ ...settings, taskAt: null })} />
-                    <span><b>في وقت مختلف كل يوم</b><small>بين 8:00 و21:30، بعيدًا عن أوقات البطاقات</small></span>
+                    <span><b>في وقت مختلف كل يوم</b><small>بين 8:00 و18:00، بعيدًا عن أوقات البطاقات، ليتّسع يومك لفعلها</small></span>
                   </label>
                   <label className={'pm' + (settings.taskAt != null ? ' on' : '')}>
                     <input type="radio" name="tmode" checked={settings.taskAt != null} onChange={() => setSettings({ ...settings, taskAt: 8 * 60 })} />
