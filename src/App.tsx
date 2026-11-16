@@ -547,7 +547,7 @@ export default function App() {
             {artNews && (
               <div className="offer news">
                 <b>جديد في «حبيبنا» ✦</b>
-                <p>تحت بعض البطاقات زرّ <b>«صورة»</b> لرسمٍ توضيحي لما ورد فيها، وزرّ <b>«خريطة»</b> للأماكن في المدينة ومكة. والمس الصورة لتكبيرها.</p>
+                <p>في بعض البطاقات رسمٌ توضيحي لما ورد فيها تحت نصّها، وتحت بعضها زرّ <b>«خريطة»</b> للأماكن في المدينة ومكة. والمس الرسم لتكبيره.</p>
                 <div className="btns"><button className="primary" onClick={() => { setArtNews(false); save('artNews', true); }}>حسنًا</button></div>
               </div>
             )}
