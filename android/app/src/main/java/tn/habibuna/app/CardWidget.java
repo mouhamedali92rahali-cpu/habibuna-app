@@ -26,7 +26,9 @@ import java.util.TimeZone;
  * والعدد المعروض = ما في التطبيق للأيام السبعة (prayBase) + ما لم يأخذه التطبيق بعد.
  */
 public class CardWidget extends AppWidgetProvider {
-    static final boolean MARQUEE = false;
+    /** حركة الجملة (قرار المستخدم 2026-11-12): مفعّلة للجميع، ولمس الجملة يوقفها ولمسة ثانية تعيدها (التفضيل stripStill) */
+    static final boolean MARQUEE = true;
+    static final String TOGGLE = "tn.habibuna.app.WIDGET_TOGGLE";
     static final String PRAY = "tn.habibuna.app.WIDGET_PRAY";
     static final String TICK = "tn.habibuna.app.WIDGET_TICK";
     static final String GLOW = "tn.habibuna.app.WIDGET_GLOW";
@@ -50,6 +52,11 @@ public class CardWidget extends AppWidgetProvider {
         String a = i.getAction();
         if (PRAY.equals(a)) { recordPray(ctx); buzz(ctx); updateAll(ctx); }
         else if (GLOW.equals(a)) updateAll(ctx);
+        else if (TOGGLE.equals(a)) {
+            SharedPreferences p = ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE);
+            p.edit().putBoolean("stripStill", !p.getBoolean("stripStill", false)).apply();
+            updateAll(ctx);
+        }
         else if (TICK.equals(a) || Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)) updateAll(ctx);
     }
 
@@ -203,9 +210,10 @@ public class CardWidget extends AppWidgetProvider {
         // تجربة: الجملة تدخل متحرّكة من اليسار (أوّل الجملة أولًا) كل بضع ثوانٍ (ViewFlipper بنسختين؛ MARQUEE = false يعيد الشكل الثابت)
         float sz = src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f);
         int tv = longT ? R.id.wtextL : R.id.wtext;
-        v.setViewVisibility(R.id.wflip, MARQUEE ? View.VISIBLE : View.GONE);
-        v.setViewVisibility(R.id.wtext, !MARQUEE && !longT ? View.VISIBLE : View.GONE);
-        v.setViewVisibility(R.id.wtextL, !MARQUEE && longT ? View.VISIBLE : View.GONE);
+        boolean moving = MARQUEE && !p.getBoolean("stripStill", false);
+        v.setViewVisibility(R.id.wflip, moving ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.wtext, !moving && !longT ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.wtextL, !moving && longT ? View.VISIBLE : View.GONE);
         v.setTextViewText(tv, text);
         v.setTextViewTextSize(tv, android.util.TypedValue.COMPLEX_UNIT_SP, sz);
         for (int f : new int[] { R.id.wf1, R.id.wf2 }) {
@@ -219,7 +227,9 @@ public class CardWidget extends AppWidgetProvider {
         v.setViewVisibility(R.id.wroot, vis);
         if (!hidden) {
             v.setOnClickPendingIntent(R.id.wpray, PendingIntent.getActivity(ctx, 7001, tap, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-            // لا يُفتح التطبيق من الشريط أصلًا (قرار المستخدم 2026-11-12/16): الجملة والمصدر والنجمة بلا لمس، و«ﷺ» للعدّ وحده
+            // لا يُفتح التطبيق من الشريط أصلًا (قرار المستخدم 2026-11-12/16)؛ لمس الجملة يوقف حركتها أو يعيدها، و«ﷺ» للعدّ وحده
+            PendingIntent tg = PendingIntent.getBroadcast(ctx, 7004, new Intent(ctx, CardWidget.class).setAction(TOGGLE), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            for (int id : new int[] { R.id.wflip, R.id.wf1, R.id.wf2, R.id.wtext, R.id.wtextL }) v.setOnClickPendingIntent(id, tg);
         }
         m.updateAppWidget(ids, v);
         scheduleNext(ctx, nextAt);
