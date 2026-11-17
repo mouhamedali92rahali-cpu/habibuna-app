@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 scripts/out/
 __pycache__/
+scripts/gharib/.cache/
