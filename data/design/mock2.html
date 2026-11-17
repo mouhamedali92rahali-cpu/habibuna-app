@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Markazi+Text:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+main{flex:1;overflow:hidden;padding:0 18px}
+nav{display:flex;justify-content:space-around;align-items:center;height:64px;flex:none}
+nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-family:Tajawal}
+nav svg{width:22px;height:22px}
+.fab{position:absolute;left:18px;bottom:108px;width:64px;height:64px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.fab b{font-size:24px;font-family:Amiri}.fab i{font-style:normal;font-size:12px;margin-top:3px;font-family:Tajawal}
+.thumb{width:80px;height:80px;border-radius:50%;margin:10px auto 4px;display:block}
+q{quotes:'«' '»'}
+
+/* ===== N: ليلي مضيء (وضع ليلي للتطبيق الحالي) ===== */
+body.sn{background:#080c1a;color:#ece3cb;font-family:'Amiri',serif}
+.sn .screen{background:radial-gradient(ellipse at 50% -10%,rgba(60,90,170,.30),transparent 60%),#080c1a}
+.sn .stars{position:absolute;inset:0;pointer-events:none;background-image:
+  radial-gradient(1px 1px at 40px 60px,#fff8,transparent),radial-gradient(1px 1px at 300px 30px,#fff6,transparent),
+  radial-gradient(1.4px 1.4px at 210px 110px,#fffa,transparent),radial-gradient(1px 1px at 90px 150px,#fff5,transparent),
+  radial-gradient(1px 1px at 350px 180px,#fff7,transparent),radial-gradient(1px 1px at 20px 260px,#fff4,transparent)}
+.sn header{padding:22px 18px 6px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.sn .logo{font-weight:700;font-size:30px;color:#e6c26a}
+.sn .tools{display:flex;gap:8px}.sn .tools span{width:32px;height:32px;border-radius:50%;border:1px solid rgba(230,194,106,.35);display:flex;align-items:center;justify-content:center;color:#e6c26a;font-size:14px}
+.sn .date{text-align:center;font-family:Tajawal;font-size:13.5px;color:#a9a28f}
+.sn .pray{margin:8px auto 0;width:max-content;font-family:Tajawal;font-size:13.5px;padding:4px 14px;border:1px solid rgba(230,194,106,.3);border-radius:99px}
+.sn .pray b{color:#e6c26a;font-weight:500}
+.sn .card{position:relative;margin:16px 2px 14px;padding:18px 18px 14px;border-radius:22px;background:linear-gradient(180deg,#151b33,#0f1428);border:1.5px solid var(--t);box-shadow:0 0 0 5px rgba(0,0,0,.25),0 0 30px -10px var(--t)}
+.sn .card::before{content:'';position:absolute;inset:6px;border-radius:17px;border:1px solid rgba(230,194,106,.22);pointer-events:none}
+.sn .kick{text-align:center;font-family:Tajawal;font-size:12.5px;color:var(--t)}
+.sn h2{text-align:center;font-size:22px;color:#f4e9cc;margin:2px 0 6px}
+.sn .text{font-size:20px;line-height:1.8;text-align:center}
+.sn .text q{color:#efcf7f}
+.sn .src{text-align:center;margin-top:10px;font-family:Tajawal;font-size:12.5px;color:#9c957f}
+.sn .thumb{background:radial-gradient(circle,#f8efd6,#e9dbb2);box-shadow:0 0 16px rgba(230,194,106,.35)}
+.sn nav{border-top:1px solid rgba(230,194,106,.16);background:#070a16}
+.sn nav a{color:#78736a}.sn nav a.on{color:#e6c26a}
+.sn .fab{background:radial-gradient(circle at 40% 35%,#f3d78a,#c4962f);color:#1a1405;box-shadow:0 0 18px rgba(230,194,106,.45)}
+
+/* ===== 4: زليج تونسي (أزرق وأبيض) ===== */
+body.s4{background:#f9f7f2;color:#1b2a44;font-family:'Noto Naskh Arabic',serif}
+.s4 .band{height:26px;background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231f4e8c'/%3E%3Cpath d='M13 2l3 8 8 3-8 3-3 8-3-8-8-3 8-3z' fill='%23f9f7f2'/%3E%3Ccircle cx='13' cy='13' r='2.2' fill='%23d7a531'/%3E%3C/svg%3E") repeat-x}
+.s4 header{padding:14px 18px 4px;text-align:center}
+.s4 .logo{font-family:Amiri;font-weight:700;font-size:32px;color:#1f4e8c}
+.s4 .date{font-family:Tajawal;font-size:13.5px;color:#5f6b80}
+.s4 .pray{margin-top:4px;font-family:Tajawal;font-size:13.5px;color:#1b2a44}.s4 .pray b{color:#1f4e8c}
+.s4 .card{position:relative;margin:16px 0 14px;background:#fff;border:2px solid #1f4e8c;border-radius:4px 4px 120px 120px/4px 4px 40px 40px;padding:20px 20px 22px}
+.s4 .card.top{border-radius:110px 110px 6px 6px/40px 40px 6px 6px;padding-top:26px}
+.s4 .card::after{content:'';position:absolute;inset:5px;border:1px dashed rgba(31,78,140,.35);border-radius:inherit;pointer-events:none}
+.s4 .kick{text-align:center;font-family:Tajawal;font-size:12.5px;color:#d7a531;font-weight:700}
+.s4 h2{text-align:center;font-family:Amiri;font-size:22px;color:#1f4e8c;margin:2px 0 6px}
+.s4 .text{font-size:18.5px;line-height:1.85}
+.s4 .text q{color:#1f4e8c;font-weight:600}
+.s4 .src{text-align:center;margin-top:8px;font-family:Tajawal;font-size:12.5px;color:#5f6b80}
+.s4 .thumb{background:#eef3fa;border:2px solid #1f4e8c}
+.s4 nav{background:#fff;border-top:2px solid #1f4e8c}.s4 nav a{color:#8a93a3}.s4 nav a.on{color:#1f4e8c;font-weight:700}
+.s4 .fab{background:#1f4e8c;color:#fff;border:3px solid #d7a531}
+
+/* ===== 5: هادئ بهوية (تطوير الهادئ الحديث) ===== */
+body.s5{background:#f6f3ea;color:#1f2a27;font-family:'Noto Naskh Arabic',serif}
+.s5 .screen{background:#f6f3ea url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 14l4.6 11.4L46 30l-11.4 4.6L30 46l-4.6-11.4L14 30l11.4-4.6z' fill='none' stroke='%230e5a50' stroke-opacity='.06'/%3E%3C/svg%3E")}
+.s5 header{padding:22px 20px 4px;display:flex;align-items:center;justify-content:space-between}
+.s5 .logo{font-family:Amiri;font-weight:700;font-size:30px;color:#0e5a50}
+.s5 .tools{display:flex;gap:8px}.s5 .tools span{width:32px;height:32px;border-radius:50%;background:#ebe6d8;display:flex;align-items:center;justify-content:center;color:#0e5a50;font-size:14px}
+.s5 .date{padding:0 20px;font-family:Tajawal;font-size:13.5px;color:#6d7570}
+.s5 .pray{margin:10px 20px 2px;font-family:Tajawal;font-size:13.5px;display:flex;justify-content:space-between;border-bottom:1px solid #e3dccb;padding-bottom:8px}
+.s5 .pray b{color:#0e5a50}
+.s5 main{padding:0 20px}
+.s5 .card{position:relative;background:#fffdf8;border-radius:18px;padding:18px 18px 14px;margin:14px 0;border-top:4px solid var(--t);box-shadow:0 1px 0 #e6dfcd,0 10px 24px -16px rgba(0,0,0,.25)}
+.s5 .card::after{content:'✦';position:absolute;top:-13px;right:50%;transform:translateX(50%);background:#f6f3ea;color:#b8923f;font-size:14px;padding:0 6px}
+.s5 .kick{font-family:Tajawal;font-size:12.5px;color:var(--t);font-weight:700}
+.s5 h2{font-family:Amiri;font-size:21px;color:#1f2a27;margin:4px 0 4px}
+.s5 .text{font-size:18px;line-height:1.85}
+.s5 .text q{color:#0e5a50;font-weight:600}
+.s5 .row{display:flex;gap:12px;align-items:center;margin-top:8px}
+.s5 .thumb{margin:0;width:64px;height:64px;background:#f3ecda;border:1px solid #d9c799;flex:none}
+.s5 .src{font-family:Tajawal;font-size:12.5px;color:#6d7570}
+.s5 nav{background:#fffdf8;border-top:1px solid #e3dccb}.s5 nav a{color:#9aa09b}.s5 nav a.on{color:#0e5a50;font-weight:700}
+.s5 .fab{background:#0e5a50;color:#f3d78a;box-shadow:0 0 0 3px #f6f3ea,0 0 0 4.5px #b8923f}
+
+/* ===== 6: صفحة كتاب ===== */
+body.s6{background:#fbf8f1;color:#1d1a14;font-family:'Amiri',serif}
+.s6 header{padding:26px 26px 0;display:flex;align-items:baseline;justify-content:space-between}
+.s6 .logo{font-weight:700;font-size:28px}
+.s6 .date{font-family:Tajawal;font-size:12.5px;color:#7b7466;text-align:left;line-height:1.5}
+.s6 .pray{margin:6px 26px 0;font-family:Tajawal;font-size:13px;color:#7b7466;border-top:1px solid #1d1a14;border-bottom:1px solid #d8d0bd;padding:6px 0}
+.s6 .pray b{color:#1d1a14}
+.s6 main{padding:0 26px}
+.s6 .entry{padding:22px 0 18px;border-bottom:1px solid #d8d0bd}
+.s6 .kick{font-family:Tajawal;font-size:11.5px;letter-spacing:1px;color:var(--t);font-weight:700}
+.s6 h2{font-size:28px;line-height:1.3;margin:4px 0 8px;font-weight:700}
+.s6 .text{font-size:20.5px;line-height:1.85}
+.s6 .text q{color:#0e5a50}
+.s6 .foot{display:flex;align-items:center;gap:12px;margin-top:10px}
+.s6 .thumb{margin:0;width:58px;height:58px;background:#f1ead8;flex:none}
+.s6 .src{font-family:Tajawal;font-size:12px;color:#7b7466}
+.s6 nav{background:#fbf8f1;border-top:1px solid #1d1a14}.s6 nav a{color:#9a9384}.s6 nav a.on{color:#1d1a14;font-weight:700}
+.s6 .fab{background:#1d1a14;color:#fbf8f1}
+</style></head><body>
+<script>
+const s=new URLSearchParams(location.search).get('s')||'n';document.body.className='s'+s;
+const R05={kick:'من زهده ﷺ',title:'كراكبٍ استظلّ تحت شجرة',text:'كان رسول الله ﷺ ينام على الحصير، ويقول: <q>ما لي وما للدنيا، ما أنا في الدنيا إلا كراكبٍ استظلّ تحت شجرة ثم راح وتركها</q>.',src:'الترمذي (2377) · صحيح'};
+const P02={kick:'من مواقف النبي ﷺ',title:'من لا يَرحم لا يُرحم',text:'كان رسول الله ﷺ يقبّل الحسن بن علي، فقال الأقرع بن حابس: إن لي عشرة من الولد ما قبّلتُ منهم أحدًا، فنظر إليه ﷺ وقال: <q>من لا يَرحم لا يُرحم</q>.'};
+const ic={c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+f:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'};
+const nav=`<nav><a class="on">${ic.c}البطاقات</a><a>${ic.f}المفضلة</a><a>${ic.s}الإعدادات</a></nav>`;
+const fab='<div class="fab"><b>ﷺ</b><i>12</i></div>';
+const art='<img class="thumb" src="../../public/art/hasir.svg">';
+const date='الثلاثاء 17 نوفمبر · 7 جمادى الآخرة 1448';
+let h='';
+if(s==='n')h=`<div class="screen"><div class="stars"></div><header><div class="tools"><span>☀</span><span>⋯</span></div><div class="logo">حبيبنا</div></header>
+<div class="date">${date}</div><div class="pray">العصر <b>بعد ساعة و20 دقيقة</b></div>
+<main><div class="card" style="--t:#c9a15a"><div class="kick">✦ ${R05.kick}</div><h2>${R05.title}</h2><p class="text">${R05.text}</p>${art}<div class="src">${R05.src}</div></div>
+<div class="card" style="--t:#b48ac0"><div class="kick">✦ ${P02.kick}</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div></main>${nav}</div>${fab}`;
+if(s==='4')h=`<div class="screen"><div class="band"></div><header><div class="logo">حبيبنا</div><div class="date">${date}</div><div class="pray">العصر <b>بعد ساعة و20 دقيقة</b></div></header>
+<main><div class="card top"><div class="kick">${R05.kick}</div><h2>${R05.title}</h2><p class="text">${R05.text}</p>${art}<div class="src">${R05.src}</div></div>
+<div class="card top"><div class="kick">${P02.kick}</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div></main><div class="band"></div>${nav}</div>${fab}`;
+if(s==='5')h=`<div class="screen"><header><div class="logo">حبيبنا</div><div class="tools"><span>☾</span><span>⋯</span></div></header>
+<div class="date">${date}</div><div class="pray"><span>الصلاة القادمة <b>العصر</b></span><span>بعد ساعة و20 دقيقة</span></div>
+<main><div class="card" style="--t:#8a5a2b"><div class="kick">${R05.kick}</div><h2>${R05.title}</h2><p class="text">${R05.text}</p><div class="row">${art}<div class="src">${R05.src}<br>حصير من سعف النخل · رسمٌ تقريبي</div></div></div>
+<div class="card" style="--t:#7b4b86"><div class="kick">${P02.kick}</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div></main>${nav}</div>${fab}`;
+if(s==='6')h=`<div class="screen"><header><div class="logo">حبيبنا</div><div class="date">الثلاثاء 17 نوفمبر<br>7 جمادى الآخرة 1448</div></header>
+<div class="pray">الصلاة القادمة <b>العصر</b> بعد ساعة و20 دقيقة</div>
+<main><div class="entry" style="--t:#8a5a2b"><div class="kick">${R05.kick} · 10:00</div><h2>${R05.title}</h2><p class="text">${R05.text}</p><div class="foot">${art}<div class="src">${R05.src}</div></div></div>
+<div class="entry" style="--t:#7b4b86"><div class="kick">${P02.kick} · 15:00</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div></main>${nav}</div>${fab}`;
+document.body.innerHTML=h;
+</script></body></html>
