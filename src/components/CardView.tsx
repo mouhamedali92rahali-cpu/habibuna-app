@@ -45,7 +45,7 @@ export function CardFront({ card, thumb }: { card: CardData; thumb?: Art }) {
       <div className="inner">
         <div className="kicker">{card.kick ? card.kick : card.dalail ? 'من دلائل الخيرات' : card.chapter === 'الصلاة عليه' ? 'تذكير' : card.qalu ? 'قالوا عنه ﷺ' : card.chapter === 'سيرته في سطور' ? 'تعرّف عليه ﷺ' : 'من مواقف النبي ﷺ'}</div>
         <div className="num"><span>{card.chapter === 'الصلاة عليه' ? '❉' : '✦'}</span></div>
-        <p className="ctext"><span>{card.text}</span></p>
+        <p className="ctext"><span>{card.text.split(/(«[^»]*»)/).map((x, i) => (i % 2 ? <span key={i} className="qq" style={{ display: "inline" }}>{x}</span> : x))}</span></p>
         {thumb && <button className={card.text.length > 150 ? "thumb sm" : "thumb"} onClick={() => openZoom(thumb)} aria-label={'صورة: ' + thumb.caption}>
           <img src={thumb.src} alt="" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith(thumb.fallback)) i.src = thumb.fallback; }} />
         </button>}

@@ -4,8 +4,8 @@
   --st:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)); --sb:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
   --font-body:'Noto Naskh Arabic','Tajawal',serif; --font-title:'Amiri','Noto Naskh Arabic',serif; --font-ui:'Tajawal',system-ui,sans-serif;
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme=light]){ --bg:#101a18; --ink:#efe8d4; --muted:#9fb0aa; --paper:#18241f; --line:#27403a; } }
-:root[data-theme=dark]{ --bg:#101a18; --ink:#efe8d4; --muted:#9fb0aa; --paper:#18241f; --line:#27403a; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme=light]){ --bg:#080c1a; --ink:#ece3cb; --muted:#a9a28f; --paper:#0e1328; --line:#252b48; } }
+:root[data-theme=dark]{ --bg:#080c1a; --ink:#ece3cb; --muted:#a9a28f; --paper:#0e1328; --line:#252b48; }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body,#root{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);direction:rtl}
@@ -124,7 +124,7 @@ select,input[type=time]{background:transparent;border:1px solid var(--line);bord
 .card.intro .inner{position:relative;inset:auto;margin:14px;min-height:312px}
 .card.intro .logo{width:110px;height:124px}.card.intro .name{font-size:2.4rem}
 .ctext{font-size:calc(1.2rem * var(--fz, 1));line-height:2;align-items:center;justify-content:center;text-align:center;margin:8px 0}
-.ctext span{display:block}
+.ctext>span{display:block}
 .long .ctext{font-size:calc(1rem * var(--fz, 1));line-height:1.85}
 .under{display:flex;align-items:center;justify-content:space-between;gap:10px;width:min(86vw,360px)}
 .srcbtn{flex:1;background:var(--paper);border:1.5px solid var(--gold);color:var(--emerald);border-radius:12px;padding:10px 14px;font-weight:700;font-size:.92rem}
@@ -513,3 +513,35 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 .task{padding:7px 10px;margin:6px auto 2px}
 .task .tbody span{font-size:.97rem;line-height:1.5}
 .task .tdone{padding:6px 12px;font-size:.88rem}
+
+/* ===== الوضع الليلي «ليلي مضيء» (قرار المستخدم 2026-11-17، المجموعة design1) ===== */
+@media (prefers-color-scheme: dark){
+:where(:root:not([data-theme=light])) body{background:radial-gradient(ellipse at 50% -10%,rgba(60,90,170,.28),transparent 55%),radial-gradient(1px 1px at 12% 8%,#fff8,transparent),radial-gradient(1px 1px at 78% 5%,#fff6,transparent),radial-gradient(1.4px 1.4px at 55% 14%,#fffa,transparent),radial-gradient(1px 1px at 25% 22%,#fff5,transparent),radial-gradient(1px 1px at 90% 26%,#fff7,transparent),radial-gradient(1px 1px at 6% 40%,#fff4,transparent),radial-gradient(1px 1px at 70% 62%,#fff5,transparent),#080c1a;background-attachment:fixed}
+:where(:root:not([data-theme=light])) .card.face.front{--tint:#5fb59c;background:linear-gradient(180deg,#151b33,#0f1428);border:1.5px solid var(--tint);box-shadow:0 0 0 5px rgba(0,0,0,.25),0 0 28px -10px var(--tint)}
+:where(:root:not([data-theme=light])) .card.face.front.t-navy{--tint:#86a3e0}.card.face.front.t-plum{--tint:#b48ac0}.card.face.front.t-brown{--tint:#c9a15a}.card.face.front.t-slate{--tint:#a9b3b5}.card.face.front.t-ivory{--tint:#e6c26a}
+:where(:root:not([data-theme=light])) .card.face.front .inner{background:transparent;color:#ece3cb;border:1px solid rgba(230,194,106,.22)}
+:where(:root:not([data-theme=light])) .card.face.front .ctitle{color:#f4e9cc}
+:where(:root:not([data-theme=light])) .card.face.front .qq{color:#efcf7f}
+:where(:root:not([data-theme=light])) .card.face.front .src{color:#a49d88}
+:where(:root:not([data-theme=light])) .card.face.front .src svg{color:var(--tint)}
+:where(:root:not([data-theme=light])) .card.face.front .chip{color:var(--tint);background:color-mix(in srgb,var(--tint) 14%,transparent)}
+:where(:root:not([data-theme=light])) .card.face.front .kicker{color:var(--tint);opacity:1}
+:where(:root:not([data-theme=light])) .card.face.front .thumb{box-shadow:0 0 16px rgba(230,194,106,.35)}
+:where(:root:not([data-theme=light])) .athar{background:rgba(230,194,106,.08);border-color:rgba(230,194,106,.3)}
+:where(:root:not([data-theme=light])) .praytap{box-shadow:0 0 18px rgba(230,194,106,.45)}
+:where(:root:not([data-theme=light])) .tabs{background:rgba(7,10,22,.92);border-top-color:rgba(230,194,106,.16)}
+}
+:where(:root[data-theme=dark]) body{background:radial-gradient(ellipse at 50% -10%,rgba(60,90,170,.28),transparent 55%),radial-gradient(1px 1px at 12% 8%,#fff8,transparent),radial-gradient(1px 1px at 78% 5%,#fff6,transparent),radial-gradient(1.4px 1.4px at 55% 14%,#fffa,transparent),radial-gradient(1px 1px at 25% 22%,#fff5,transparent),radial-gradient(1px 1px at 90% 26%,#fff7,transparent),radial-gradient(1px 1px at 6% 40%,#fff4,transparent),radial-gradient(1px 1px at 70% 62%,#fff5,transparent),#080c1a;background-attachment:fixed}
+:where(:root[data-theme=dark]) .card.face.front{--tint:#5fb59c;background:linear-gradient(180deg,#151b33,#0f1428);border:1.5px solid var(--tint);box-shadow:0 0 0 5px rgba(0,0,0,.25),0 0 28px -10px var(--tint)}
+:where(:root[data-theme=dark]) .card.face.front.t-navy{--tint:#86a3e0}.card.face.front.t-plum{--tint:#b48ac0}.card.face.front.t-brown{--tint:#c9a15a}.card.face.front.t-slate{--tint:#a9b3b5}.card.face.front.t-ivory{--tint:#e6c26a}
+:where(:root[data-theme=dark]) .card.face.front .inner{background:transparent;color:#ece3cb;border:1px solid rgba(230,194,106,.22)}
+:where(:root[data-theme=dark]) .card.face.front .ctitle{color:#f4e9cc}
+:where(:root[data-theme=dark]) .card.face.front .qq{color:#efcf7f}
+:where(:root[data-theme=dark]) .card.face.front .src{color:#a49d88}
+:where(:root[data-theme=dark]) .card.face.front .src svg{color:var(--tint)}
+:where(:root[data-theme=dark]) .card.face.front .chip{color:var(--tint);background:color-mix(in srgb,var(--tint) 14%,transparent)}
+:where(:root[data-theme=dark]) .card.face.front .kicker{color:var(--tint);opacity:1}
+:where(:root[data-theme=dark]) .card.face.front .thumb{box-shadow:0 0 16px rgba(230,194,106,.35)}
+:where(:root[data-theme=dark]) .athar{background:rgba(230,194,106,.08);border-color:rgba(230,194,106,.3)}
+:where(:root[data-theme=dark]) .praytap{box-shadow:0 0 18px rgba(230,194,106,.45)}
+:where(:root[data-theme=dark]) .tabs{background:rgba(7,10,22,.92);border-top-color:rgba(230,194,106,.16)}
