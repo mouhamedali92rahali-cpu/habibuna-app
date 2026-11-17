@@ -26,27 +26,18 @@ const it = D.items[0], c = it.card;
 const narrator = (c.hadith && c.hadith.narrator) || '';
 it.hold = it.hold || 3.4;
 
-// 1) سؤال الهوك وحده، ثم راوي القصة
-const hookEnd = .12 + D.hook.split(' ').length * TITLE_STEP + .3;
-const N0 = hookEnd + 1.6;
-scene(N0 + 3.4, (el, s) => {
-  const ch = chrome(el, s, { step: D.topic, title: D.hook });
-  const nb = h(`<div class="narr abs"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5z"/><path d="M12 6.5v13"/></svg>
-    <div class="k">يروي القصة</div><div class="n">${narrator}</div></div>`);
-  el.appendChild(nb);
-  sfx(s.start + N0, 'pop', .8);
-  return lt => {
-    ch(lt);
-    const p = back(seg(lt, N0, .6)); css(nb, { opacity: clamp(p * 1.5), transform: `translateY(${(1 - p) * 80}px) scale(${.94 + .06 * p})` });
-  };
-});
-
-// 2) البطاقة ثم شرحها
-cardScene(it, D.topic);
+// قاعدة البقاء 5: سؤال الهوك والبطاقة مفتوحة معًا من أول لقطة، واسم الراوي سطر صغير تحتها، ثم الشرح
+it.open = true;
+const st = cardScene(Object.assign(it, { label: D.hook }), D.topic);
+if (narrator) {
+  const nb = h(`<div class="abs" style="left:0;right:0;top:1440px;text-align:center;font:400 38px Tajawal;color:#d9b25e">يروي القصة: ${narrator}</div>`);
+  st.el.appendChild(nb);
+  const up = st.update; st.update = lt => { up(lt); nb.style.opacity = String(eo(seg(lt, .8, .4)) * (1 - seg(lt, 3.6, .4))); }; // يختفي قبل الشرح
+}
 
 // 3) دعوة للمشاركة
-scene(5.6, (el, s) => {
-  const ch = chrome(el, s, { step: D.topic, title: D.outroTitle, sub: D.outroSub, subStart: 1.6 });
+scene(3.6, (el, s) => {
+  const ch = chrome(el, s, { step: D.topic, title: D.outroTitle, sub: D.outroSub, subStart: .6, subStep: .2 });
   const hb = h(`<div class="heart abs"><div class="abs" style="inset:-60px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,94,.3),transparent 65%)"></div>
     <svg viewBox="0 0 24 24" width="400" height="400" fill="rgba(217,178,94,.12)" stroke="#d9b25e" stroke-width="1.2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></div>`);
   el.appendChild(hb);
