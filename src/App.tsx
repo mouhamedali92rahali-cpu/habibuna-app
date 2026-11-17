@@ -517,16 +517,15 @@ export default function App() {
       <main onScroll={tab === 'feed' ? onMainScroll : undefined} className={tab === 'feed' && pool.length > 0 ? 'withfab' : undefined}>
         {tab === 'feed' && (
           <section className="page feed">
-            <DateTicker onSettings={() => setTab('settings')} hideSunna={taskVisible && !!todayTask && !taskDone[dayNo]} />
-            {/* المهمة وسنن الأيام في مكان واحد (قرار المستخدم 2026-11-16): المهمة ما لم تُنجز، وبعد «فعلتُها» تختفي ويعود سطر السنن */}
-            {taskVisible && todayTask && !taskDone[dayNo] && (
+            {/* المهمة وسنن الأيام وتذكير الوقت في مكان واحد يتبادلونه (قرار المستخدم 2026-11-16/17)؛ وبعد «فعلتُها» تختفي المهمة */}
+            <DateTicker onSettings={() => setTab('settings')} task={taskVisible && todayTask && !taskDone[dayNo] ? (
                 <div className="task">
                   <div className="tbody">
                     <span>✉ {todayTask.text}</span>
                   </div>
                   <button className="tdone" onClick={() => doTask(dayNo)}>فعلتُها</button>
                 </div>
-            )}
+            ) : null} />
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
                 <b>الإشعارات غير مفعّلة</b>
@@ -982,7 +981,7 @@ function usePrayerSel() {
   }, []);
   return { sel, adj };
 }
-function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record<string, string>>; onSettings: () => void; hideSunna?: boolean }) {
+function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<string, string>>; onSettings: () => void; task?: React.ReactNode }) {
   const { sel, adj } = usePrayerSel();
   const [now, setNow] = useState(() => new Date());
   const [pick, setPick] = useState(false);
@@ -997,9 +996,13 @@ function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record
   const timed: Sunna | null = cur && ['morning', 'duha', 'evening', 'witr'].includes(cur.kind)
     ? { id: 't-' + cur.at, line: cur.t.replace(/^﴿|﴾$/g, ''), matn: cur.full ?? '', narr: '', source: (cur.t.startsWith('﴿') ? 'سورة ' : '') + cur.s, grade: cur.g ?? '' } : null;
   const sunan = timed ? [...days, timed] : days;
-  useEffect(() => { if (sunan.length < 2) return; const t = setInterval(() => setRot((r) => r + 1), 6000); return () => clearInterval(t); }, [sunan.length]);
+  // المهمة (إن لم تُنجز) أولًا، ثم السنن وتذكير الوقت، تتبادل كل سبع ثوانٍ
+  const slots = sunan.length + (task ? 1 : 0);
+  useEffect(() => { if (slots < 2) return; const t = setInterval(() => setRot((r) => r + 1), 7000); return () => clearInterval(t); }, [slots]);
   const n = sel ? nextPrayer(sel, now, adj) : null;
-  const su = sunan.length ? sunan[rot % sunan.length] : null;
+  const idx = slots ? rot % slots : 0;
+  const showTask = !!task && idx === 0;
+  const su = !showTask && sunan.length ? sunan[(idx - (task ? 1 : 0) + sunan.length) % sunan.length] : null;
   return (
     <>
       <div className={'pline' + (n?.now ? ' now' : '')} role="button" onClick={() => setPick(true)}>
@@ -1010,7 +1013,8 @@ function PrayerLine({ fix, onSettings, hideSunna }: { fix: Record<string, Record
         <button className="pgear" aria-label="إعدادات المواقيت" onClick={(e) => { e.stopPropagation(); onSettings(); }}>⚙</button>
       </div>
       {n?.p === 'fajr' && isRamadan(now, fix) && <p className="pnote">هذا وقت الصلاة، لا وقت الإمساك</p>}
-      {su && !hideSunna && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
+      {showTask && task}
+      {su && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
       {show && (
         <div className="modal" onClick={() => setShow(null)}>
           <div className="psheet" onClick={(e) => e.stopPropagation()}>
@@ -1089,7 +1093,7 @@ function PrayerSettings() {
   );
 }
 
-function DateTicker({ onSettings, hideSunna }: { onSettings: () => void; hideSunna?: boolean }) {
+function DateTicker({ onSettings, task }: { onSettings: () => void; task?: React.ReactNode }) {
   type H = Record<string, Record<string, string>>;
   // ما اختاره صاحب الهاتف لبلده (يحلّ محلّه التصحيح الرسمي إن وصل)
   const [mine, setMine] = useState<H>(() => load<H>('hijriMine', {}));
@@ -1118,7 +1122,7 @@ function DateTicker({ onSettings, hideSunna }: { onSettings: () => void; hideSun
       <div className="dateline" aria-label={d.hijri ? d.greg + ' — ' + d.hijri : d.greg}>
         <span className="dtrack">{d.greg}{d.hijri && <><i>✦</i>{d.hijri}</>}</span>
       </div>
-      <PrayerLine fix={fix} onSettings={onSettings} hideSunna={hideSunna} />
+      <PrayerLine fix={fix} onSettings={onSettings} task={task} />
       {showAsk && ask && (
         <div className="hijriask">
           <p>هل اليوم في بلدك:</p>
