@@ -200,7 +200,7 @@ public class CardWidget extends AppWidgetProvider {
         // الطول بلا تشكيل: القصيرة (سطر أو سطران) تنزل إلى الوسط، والطويلة تصعد بخط أصغر فوق المصدر
         int plain = text.replaceAll("[\u064B-\u0652\u0670]", "").length();
         boolean longT = !src.isEmpty() && plain >= 48;
-        // تجربة: الجملة تدخل متحرّكة من اليمين كل بضع ثوانٍ (ViewFlipper بنسختين؛ MARQUEE = false يعيد الشكل الثابت)
+        // تجربة: الجملة تدخل متحرّكة من اليسار (أوّل الجملة أولًا) كل بضع ثوانٍ (ViewFlipper بنسختين؛ MARQUEE = false يعيد الشكل الثابت)
         float sz = src.isEmpty() ? (plain < 40 ? 17f : plain < 60 ? 15.5f : 14.5f) : longT ? (plain < 60 ? 14f : plain < 70 ? 13.5f : 13f) : (plain < 30 ? 16.5f : 15.5f);
         int tv = longT ? R.id.wtextL : R.id.wtext;
         v.setViewVisibility(R.id.wflip, MARQUEE ? View.VISIBLE : View.GONE);
