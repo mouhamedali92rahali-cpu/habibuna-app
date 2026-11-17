@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Markazi+Text:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden}
+body{position:relative}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+main{flex:1;overflow:hidden;padding:0 18px}
+nav{display:flex;justify-content:space-around;align-items:center;height:64px;flex:none}
+nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none}
+nav svg{width:22px;height:22px}
+.fab{position:absolute;left:18px;bottom:108px;width:64px;height:64px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.fab b{font-size:24px}.fab i{font-style:normal;font-size:12px;margin-top:3px}
+.thumb{width:84px;height:84px;border-radius:50%;margin:10px auto 6px;display:block}
+
+/* ============ 1. مخطوطة ============ */
+.s1 body,body.s1{background:#eadcb8;color:#2b2112;font-family:'Amiri',serif}
+.s1 .screen{background:
+  radial-gradient(ellipse at 50% 0%,rgba(255,250,235,.7),transparent 60%),
+  radial-gradient(ellipse at 100% 100%,rgba(120,80,30,.18),transparent 55%),
+  radial-gradient(ellipse at 0% 60%,rgba(120,80,30,.12),transparent 50%),#eadcb8}
+.s1 header{padding:22px 18px 8px;text-align:center}
+.s1 .logo{font-family:'Amiri',serif;font-weight:700;font-size:38px;color:#7d1d14;line-height:1.1}
+.s1 .date{font-size:15px;color:#5a4526;margin-top:2px}
+.s1 .date span{color:#7d1d14}
+.s1 .pray{margin:10px auto 0;font-size:15px;color:#2b2112;display:flex;justify-content:center;gap:8px;align-items:center}
+.s1 .pray .dot{color:#7d1d14}
+.s1 .rule{height:10px;margin:12px 0 14px;background:
+  linear-gradient(#7d1d14,#7d1d14) 0 3px/100% 1px no-repeat,linear-gradient(#7d1d14,#7d1d14) 0 6px/100% 1px no-repeat}
+.s1 .page{background:#f6ecd2;border:1px solid #b89a63;outline:3px double #b89a63;outline-offset:3px;padding:18px 18px 14px;margin:8px 4px 18px;position:relative;box-shadow:0 2px 0 rgba(90,60,20,.15)}
+.s1 .kick{text-align:center;font-size:14px;color:#7d1d14;letter-spacing:.3px}
+.s1 .kick::before,.s1 .kick::after{content:'۞';margin:0 8px;color:#b8923f}
+.s1 h2{font-family:'Aref Ruqaa',serif;text-align:center;font-size:27px;color:#7d1d14;margin:4px 0 6px;font-weight:700}
+.s1 .text{font-size:22px;line-height:1.75}
+.s1 .text q{quotes:'«' '»';color:#7d1d14}
+.s1 .src{margin-top:10px;font-size:14px;color:#5a4526;text-align:center;border-top:1px solid #c9ad79;padding-top:6px}
+.s1 .grade{font-size:13px;color:#7a6440;text-align:center}
+.s1 .thumb{background:#f2e5c4;border:1px solid #b89a63;padding:4px}
+.s1 .marg{position:absolute;right:-14px;top:40px;writing-mode:vertical-rl;font-size:12px;color:#7d1d14;opacity:.7}
+.s1 nav{background:#e2d1a6;border-top:3px double #b89a63}
+.s1 nav a{color:#6b5530;font-family:'Amiri',serif;font-size:13px}
+.s1 nav a.on{color:#7d1d14;font-weight:700}
+.s1 .fab{background:radial-gradient(circle at 35% 30%,#a8342a,#6e1510);color:#f6ecd2;box-shadow:0 3px 8px rgba(70,20,10,.35),inset 0 0 0 3px rgba(255,220,190,.18)}
+.s1 .fab b{font-family:'Amiri',serif}
+
+/* ============ 2. هادئ حديث ============ */
+body.s2{background:#f7f5f0;color:#1d2a28;font-family:'Tajawal',sans-serif}
+.s2 header{padding:24px 22px 6px;display:flex;align-items:center;justify-content:space-between}
+.s2 .logo{font-family:'Reem Kufi',sans-serif;font-size:28px;color:#0e5a50;display:flex;align-items:center;gap:8px;font-weight:600}
+.s2 .logo svg{width:22px;height:22px}
+.s2 .hdr-ic{display:flex;gap:10px}
+.s2 .hdr-ic span{width:34px;height:34px;border-radius:50%;background:#ecebe5;display:flex;align-items:center;justify-content:center;color:#0e5a50;font-size:15px}
+.s2 .date{padding:0 22px;font-size:14px;color:#6a7471}
+.s2 .pray{margin:12px 22px 4px;background:#fff;border-radius:14px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;box-shadow:0 1px 0 #e8e5dc}
+.s2 .pray b{color:#0e5a50;font-weight:700}
+.s2 .pray small{color:#8a918f}
+.s2 main{padding:0 22px}
+.s2 .sec{font-size:12px;color:#8a918f;margin:18px 0 8px;letter-spacing:.5px}
+.s2 .card{background:#fff;border-radius:22px;padding:20px 20px 16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -12px rgba(14,90,80,.18)}
+.s2 .kick{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#0e5a50;background:#e6f0ec;border-radius:99px;padding:3px 10px}
+.s2 .time{float:left;font-size:12px;color:#a3a9a7;margin-top:4px}
+.s2 h2{font-family:'Noto Naskh Arabic',serif;font-size:19px;font-weight:700;margin:12px 0 6px;color:#0e5a50}
+.s2 .text{font-family:'Noto Naskh Arabic',serif;font-size:18.5px;line-height:1.85;color:#1d2a28}
+.s2 .text q{quotes:'«' '»';font-weight:600}
+.s2 .row{display:flex;align-items:center;gap:14px}
+.s2 .thumb{margin:0;width:72px;height:72px;background:#f3efe4;flex:none}
+.s2 .meta{margin-top:12px;padding-top:10px;border-top:1px solid #efece5;display:flex;justify-content:space-between;font-size:12.5px;color:#6a7471}
+.s2 .meta b{color:#0e5a50;font-weight:600}
+.s2 nav{background:#fff;border-top:1px solid #ebe8e0}
+.s2 nav a{color:#9aa19f;font-family:'Tajawal'}
+.s2 nav a.on{color:#0e5a50;font-weight:700}
+.s2 .fab{background:#0e5a50;color:#fff;box-shadow:0 8px 20px -6px rgba(14,90,80,.55)}
+.s2 .fab b{font-family:'Amiri',serif}
+
+/* ============ 3. ليلي مضيء ============ */
+body.s3{background:#070b18;color:#efe6cf;font-family:'Markazi Text',serif}
+.s3 .screen{background:
+  radial-gradient(ellipse at 50% 38%,rgba(212,170,80,.16),transparent 55%),
+  radial-gradient(ellipse at 50% -10%,rgba(60,90,170,.35),transparent 60%),#070b18}
+.s3 .stars{position:absolute;inset:0;background-image:
+  radial-gradient(1px 1px at 40px 60px,#fff8,transparent),radial-gradient(1px 1px at 300px 30px,#fff6,transparent),
+  radial-gradient(1.4px 1.4px at 210px 110px,#fffa,transparent),radial-gradient(1px 1px at 90px 150px,#fff5,transparent),
+  radial-gradient(1px 1px at 350px 180px,#fff7,transparent),radial-gradient(1px 1px at 20px 260px,#fff4,transparent),
+  radial-gradient(1.2px 1.2px at 330px 520px,#fff6,transparent),radial-gradient(1px 1px at 60px 640px,#fff5,transparent);pointer-events:none}
+.s3 header{padding:26px 22px 4px;text-align:center;position:relative}
+.s3 .logo{font-family:'Amiri',serif;font-weight:700;font-size:34px;color:#e9c46a;text-shadow:0 0 18px rgba(233,196,106,.45)}
+.s3 .moon{position:absolute;right:24px;top:30px;width:22px;height:22px;border-radius:50%;box-shadow:-6px 4px 0 0 #e9c46a;transform:rotate(-20deg)}
+.s3 .date{font-size:17px;color:#b9b2a0;text-align:center}
+.s3 .pray{margin:10px auto 0;width:max-content;font-size:17px;padding:5px 16px;border:1px solid rgba(233,196,106,.35);border-radius:99px;color:#efe6cf}
+.s3 .pray b{color:#e9c46a;font-weight:600}
+.s3 .card{position:relative;margin:20px 6px 18px;padding:22px 20px 16px;border-radius:26px;background:linear-gradient(180deg,rgba(28,34,58,.92),rgba(16,20,38,.95));border:1px solid rgba(233,196,106,.45);box-shadow:0 0 0 6px rgba(233,196,106,.05),0 0 40px -6px rgba(233,196,106,.35),inset 0 1px 0 rgba(255,240,200,.12)}
+.s3 .kick{text-align:center;font-size:15px;color:#e9c46a;letter-spacing:.5px}
+.s3 h2{text-align:center;font-family:'Amiri',serif;font-size:24px;color:#f7ecd0;margin:4px 0 8px}
+.s3 .text{font-family:'Amiri',serif;font-size:21px;line-height:1.85;text-align:center;color:#efe6cf}
+.s3 .text q{quotes:'«' '»';color:#f3d488}
+.s3 .src{text-align:center;margin-top:12px;font-size:15px;color:#a8a08c}
+.s3 .src b{color:#e9c46a;font-weight:500}
+.s3 .thumb{background:radial-gradient(circle,#fbf3dc,#efe2bd);box-shadow:0 0 22px rgba(233,196,106,.45)}
+.s3 nav{background:rgba(7,11,24,.85);border-top:1px solid rgba(233,196,106,.18)}
+.s3 nav a{color:#7f7a6c;font-family:'Tajawal'}
+.s3 nav a.on{color:#e9c46a}
+.s3 .fab{background:radial-gradient(circle at 40% 35%,#f6dc8e,#c99a33);color:#1a1405;box-shadow:0 0 26px rgba(233,196,106,.6)}
+.s3 .fab b{font-family:'Amiri',serif}
+</style></head>
+<body>
+<script>
+const s=new URLSearchParams(location.search).get('s')||'1';document.body.className='s'+s;
+const R05={kick:'من زهده ﷺ',title:'كراكبٍ استظلّ تحت شجرة',text:'كان رسول الله ﷺ ينام على الحصير، ويقول: <q>ما لي وما للدنيا، ما أنا في الدنيا إلا كراكبٍ استظلّ تحت شجرة ثم راح وتركها</q>.',src:'الترمذي (2377)',grade:'صحيح — قال الترمذي: حسن صحيح'};
+const P02={kick:'من مواقف النبي ﷺ',title:'من لا يَرحم لا يُرحم',text:'كان رسول الله ﷺ يقبّل الحسن بن علي، فقال الأقرع بن حابس: إن لي عشرة من الولد ما قبّلتُ منهم أحدًا، فنظر إليه ﷺ وقال: <q>من لا يَرحم لا يُرحم</q>.'};
+const ic={c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+f:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'};
+const nav=`<nav><a class="on">${ic.c}البطاقات</a><a>${ic.f}المفضلة</a><a>${ic.s}الإعدادات</a></nav>`;
+const fab='<div class="fab"><b>ﷺ</b><i>12</i></div>';
+const art='<img class="thumb" src="../../public/art/hasir.svg">';
+let h='';
+if(s==='1'){h=`<div class="screen"><header><div class="logo">حبيبنا</div>
+<div class="date">الثلاثاء 17 نوفمبر 2026 <span>۞</span> 7 جمادى الآخرة 1448</div>
+<div class="pray">العصر بعد ساعة و20 دقيقة</div></header>
+<main><div class="rule"></div>
+<div class="page"><div class="kick">${R05.kick}</div><h2>${R05.title}</h2><p class="text">${R05.text}</p>${art}
+<div class="src">${R05.src}</div><div class="grade">${R05.grade}</div></div>
+<div class="page"><div class="kick">${P02.kick}</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div>
+</main>${nav}</div>${fab}`;}
+if(s==='2'){h=`<div class="screen"><header><div class="logo"><svg viewBox="0 0 24 24"><path fill="#0e5a50" d="M12 1.5l2.6 4.2 4.8-1.2-1.2 4.8 4.2 2.6-4.2 2.6 1.2 4.8-4.8-1.2L12 22.5l-2.6-4.4-4.8 1.2 1.2-4.8L1.5 12l4.3-2.7-1.2-4.8 4.8 1.2z"/><circle cx="12" cy="12" r="4" fill="#f7f5f0"/></svg>حبيبنا</div><div class="hdr-ic"><span>☾</span><span>⋯</span></div></header>
+<div class="date">الثلاثاء 17 نوفمبر · 7 جمادى الآخرة 1448</div>
+<div class="pray"><span>الصلاة القادمة <b>العصر</b></span><small>بعد ساعة و20 دقيقة</small></div>
+<main><div class="sec">بطاقات اليوم</div>
+<div class="card"><span class="kick">${R05.kick}</span><span class="time">10:00</span><h2>${R05.title}</h2>
+<div class="row"><p class="text">${R05.text}</p></div>
+<div class="row" style="margin-top:10px">${art.replace('class="thumb"','class="thumb"')}<div style="font-size:12.5px;color:#6a7471">حصير منسوج من سعف النخل<br><span style="color:#a3a9a7">رسمٌ تقريبي للتوضيح</span></div></div>
+<div class="meta"><span>${R05.src}</span><b>صحيح</b></div></div>
+<div class="card"><span class="kick">${P02.kick}</span><span class="time">15:00</span><h2>${P02.title}</h2><p class="text">${P02.text}</p></div>
+</main>${nav}</div>${fab}`;}
+if(s==='3'){h=`<div class="screen"><div class="stars"></div><header><div class="moon"></div><div class="logo">حبيبنا</div>
+<div class="date">الثلاثاء 17 نوفمبر · 7 جمادى الآخرة 1448</div>
+<div class="pray">العصر <b>بعد ساعة و20 دقيقة</b></div></header>
+<main><div class="card"><div class="kick">✦ ${R05.kick} ✦</div><h2>${R05.title}</h2><p class="text">${R05.text}</p>${art}
+<div class="src">${R05.src} · <b>صحيح</b></div></div>
+<div class="card"><div class="kick">✦ ${P02.kick} ✦</div><h2>${P02.title}</h2><p class="text">${P02.text}</p></div>
+</main>${nav}</div>${fab}`;}
+document.body.innerHTML=h;
+</script></body></html>
