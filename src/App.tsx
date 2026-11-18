@@ -6,7 +6,7 @@ import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, W
 import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
-import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendWidget, stripLines, type Maker } from './lib/phone';
+import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendHomeInfo, sendWidget, stripLines, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
 import { countUse } from './lib/count';
 import { CardFront, markOf } from './components/CardView';
@@ -375,10 +375,10 @@ export default function App() {
   const qStreak = streak(quizDone, qKey - 7);
   // تغيّرت المدينة أو ضبط المواقيت: يُعاد حساب أوقات الشريط على الشاشة الرئيسية
   useEffect(() => {
-    const f = () => { void sendFormulas(cards ?? []).catch(() => {}); };
+    const f = () => { void sendFormulas(cards ?? []).catch(() => {}); void sendHomeInfo(settings, tasks).catch(() => {}); };
     window.addEventListener('hb-prayer', f);
     return () => window.removeEventListener('hb-prayer', f);
-  }, [cards]);
+  }, [cards, settings, tasks]);
 
   useEffect(() => {
     if (pool.length === 0) return;
@@ -403,6 +403,11 @@ export default function App() {
       }).catch(() => {});
       // زرّ الصلاة على الشاشة الرئيسية: صيغ «دلائل الخيرات» القصيرة، وبطاقات اليوم والمواعيد القادمة (للون الإطار)
       void sendFormulas(cards ?? []).catch(() => {});
+      // أدوات الشاشة الرئيسية الثلاث (تجربة): «فعلتُها» من الشاشة يُسجَّل هنا، ثم تُرسل الأيام والمواقيت والمهام
+      PhoneSettings.takeTaskDone().then(({ days }) => {
+        const ds = (JSON.parse(days || '[]') as string[]).map(Number).filter((d) => !taskDone[d]);
+        if (ds.length && tasks.length) { let m = taskDone; for (const d of ds) m = markTaskDone(d, taskFor(tasks, d).id); setTaskDone(m); void clearTaskNote().catch(() => {}); }
+      }).catch(() => {}).finally(() => { void sendHomeInfo(settings, tasks).catch(() => {}); });
       // اليوم والساعة يُحسبان الآن لا من وقت رسم الصفحة: من عاد إلى التطبيق في يوم جديد كان لون الشريط يأخذ بطاقة الأمس
       const n = new Date(), dNow = dayNumber(n), mNow = n.getHours() * 60 + n.getMinutes();
       const todaySlots = times.map((m, k) => ({ m, k })).filter((x) => x.m <= mNow && slotOk(dNow, x.m))

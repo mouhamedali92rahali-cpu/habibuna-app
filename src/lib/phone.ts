@@ -1,11 +1,14 @@
 import { artNow } from './art';
 import { registerPlugin } from '@capacitor/core';
-import { isNative, type WeekSlot } from './notify';
+import { isNative, dayNumber, type WeekSlot } from './notify';
 import type { CardData } from './types';
 import { WIDGET_LINES } from './widgetLines';
 import { widgetLines, hijriFix } from './cards';
 import { stripPlan, type Lines } from './strip';
-import { loadSel, loadAdj } from './prayer';
+import { loadSel, loadAdj, dayTimes, PRAYERS, PNAME, hhmm } from './prayer';
+import { hijriToday } from './hijri';
+import { taskFor, taskTime, taskDoneMap, type Task } from './tasks';
+import type { Settings } from './types';
 import { load } from './store';
 
 interface PhoneSettingsPlugin {
@@ -33,6 +36,8 @@ interface PhoneSettingsPlugin {
   setPrayBase(o: { days: string }): Promise<void>;
   widgetState(): Promise<{ placed: boolean; canPin: boolean; hidden?: boolean }>;
   pinWidget(o?: { kind?: 'coin' | 'strip' }): Promise<{ asked: boolean }>;
+  setHomeInfo(o: { days: string; prayers: string; tasks: string }): Promise<void>;
+  takeTaskDone(): Promise<{ days: string }>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 
@@ -103,4 +108,27 @@ export function hijriNow(): Record<string, Record<string, string>> {
   const r = { ...m };
   for (const k of Object.keys(hijriFix)) r[k] = { ...(m[k] ?? {}), ...hijriFix[k] };
   return r;
+}
+
+/** أدوات الشاشة الرئيسية الثلاث (تجربة للمستخدم وحده، 2026-11-18): التاريخ، والصلاة القادمة، والمهمة الخفيّة.
+ * تُحسب هنا لثلاثين يومًا من أمس وتُرسل مرة واحدة، فتتجدّد الأدوات وحدها وإن لم يُفتح التطبيق */
+export async function sendHomeInfo(s: Settings, tasks: Task[]): Promise<void> {
+  if (!isNative) return;
+  const fix = hijriNow(), sel = loadSel(), adj = loadAdj(), done = taskDoneMap();
+  const days: { start: number; greg: string; hijri: string }[] = [];
+  const prayers: { at: number; name: string; hm: string }[] = [];
+  const tk: { start: number; at: number; day: number; text: string; hm: string; done: boolean }[] = [];
+  for (let i = -1; i <= 30; i++) {
+    const start = new Date(); start.setDate(start.getDate() + i); start.setHours(0, 0, 0, 0);
+    const noon = new Date(start); noon.setHours(12);
+    const h = hijriToday(noon, fix);
+    days.push({ start: start.getTime(), greg: h.greg, hijri: h.hijri });
+    const t = sel ? dayTimes(sel, noon, adj) : null;
+    if (t) for (const p of PRAYERS) prayers.push({ at: t[p].getTime(), name: PNAME[p], hm: hhmm(t[p]) });
+    if (s.taskOn !== false && tasks.length && i >= 0) {
+      const day = dayNumber(noon), m = taskTime(s, day), at = new Date(start); at.setHours(Math.floor(m / 60), m % 60);
+      tk.push({ start: start.getTime(), at: at.getTime(), day, text: taskFor(tasks, day).text, hm: hhmm(at), done: !!done[day] });
+    }
+  }
+  await PhoneSettings.setHomeInfo({ days: JSON.stringify(days), prayers: JSON.stringify(prayers), tasks: JSON.stringify(tk) });
 }

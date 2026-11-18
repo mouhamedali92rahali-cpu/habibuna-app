@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- الصلاة القادمة بعدّ تنازلي (تجربة 2026-11-18) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hroot" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/hw_edge" />
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:layout_margin="4dp" android:scaleType="fitXY" android:src="@drawable/hw_face" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl"
+        android:gravity="center" android:orientation="horizontal" android:paddingLeft="16dp" android:paddingRight="16dp">
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/pname" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:fontFamily="serif" android:textStyle="bold" android:textSize="18sp" android:textColor="#0F5C4D" android:maxLines="1" />
+            <Chronometer android:id="@+id/pcount" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="13.5sp" android:textColor="#3B3424" android:textDirection="rtl" />
+            <TextView android:id="@+id/pnow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone"
+                android:textStyle="bold" android:textSize="13.5sp" android:textColor="#B8892E" />
+        </LinearLayout>
+        <TextView android:id="@+id/ptime" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textSize="12sp" android:textColor="#8A7A50" android:layoutDirection="ltr" />
+    </LinearLayout>
+</FrameLayout>

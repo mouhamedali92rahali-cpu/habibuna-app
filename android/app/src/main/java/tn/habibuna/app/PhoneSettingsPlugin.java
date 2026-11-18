@@ -159,6 +159,27 @@ public class PhoneSettingsPlugin extends Plugin {
         call.resolve();
     }
 
+    /** أدوات الشاشة الرئيسية الثلاث (تجربة 2026-11-18): الأيام والمواقيت والمهام لثلاثين يومًا */
+    @PluginMethod
+    public void setHomeInfo(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit()
+            .putString("homeDays", call.getString("days", "[]")).putString("homePrayers", call.getString("prayers", "[]")).putString("homeTasks", call.getString("tasks", "[]")).apply();
+        HomeWidgets.updateAll(getContext());
+        call.resolve();
+    }
+
+    /** أيام المهام التي ضُغط فيها «فعلتُها» من الشاشة الرئيسية، يأخذها التطبيق مرة واحدة */
+    @PluginMethod
+    public void takeTaskDone(PluginCall call) {
+        android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
+        org.json.JSONArray a = new org.json.JSONArray();
+        for (String d : p.getStringSet("taskDoneOps", new java.util.HashSet<>())) a.put(d);
+        p.edit().remove("taskDoneOps").apply();
+        JSObject r = new JSObject();
+        r.put("days", a.toString());
+        call.resolve(r);
+    }
+
     /** عدد الصلاة المحفوظ في التطبيق {يوم: عدد} للأيام السبعة، ليعرضه زرّ «ﷺ» على الشاشة الرئيسية */
     @PluginMethod
     public void setPrayBase(PluginCall call) {

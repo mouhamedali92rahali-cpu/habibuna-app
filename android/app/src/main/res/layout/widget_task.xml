@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- المهمة الخفيّة وزرّ «فعلتُها» (تجربة 2026-11-18) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hroot" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/hw_edge" />
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:layout_margin="4dp" android:scaleType="fitXY" android:src="@drawable/hw_face" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl"
+        android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="14dp" android:paddingRight="18dp">
+        <TextView android:id="@+id/ttext" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:fontFamily="serif" android:textSize="14.5sp" android:textColor="#1D2A28" android:maxLines="3" android:ellipsize="end"
+            android:lineSpacingMultiplier="0.95" android:textDirection="rtl" android:gravity="start|center_vertical" />
+        <TextView android:id="@+id/tdone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"
+            android:background="@drawable/hw_btn" android:paddingLeft="14dp" android:paddingRight="14dp" android:paddingTop="7dp" android:paddingBottom="7dp"
+            android:text="فعلتُها" android:textStyle="bold" android:textSize="13.5sp" android:textColor="#FFFFFF" android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

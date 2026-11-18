@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- أدوات الشاشة الرئيسية الثلاث: حافّة زمردية كإطار البطاقة -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#0F5C4D" />
+    <corners android:radius="26dp" />
+</shape>

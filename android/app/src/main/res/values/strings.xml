@@ -6,4 +6,7 @@
     <string name="custom_url_scheme">tn.habibuna.app</string>
     <string name="widget_desc">اضغطه كلما صلّيت على النبي ﷺ، ومعه آية أو حديث يتبدّل ثلاث مرات في اليوم</string>
     <string name="widget_coin_desc">زرّ الصلاة على النبي ﷺ بحجم أيقونة</string>
+    <string name="hw_date_desc">التاريخ الهجري والميلادي بشكل بطاقات «حبيبنا»</string>
+    <string name="hw_prayer_desc">الصلاة القادمة والوقت الباقي لها، حسب مدينتك في «حبيبنا»</string>
+    <string name="hw_task_desc">مهمّتك الخفيّة اليوم وزرّ «فعلتُها»</string>
 </resources>
