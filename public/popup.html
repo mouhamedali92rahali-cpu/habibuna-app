@@ -45,7 +45,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
 .text{font-family:Naskh,'Noto Naskh Arabic',serif;font-size:1.2rem;line-height:2.05;margin:4px 0 6px;white-space:pre-line}
 .athar{margin:2px 0 4px;padding:7px 12px;border-radius:12px;background:rgba(201,162,75,.16);border:1px solid rgba(201,162,75,.5);font:400 .95rem/1.7 Tajawal,sans-serif;color:var(--ink)}
 .athar b{color:#a8822f}
-.news{margin:8px 34px 0;padding:6px 10px;border-radius:10px;border:1px dashed rgba(168,130,47,.7);font:500 .85rem/1.6 Tajawal,sans-serif;color:#7a5c1c;text-align:center;cursor:pointer}
+.news{margin:8px 34px 0;padding:6px 10px;border-radius:10px;border:1px dashed rgba(168,130,47,.7);font:500 .85rem/1.6 Tajawal,sans-serif;color:#7a5c1c;text-align:center}
 .divider{display:flex;align-items:center;gap:8px;width:62%;margin:12px 0 10px}
 .divider span{flex:1;height:1px;background:var(--gold)}
 .divider i{width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
@@ -151,7 +151,8 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   $('text').textContent = c.text;
   var setAthar = function (t) { $('atharT').textContent = t || ''; $('athar').hidden = !t; };
   setAthar(c.athar);
-  if (d.news) { $('news').hidden = false; $('news').onclick = function () { send('open'); }; }
+  // النافذة لا تفتح التطبيق (قرار المستخدم 2026-11-18): السطر للإعلام فقط
+  if (d.news) { $('news').hidden = false; }
   $('source').textContent = 'المصدر: ' + c.source;
   if (c.qalu) { $('source').textContent = 'المصدر:'; var en = document.createElement('div'); en.dir = /[A-Za-z]/.test(c.source) ? 'ltr' : 'rtl'; en.style.unicodeBidi = 'isolate'; en.textContent = c.source; $('source').append(en); }
   $('grade').textContent = c.grade;
@@ -164,9 +165,9 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   // «نص الحديث والشرح» داخل النافذة نفسها (النسخة 3.35؛ كان رابطًا إلى التطبيق فظنّه المستخدم جملة إخبارية)
   var label = function () {
     var m = !!c.matn, h = !!c.sharhText;
-    $('more').textContent = m && h ? 'نص الحديث والشرح' : m ? 'نص الحديث كاملًا' : h ? 'شرح موجز' : 'افتح البطاقة في التطبيق';
-    // النسخ المجدولة قبل 3.35 لا تحمل النص: يبقى الرابط إلى التطبيق
-    $('more').style.display = (reminder || c.qalu) && !m && !h && !c.sharh ? 'none' : '';
+    $('more').textContent = m && h ? 'نص الحديث والشرح' : m ? 'نص الحديث كاملًا' : 'شرح موجز';
+    // بلا نص حديث ولا شرح لا يظهر الزرّ (لم يعد يفتح التطبيق)
+    $('more').style.display = m || h ? '' : 'none';
   };
   label();
   var add = function (tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; e.textContent = txt; $('sin').append(e); };
@@ -185,8 +186,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
     }
     var row = document.createElement('div'); row.className = 'row';
     var b1 = document.createElement('button'); b1.textContent = 'رجوع'; b1.onclick = function () { $('sheet').hidden = true; };
-    var b2 = document.createElement('button'); b2.textContent = 'افتحها في التطبيق'; b2.onclick = function () { send('open'); };
-    row.append(b1, b2); $('sin').append(row);
+    row.append(b1); $('sin').append(row);
     $('sheet').hidden = false; $('sin').scrollTop = 0;
   };
   var send = function (what) {
@@ -207,7 +207,7 @@ body{font-family:Tajawal,system-ui,sans-serif;color:var(--ink);overflow:hidden;
   favLabel();
   $('fav').style.display = c.id ? '' : 'none';
   $('fav').onclick = function () { fav = !fav; favLabel(); send(fav ? 'fav/1' : 'fav/0'); };
-  $('more').onclick = function () { if (c.matn || c.sharhText) openSheet(); else send('open'); };
+  $('more').onclick = function () { if (c.matn || c.sharhText) openSheet(); };
   // نص البطاقة قد يُصحَّح بعد جدولة النافذة (تُجدول لثلاثين يومًا): نأخذ أحدث نص من الموقع إن أمكن، وإلا بقي المحفوظ
   if (c.id && window.fetch) {
     var ctl = window.AbortController ? new AbortController() : null;
