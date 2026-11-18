@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- يومك: التاريخ والصلاة القادمة والمهمة الخفيّة في أداة واحدة (تجربة 2026-11-18) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hroot" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/hw_edge" />
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:layout_margin="4dp" android:scaleType="fitXY" android:src="@drawable/hw_face" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:layoutDirection="rtl"
+        android:gravity="center_vertical" android:orientation="vertical" android:paddingLeft="18dp" android:paddingRight="18dp" android:paddingTop="10dp" android:paddingBottom="10dp">
+
+        <!-- التاريخ -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal">
+            <ImageView android:layout_width="12dp" android:layout_height="12dp" android:src="@drawable/widget_star" />
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical">
+                <TextView android:id="@+id/hhijri" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false"
+                    android:fontFamily="serif" android:textStyle="bold" android:textSize="16sp" android:textColor="#0F5C4D" android:maxLines="1" android:textDirection="rtl" />
+                <TextView android:id="@+id/hgreg" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textSize="12sp" android:textColor="#6B6650" android:maxLines="1" android:textDirection="rtl" />
+            </LinearLayout>
+            <ImageView android:layout_width="12dp" android:layout_height="12dp" android:src="@drawable/widget_star" />
+        </LinearLayout>
+
+        <ImageView android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="6dp" android:layout_marginBottom="6dp" android:scaleType="fitXY" android:src="@drawable/hw_rule" />
+
+        <!-- الصلاة القادمة -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal">
+            <TextView android:id="@+id/pname" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:fontFamily="serif" android:textStyle="bold" android:textSize="16sp" android:textColor="#0F5C4D" android:maxLines="1" />
+            <Chronometer android:id="@+id/pcount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp"
+                android:textSize="13.5sp" android:textColor="#3B3424" android:textDirection="rtl" />
+            <TextView android:id="@+id/pnow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:visibility="gone"
+                android:textStyle="bold" android:textSize="13.5sp" android:textColor="#B8892E" />
+            <TextView android:id="@+id/ptime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp"
+                android:textSize="12sp" android:textColor="#8A7A50" />
+        </LinearLayout>
+
+        <ImageView android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="6dp" android:layout_marginBottom="6dp" android:scaleType="fitXY" android:src="@drawable/hw_rule" />
+
+        <!-- المهمة الخفيّة -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ttext" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:fontFamily="serif" android:textSize="14sp" android:textColor="#1D2A28" android:maxLines="3" android:ellipsize="end"
+                android:lineSpacingMultiplier="0.95" android:textDirection="rtl" android:gravity="start|center_vertical" />
+            <TextView android:id="@+id/tdone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"
+                android:background="@drawable/hw_btn" android:paddingLeft="13dp" android:paddingRight="13dp" android:paddingTop="6dp" android:paddingBottom="6dp"
+                android:text="فعلتُها" android:textStyle="bold" android:textSize="13sp" android:textColor="#FFFFFF" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

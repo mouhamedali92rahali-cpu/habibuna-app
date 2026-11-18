@@ -48,6 +48,10 @@ public class HomeWidgets {
             super.onReceive(c, i);
         }
     }
+    /** الثلاثة في أداة واحدة (طلب المستخدم 2026-11-18 بعد رؤية الثلاث منفصلة) */
+    public static class DayW extends AppWidgetProvider {
+        @Override public void onUpdate(Context c, AppWidgetManager m, int[] ids) { updateAll(c); }
+    }
     /** المنبّه المشترك، وبعد إعادة تشغيل الهاتف أو تغيير الساعة */
     public static class Tick extends BroadcastReceiver {
         @Override public void onReceive(Context c, Intent i) { updateAll(c); }
@@ -61,11 +65,18 @@ public class HomeWidgets {
         long now = System.currentTimeMillis();
         long next = nextMidnight(now);
         AppWidgetManager m = AppWidgetManager.getInstance(c);
-        int[] d = ids(c, DateW.class), p = ids(c, PrayerW.class), t = ids(c, TaskW.class);
+        int[] d = ids(c, DateW.class), p = ids(c, PrayerW.class), t = ids(c, TaskW.class), all = ids(c, DayW.class);
         if (d.length > 0) { RemoteViews v = dateViews(c, now); for (int id : d) m.updateAppWidget(id, v); }
         if (p.length > 0) { long[] n = new long[]{next}; RemoteViews v = prayerViews(c, now, n); next = n[0]; for (int id : p) m.updateAppWidget(id, v); }
         if (t.length > 0) { long[] n = new long[]{next}; RemoteViews v = taskViews(c, now, n); next = n[0]; for (int id : t) m.updateAppWidget(id, v); }
-        if (d.length + p.length + t.length > 0) schedule(c, next);
+        if (all.length > 0) {
+            RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_day);
+            long[] n = new long[]{next};
+            fillDate(c, v, now); fillPrayer(c, v, now, n); fillTask(c, v, now, n); next = n[0];
+            v.setOnClickPendingIntent(R.id.hroot, openApp(c));
+            for (int id : all) m.updateAppWidget(id, v);
+        }
+        if (d.length + p.length + t.length + all.length > 0) schedule(c, next);
     }
 
     static long nextMidnight(long now) {
@@ -80,8 +91,8 @@ public class HomeWidgets {
     }
 
     /** اليوم المطابق الآن من القائمة {start, greg, hijri} */
-    static RemoteViews dateViews(Context c, long now) {
-        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_date);
+    static RemoteViews dateViews(Context c, long now) { RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_date); fillDate(c, v, now); v.setOnClickPendingIntent(R.id.hroot, openApp(c)); return v; }
+    static void fillDate(Context c, RemoteViews v, long now) {
         JSONArray a = arr(c, "homeDays");
         JSONObject cur = null;
         for (int i = 0; i < a.length(); i++) { JSONObject o = a.optJSONObject(i); if (o != null && o.optLong("start") <= now) cur = o; }
@@ -92,27 +103,24 @@ public class HomeWidgets {
             v.setTextViewText(R.id.hhijri, h.isEmpty() ? cur.optString("greg") : h);
             v.setViewVisibility(R.id.hgreg, h.isEmpty() ? View.GONE : View.VISIBLE);
         }
-        v.setOnClickPendingIntent(R.id.hroot, openApp(c));
-        return v;
     }
 
     /** الصلاة القادمة بعدّ تنازلي حيّ (Chronometer)، و«حان الآن» عشرين دقيقة بعد دخول الوقت */
-    static RemoteViews prayerViews(Context c, long now, long[] next) {
-        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_prayer);
+    static RemoteViews prayerViews(Context c, long now, long[] next) { RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_prayer); fillPrayer(c, v, now, next); v.setOnClickPendingIntent(R.id.hroot, openApp(c)); return v; }
+    static void fillPrayer(Context c, RemoteViews v, long now, long[] next) {
         JSONArray a = arr(c, "homePrayers");
         JSONObject cur = null;
         for (int i = 0; i < a.length(); i++) {
             JSONObject o = a.optJSONObject(i);
             if (o != null && o.optLong("at") + NOW_WINDOW > now) { cur = o; break; }
         }
-        v.setOnClickPendingIntent(R.id.hroot, openApp(c));
         if (cur == null) {
             v.setTextViewText(R.id.pname, "مواقيت الصلاة");
             v.setTextViewText(R.id.pnow, "افتح «حبيبنا» مرة لتظهر");
             v.setViewVisibility(R.id.pnow, View.VISIBLE);
             v.setViewVisibility(R.id.pcount, View.GONE);
             v.setTextViewText(R.id.ptime, "");
-            return v;
+            return;
         }
         long at = cur.optLong("at");
         v.setTextViewText(R.id.pname, cur.optString("name"));
@@ -129,12 +137,11 @@ public class HomeWidgets {
             if (Build.VERSION.SDK_INT >= 24) v.setChronometerCountDown(R.id.pcount, true);
             next[0] = Math.min(next[0], at + 1000);
         }
-        return v;
     }
 
     /** مهمة اليوم: لا تظهر قبل وقتها (كالتطبيق)، و«فعلتُها» يخفيها ويسجّلها للتطبيق */
-    static RemoteViews taskViews(Context c, long now, long[] next) {
-        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_task);
+    static RemoteViews taskViews(Context c, long now, long[] next) { RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_task); fillTask(c, v, now, next); v.setOnClickPendingIntent(R.id.hroot, openApp(c)); return v; }
+    static void fillTask(Context c, RemoteViews v, long now, long[] next) {
         JSONArray a = arr(c, "homeTasks");
         Set<String> done = prefs(c).getStringSet("homeTaskDone", new HashSet<>());
         JSONObject cur = null;
@@ -142,11 +149,10 @@ public class HomeWidgets {
             JSONObject o = a.optJSONObject(i);
             if (o != null && o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L) cur = o;
         }
-        v.setOnClickPendingIntent(R.id.hroot, openApp(c));
         v.setViewVisibility(R.id.tdone, View.GONE);
         if (cur == null) {
             v.setTextViewText(R.id.ttext, a.length() == 0 ? "افتح «حبيبنا» مرة لتظهر مهمّتك" : "لا مهمة اليوم");
-            return v;
+            return;
         }
         int day = cur.optInt("day");
         long at = cur.optLong("at");
@@ -161,7 +167,6 @@ public class HomeWidgets {
             Intent i = new Intent(c, TaskW.class).setAction(DONE).putExtra("day", day);
             v.setOnClickPendingIntent(R.id.tdone, PendingIntent.getBroadcast(c, 7200, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         }
-        return v;
     }
 
     static void taskDone(Context c, int day) {

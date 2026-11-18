@@ -9,4 +9,5 @@
     <string name="hw_date_desc">التاريخ الهجري والميلادي بشكل بطاقات «حبيبنا»</string>
     <string name="hw_prayer_desc">الصلاة القادمة والوقت الباقي لها، حسب مدينتك في «حبيبنا»</string>
     <string name="hw_task_desc">مهمّتك الخفيّة اليوم وزرّ «فعلتُها»</string>
+    <string name="hw_day_desc">التاريخ والصلاة القادمة ومهمّتك الخفيّة في أداة واحدة</string>
 </resources>
