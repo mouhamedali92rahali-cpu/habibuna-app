@@ -265,6 +265,7 @@ public class CardWidget extends AppWidgetProvider {
     public static void setHidden(Context ctx, boolean h) {
         ctx.getSharedPreferences(PopupScheduler.PREFS, Context.MODE_PRIVATE).edit().putBoolean("widgetHidden", h).apply();
         updateAll(ctx);
+        HomeWidgets.updateAll(ctx); // «يومك» يُظهر تذكير الوقت حين يُخفى الشريط
     }
 
     public static boolean hidden(Context ctx) {

@@ -242,7 +242,9 @@ public class HomeWidgets {
         JSONArray rot = arr(c, "homeRot");
         JSONObject r = null;
         for (int i = 0; i < rot.length(); i++) { JSONObject o = rot.optJSONObject(i); if (o == null) continue; if (o.optLong("at") <= now) r = o; else { next[0] = Math.min(next[0], o.optLong("at") + 1000); break; } }
-        if (r != null && !r.optString("line").isEmpty()) { addLine(c, v, "✦ " + r.optString("line")); n++; }
+        // تذكير الوقت هو جملة شريط الصلاة نفسها؛ فلا يظهر هنا إن كان الشريط ظاهرًا على الشاشة (قرار المستخدم 2026-11-18)
+        boolean strip = ids(c, CardWidget.class).length > 0 && !prefs(c).getBoolean("widgetHidden", false);
+        if (!strip && r != null && !r.optString("line").isEmpty()) { addLine(c, v, "✦ " + r.optString("line")); n++; }
         if (n == 0) { addLine(c, v, fallback != null ? fallback : "✦ صلِّ على النبي ﷺ"); n = 1; }
         // يبدأ من الموضع الذي يقابل الوقت، فإن لم تُشغّل واجهة الهاتف التبادل تغيّر السطر مع تجدّد الأداة كل دقيقة
         v.setDisplayedChild(R.id.hrot, (int) ((now / 7000L) % n));
