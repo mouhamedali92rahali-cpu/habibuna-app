@@ -256,7 +256,11 @@ public class HomeWidgets {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         PendingIntent pi = PendingIntent.getBroadcast(c, 7301, new Intent(c, Tick.class).setAction(TICK + ".MIN"), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        try { am.setWindow(AlarmManager.RTC, at, 10_000L, pi); } catch (Exception e) { am.set(AlarmManager.RTC, at, pi); }
+        // دقيق إن سُمحت المواعيد الدقيقة (HyperOS يؤخّر المنبّهات غير الدقيقة دقائق طويلة)، ولا يوقظ الهاتف في الحالتين
+        try {
+            if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setExact(AlarmManager.RTC, at, pi);
+            else am.setWindow(AlarmManager.RTC, at, 10_000L, pi);
+        } catch (Exception e) { am.set(AlarmManager.RTC, at, pi); }
     }
 
     static void taskDone(Context c, int day) {
