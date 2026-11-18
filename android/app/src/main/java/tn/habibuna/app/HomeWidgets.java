@@ -72,9 +72,11 @@ public class HomeWidgets {
         if (all.length > 0) {
             RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_day);
             long[] n = new long[]{next};
-            fillDate(c, v, now); fillPrayer(c, v, now, n); fillTask(c, v, now, n); next = n[0];
+            fillDay(c, v, now, n); next = n[0];
             v.setOnClickPendingIntent(R.id.hroot, openApp(c));
             for (int id : all) m.updateAppWidget(id, v);
+            // «يومك» يُكتب بالكلمات («بعد 34 دقيقة») فيتجدّد كل دقيقة، بمنبّه لا يوقظ الهاتف (يتأخّر إلى أن تُضاء الشاشة)
+            scheduleMinute(c, (now / 60_000L + 1) * 60_000L + 500);
         }
         if (d.length + p.length + t.length + all.length > 0) schedule(c, next);
     }
@@ -167,6 +169,94 @@ public class HomeWidgets {
             Intent i = new Intent(c, TaskW.class).setAction(DONE).putExtra("day", day);
             v.setOnClickPendingIntent(R.id.tdone, PendingIntent.getBroadcast(c, 7200, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         }
+    }
+
+    // ===== «يومك» بخصائص التطبيق (طلب المستخدم 2026-11-18) =====
+    static String hoursAr(long h) { return h == 1 ? "ساعة" : h == 2 ? "ساعتين" : h <= 10 ? h + " ساعات" : h + " ساعة"; }
+    static String minsAr(long m) { return m == 1 ? "دقيقة" : m == 2 ? "دقيقتين" : m <= 10 ? m + " دقائق" : m + " دقيقة"; }
+    /** مثل untilText في prayer.ts: «بعد ساعتين و20 دقيقة» */
+    static String untilText(long ms) {
+        long t = (ms + 59_999L) / 60_000L;
+        if (t < 1) return "بعد أقل من دقيقة";
+        long h = t / 60, m = t % 60;
+        if (h == 0) return "بعد " + minsAr(m);
+        return "بعد " + hoursAr(h) + (m > 0 ? " و" + minsAr(m) : "");
+    }
+
+    static void fillDay(Context c, RemoteViews v, long now, long[] next) {
+        // التاريخ في نسختين يتبادلان بحركة من اليسار إلى اليمين
+        JSONArray days = arr(c, "homeDays");
+        JSONObject cur = null;
+        for (int i = 0; i < days.length(); i++) { JSONObject o = days.optJSONObject(i); if (o != null && o.optLong("start") <= now) cur = o; }
+        String hij = cur == null ? "افتح «حبيبنا» مرة ليظهر التاريخ" : cur.optString("hijri");
+        String greg = cur == null ? "" : cur.optString("greg");
+        if (hij.isEmpty()) { hij = greg; greg = ""; }
+        int[][] dv = {{R.id.hhijri, R.id.hgreg}, {R.id.hhijri2, R.id.hgreg2}};
+        for (int[] x : dv) {
+            v.setTextViewText(x[0], hij); v.setTextViewText(x[1], greg);
+            v.setViewVisibility(x[1], greg.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+
+        // الصلاة القادمة بالكلمات، واسمها عريض بالزمردي كما في التطبيق
+        JSONArray pr = arr(c, "homePrayers");
+        JSONObject p = null;
+        for (int i = 0; i < pr.length(); i++) { JSONObject o = pr.optJSONObject(i); if (o != null && o.optLong("at") + NOW_WINDOW > now) { p = o; break; } }
+        if (p == null) v.setTextViewText(R.id.pline, "مواقيت الصلاة: افتح «حبيبنا» مرة");
+        else {
+            long at = p.optLong("at");
+            String name = p.optString("name");
+            boolean on = at <= now;
+            String rest = on ? " حان الآن" : " " + untilText(at - now);
+            android.text.SpannableString sp = new android.text.SpannableString(name + rest);
+            sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, on ? sp.length() : name.length(), 0);
+            sp.setSpan(new android.text.style.ForegroundColorSpan(0xFF0F5C4D), 0, on ? sp.length() : name.length(), 0);
+            v.setTextViewText(R.id.pline, sp);
+            next[0] = Math.min(next[0], on ? at + NOW_WINDOW + 1000 : at + 1000);
+        }
+
+        // التناوب: المهمة (إن حان وقتها ولم تُنجز) أولًا، ثم سنن الأيام، ثم تذكير الوقت
+        v.removeAllViews(R.id.hrot);
+        int n = 0;
+        JSONArray tk = arr(c, "homeTasks");
+        Set<String> done = prefs(c).getStringSet("homeTaskDone", new HashSet<>());
+        JSONObject t = null;
+        for (int i = 0; i < tk.length(); i++) { JSONObject o = tk.optJSONObject(i); if (o != null && o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L) t = o; }
+        String fallback = null;
+        if (t != null) {
+            int day = t.optInt("day");
+            long at = t.optLong("at");
+            if (t.optBoolean("done") || done.contains(String.valueOf(day))) fallback = "عَلِمها الله، وكفى ✦";
+            else if (now < at) { fallback = "✉ تصلك مهمّتك الخفيّة اليوم عند " + t.optString("hm"); next[0] = Math.min(next[0], at + 1000); }
+            else {
+                RemoteViews r = new RemoteViews(c.getPackageName(), R.layout.widget_day_task);
+                r.setTextViewText(R.id.ttext, "✉ " + t.optString("text"));
+                Intent i = new Intent(c, TaskW.class).setAction(DONE).putExtra("day", day);
+                r.setOnClickPendingIntent(R.id.tdone, PendingIntent.getBroadcast(c, 7200, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                v.addView(R.id.hrot, r); n++;
+            }
+        }
+        if (cur != null) {
+            JSONArray su = cur.optJSONArray("sunan");
+            if (su != null) for (int i = 0; i < su.length(); i++) { String x = su.optString(i); if (!x.isEmpty()) { addLine(c, v, "✦ " + x); n++; } }
+        }
+        JSONArray rot = arr(c, "homeRot");
+        JSONObject r = null;
+        for (int i = 0; i < rot.length(); i++) { JSONObject o = rot.optJSONObject(i); if (o == null) continue; if (o.optLong("at") <= now) r = o; else { next[0] = Math.min(next[0], o.optLong("at") + 1000); break; } }
+        if (r != null && !r.optString("line").isEmpty()) { addLine(c, v, "✦ " + r.optString("line")); n++; }
+        if (n == 0) { addLine(c, v, fallback != null ? fallback : "✦ صلِّ على النبي ﷺ"); n = 1; }
+        // يبدأ من الموضع الذي يقابل الوقت، فإن لم تُشغّل واجهة الهاتف التبادل تغيّر السطر مع تجدّد الأداة كل دقيقة
+        v.setDisplayedChild(R.id.hrot, (int) ((now / 7000L) % n));
+    }
+    static void addLine(Context c, RemoteViews v, String text) {
+        RemoteViews r = new RemoteViews(c.getPackageName(), R.layout.widget_day_line);
+        r.setTextViewText(R.id.rline, text);
+        v.addView(R.id.hrot, r);
+    }
+    static void scheduleMinute(Context c, long at) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        PendingIntent pi = PendingIntent.getBroadcast(c, 7301, new Intent(c, Tick.class).setAction(TICK + ".MIN"), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        try { am.setWindow(AlarmManager.RTC, at, 10_000L, pi); } catch (Exception e) { am.set(AlarmManager.RTC, at, pi); }
     }
 
     static void taskDone(Context c, int day) {

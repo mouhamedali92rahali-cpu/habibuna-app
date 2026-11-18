@@ -163,7 +163,7 @@ public class PhoneSettingsPlugin extends Plugin {
     @PluginMethod
     public void setHomeInfo(PluginCall call) {
         getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit()
-            .putString("homeDays", call.getString("days", "[]")).putString("homePrayers", call.getString("prayers", "[]")).putString("homeTasks", call.getString("tasks", "[]")).apply();
+            .putString("homeDays", call.getString("days", "[]")).putString("homePrayers", call.getString("prayers", "[]")).putString("homeTasks", call.getString("tasks", "[]")).putString("homeRot", call.getString("rot", "[]")).apply();
         HomeWidgets.updateAll(getContext());
         call.resolve();
     }
