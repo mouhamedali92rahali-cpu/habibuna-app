@@ -142,7 +142,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginBottom="4dp"
                 android:autoStart="true"
-                android:flipInterval="9000"
+                android:flipInterval="12000"
                 android:inAnimation="@anim/wslide_in"
                 android:outAnimation="@anim/wslide_out">
                 <TextView

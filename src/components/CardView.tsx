@@ -22,16 +22,24 @@ function useFitText() {
     const el = ref.current;
     const inner = el?.querySelector<HTMLElement>('.inner');
     if (!el || !inner) return;
+    // يصغّر الخط حتى يتّسع النص للإطار (حتى 78٪ إن لزم)، فلا يبقى في البطاقة تمرير داخلي يأخذ الإصبع بدل الصفحة
+    // (ملاحظة المستخدم 2026-11-18: البطاقة الأولى كان نصّها يتحرّك داخلها). ويُعاد بعد تحميل الخطوط والرسم.
     const fit = () => {
-      let v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz')) || 1;
+      const base = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz')) || 1;
+      let v = base;
       el.style.setProperty('--fz', String(v));
-      while (v > 1 && inner.scrollHeight > inner.clientHeight + 1) {
-        v = Math.max(1, Math.round((v - 0.04) * 100) / 100);
+      const floor = Math.min(base, 0.78);
+      while (v > floor && inner.scrollHeight > inner.clientHeight + 1) {
+        v = Math.max(floor, Math.round((v - 0.03) * 100) / 100);
         el.style.setProperty('--fz', String(v));
       }
     };
     fit();
     void document.fonts?.ready.then(fit);
+    const onLoad = () => fit();
+    el.addEventListener('load', onLoad, true);
+    const t = setTimeout(fit, 600);
+    return () => { el.removeEventListener('load', onLoad, true); clearTimeout(t); };
   });
   return ref;
 }
