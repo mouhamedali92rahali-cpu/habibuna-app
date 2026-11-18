@@ -25,8 +25,10 @@ const d = JSON.parse(decodeURIComponent(location.hash.slice(1)));
 const add = x => document.body.appendChild(h(x));
 add(`<div class="badge tag abs"><div class="pill"><i></i>${d.tag.replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`);
 add(`<div class="big abs">${words(d.title)}</div>`);
-const x = new XMLHttpRequest(); x.open('GET', '../../public/art/' + d.art + '.svg', false); x.send();
-add(`<div class="disc abs">${x.responseText}</div>`);
+// الرسم من public/art، أو (بلا رسم) «ﷺ» كبيرة في وسط دائرة ذهبية
+let inner = `<div style="font:400 300px/1 Amiri,serif;color:#b8923f;margin-top:-30px">ﷺ</div>`;
+if (d.art) { const x = new XMLHttpRequest(); x.open('GET', '../../public/art/' + d.art + '.svg', false); x.send(); inner = x.responseText; }
+add(`<div class="disc abs">${inner}</div>`);
 add(`<div class="sub abs">${d.sub}</div>`);
 </script>
 </body>
