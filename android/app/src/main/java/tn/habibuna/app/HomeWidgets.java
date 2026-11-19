@@ -124,26 +124,48 @@ public class HomeWidgets {
                     break;
                 }
             }
-            String third = "";
+            // السطر الثالث: المهمة إن حانت ولم تُنجز (ومعها زرّاها في أسفل الإشعار)، وإلا سطر يتبدّل مع كل تجدّد (كل دقيقة):
+            // السنن، وتذكير الوقت (إن لم يكن الشريط على الشاشة)، و«كن مثله ﷺ» وأهل البيت والأصحاب
+            JSONObject task = null;
             JSONArray tk = arr(c, "homeTasks");
             Set<String> done = prefs(c).getStringSet("homeTaskDone", new HashSet<>()), skip = prefs(c).getStringSet("homeTaskSkip", new HashSet<>());
             for (int i = 0; i < tk.length(); i++) {
                 JSONObject o = tk.optJSONObject(i);
                 if (o == null || !(o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L)) continue;
                 String d = String.valueOf(o.optInt("day"));
-                if (!o.optBoolean("done") && !done.contains(d) && !skip.contains(d) && o.optLong("at") <= now) third = "✉ " + o.optString("text");
+                if (!o.optBoolean("done") && !done.contains(d) && !skip.contains(d) && o.optLong("at") <= now) task = o;
                 else if (o.optLong("at") > now) next[0] = Math.min(next[0], o.optLong("at") + 1000);
             }
-            if (third.isEmpty() && cur != null) {
-                JSONArray ext = cur.optJSONArray("ext");
-                JSONObject e = ext == null ? null : ext.optJSONObject(0);
-                if (e != null) third = e.optString("h") + ": " + e.optString("t");
+            java.util.List<CharSequence> lines = new java.util.ArrayList<>();
+            if (cur != null) {
+                JSONArray su = cur.optJSONArray("sunan");
+                if (su != null) for (int i = 0; i < su.length(); i++) if (!su.optString(i).isEmpty()) lines.add("✦ " + su.optString(i));
             }
-            // مطويًّا: التاريخ والصلاة؛ ومفتوحًا: شكل «يومك» كاملًا (التاريخ، والصلاة بين رسمي النبض، والسطر المتبادل بزرّي المهمة)
+            JSONArray rot = arr(c, "homeRot");
+            JSONObject r = null;
+            for (int i = 0; i < rot.length(); i++) { JSONObject o = rot.optJSONObject(i); if (o != null && o.optLong("at") <= now) r = o; }
+            boolean strip = ids(c, CardWidget.class).length > 0 && !prefs(c).getBoolean("widgetHidden", false);
+            if (!strip && r != null && !r.optString("line").isEmpty()) lines.add("✦ " + r.optString("line"));
+            JSONArray ext = cur == null ? null : cur.optJSONArray("ext");
+            if (ext != null) for (int i = 0; i < ext.length(); i++) {
+                JSONObject e = ext.optJSONObject(i); if (e == null || e.optString("t").isEmpty()) continue;
+                String head = e.optString("h") + "  ";
+                android.text.SpannableString sp = new android.text.SpannableString(head + e.optString("t"));
+                sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, head.length(), 0);
+                sp.setSpan(new android.text.style.ForegroundColorSpan(0xFFB8892E), 0, head.length(), 0);
+                lines.add(sp);
+            }
+            CharSequence third = task != null ? "✉ " + task.optString("text") : lines.isEmpty() ? "" : lines.get((int) ((now / 60_000L) % lines.size()));
+
             RemoteViews bigView = new RemoteViews(c.getPackageName(), R.layout.notif_lock);
-            long[] n2 = new long[]{next[0]};
-            fillDay(c, bigView, now, n2);
-            next[0] = Math.min(next[0], n2[0]);
+            bigView.setTextViewText(R.id.lhijri, title);
+            bigView.setTextViewText(R.id.lgreg, greg);
+            android.text.SpannableString psp = new android.text.SpannableString(pl);
+            int nameEnd = pl.startsWith("حان") ? pl.length() : Math.max(0, pl.indexOf(' '));
+            psp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, nameEnd, 0);
+            psp.setSpan(new android.text.style.ForegroundColorSpan(0xFF0F5C4D), 0, nameEnd, 0);
+            bigView.setTextViewText(R.id.lpray, psp);
+            bigView.setTextViewText(R.id.lline, third);
             androidx.core.app.NotificationCompat.Builder b = new androidx.core.app.NotificationCompat.Builder(c, LOCK_CH)
                 .setSmallIcon(R.drawable.ic_stat_habibuna).setColor(0xFF0F5C4D)
                 .setContentTitle(title).setContentText(pl).setSubText(greg)
@@ -153,6 +175,11 @@ public class HomeWidgets {
                 .setVisibility(androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(androidx.core.app.NotificationCompat.CATEGORY_STATUS)
                 .setContentIntent(openApp(c));
+            if (task != null) {
+                int day = task.optInt("day");
+                b.addAction(0, "✓ فعلتُها", PendingIntent.getBroadcast(c, 7210, new Intent(c, TaskW.class).setAction(DONE).putExtra("day", day), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                if (task.optBoolean("post")) b.addAction(0, "↻ لاحقًا", PendingIntent.getBroadcast(c, 7212, new Intent(c, TaskW.class).setAction(LATER).putExtra("day", day), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            }
             nm.notify(LOCK_ID, b.build());
         } catch (Exception ignored) {}
     }
