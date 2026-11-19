@@ -161,6 +161,13 @@ public class PhoneSettingsPlugin extends Plugin {
 
     /** أدوات الشاشة الرئيسية الثلاث (تجربة 2026-11-18): الأيام والمواقيت والمهام لثلاثين يومًا */
     @PluginMethod
+    public void setLockDay(PluginCall call) {
+        getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit().putBoolean("lockDay", Boolean.TRUE.equals(call.getBoolean("on", false))).apply();
+        HomeWidgets.updateAll(getContext());
+        call.resolve();
+    }
+
+    @PluginMethod
     public void setHomeInfo(PluginCall call) {
         getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE).edit()
             .putString("homeDays", call.getString("days", "[]")).putString("homePrayers", call.getString("prayers", "[]")).putString("homeTasks", call.getString("tasks", "[]")).putString("homeRot", call.getString("rot", "[]")).apply();

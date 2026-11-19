@@ -80,7 +80,76 @@ public class HomeWidgets {
             // «يومك» يُكتب بالكلمات («بعد 34 دقيقة») فيتجدّد كل دقيقة، بمنبّه لا يوقظ الهاتف (يتأخّر إلى أن تُضاء الشاشة)
             scheduleMinute(c, (now / 60_000L + 1) * 60_000L + 500);
         }
-        if (d.length + p.length + t.length + all.length > 0) schedule(c, next);
+        // «يومك على شاشة القفل» (تجربة للمستخدم 2026-11-19): إشعار ثابت صامت يتجدّد كل دقيقة
+        boolean lock = prefs(c).getBoolean("lockDay", false);
+        if (lock) {
+            long[] n = new long[]{next};
+            postLock(c, now, n); next = n[0];
+            if (all.length == 0) scheduleMinute(c, (now / 60_000L + 1) * 60_000L + 500);
+        } else cancelLock(c);
+        if (d.length + p.length + t.length + all.length > 0 || lock) schedule(c, next);
+    }
+
+    static final int LOCK_ID = 7400;
+    static final String LOCK_CH = "lockday";
+    static void cancelLock(Context c) {
+        try { NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE); if (nm != null) nm.cancel(LOCK_ID); } catch (Exception ignored) {}
+    }
+    /** التاريخ عنوانًا، والصلاة القادمة نصًّا، ثم المهمة (إن حان وقتها ولم تُنجز) أو «كن مثله ﷺ» */
+    static void postLock(Context c, long now, long[] next) {
+        try {
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+            if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(LOCK_CH) == null) {
+                // أهمية عادية بلا صوت ولا اهتزاز: الإشعارات «الصامتة» تخفيها بعض الهواتف عن شاشة القفل
+                android.app.NotificationChannel ch = new android.app.NotificationChannel(LOCK_CH, "يومك على شاشة القفل", NotificationManager.IMPORTANCE_DEFAULT);
+                ch.setDescription("التاريخ والصلاة القادمة ومهمتك، بلا صوت");
+                ch.setSound(null, null); ch.enableVibration(false); ch.setShowBadge(false);
+                ch.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+                nm.createNotificationChannel(ch);
+            }
+            JSONArray days = arr(c, "homeDays");
+            JSONObject cur = null;
+            for (int i = 0; i < days.length(); i++) { JSONObject o = days.optJSONObject(i); if (o != null && o.optLong("start") <= now) cur = o; }
+            String title = cur == null ? "حبيبنا" : cur.optString("hijri");
+            String greg = cur == null ? "" : cur.optString("greg");
+            String pl = "مواقيت الصلاة: افتح «حبيبنا» مرة";
+            JSONArray pr = arr(c, "homePrayers");
+            for (int i = 0; i < pr.length(); i++) {
+                JSONObject o = pr.optJSONObject(i);
+                if (o != null && o.optLong("at") + NOW_WINDOW > now) {
+                    long at = o.optLong("at");
+                    pl = at <= now ? "حان الآن موعد صلاة " + o.optString("name") : o.optString("name") + " " + untilText(at - now);
+                    next[0] = Math.min(next[0], at <= now ? at + NOW_WINDOW + 1000 : at + 1000);
+                    break;
+                }
+            }
+            String third = "";
+            JSONArray tk = arr(c, "homeTasks");
+            Set<String> done = prefs(c).getStringSet("homeTaskDone", new HashSet<>()), skip = prefs(c).getStringSet("homeTaskSkip", new HashSet<>());
+            for (int i = 0; i < tk.length(); i++) {
+                JSONObject o = tk.optJSONObject(i);
+                if (o == null || !(o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L)) continue;
+                String d = String.valueOf(o.optInt("day"));
+                if (!o.optBoolean("done") && !done.contains(d) && !skip.contains(d) && o.optLong("at") <= now) third = "✉ " + o.optString("text");
+                else if (o.optLong("at") > now) next[0] = Math.min(next[0], o.optLong("at") + 1000);
+            }
+            if (third.isEmpty() && cur != null) {
+                JSONArray ext = cur.optJSONArray("ext");
+                JSONObject e = ext == null ? null : ext.optJSONObject(0);
+                if (e != null) third = e.optString("h") + ": " + e.optString("t");
+            }
+            String big = pl + (third.isEmpty() ? "" : "\n" + third);
+            androidx.core.app.NotificationCompat.Builder b = new androidx.core.app.NotificationCompat.Builder(c, LOCK_CH)
+                .setSmallIcon(R.drawable.ic_stat_habibuna).setColor(0xFF0F5C4D)
+                .setContentTitle(title).setContentText(pl).setSubText(greg)
+                .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle().bigText(big))
+                .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setShowWhen(false)
+                .setVisibility(androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(androidx.core.app.NotificationCompat.CATEGORY_STATUS)
+                .setContentIntent(openApp(c));
+            nm.notify(LOCK_ID, b.build());
+        } catch (Exception ignored) {}
     }
 
     static long nextMidnight(long now) {

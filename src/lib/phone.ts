@@ -42,6 +42,7 @@ interface PhoneSettingsPlugin {
   setHomeInfo(o: { days: string; prayers: string; tasks: string; rot: string }): Promise<void>;
   takeTaskDone(): Promise<{ days: string }>;
   takeTaskPost(): Promise<{ ops: string }>;
+  setLockDay(o: { on: boolean }): Promise<void>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 

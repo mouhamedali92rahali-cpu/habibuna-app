@@ -8,4 +8,4 @@ export interface Settings { perDay: number; from: string; to: string; notifyOn: 
   /** أوقات البطاقات الثلاث بالدقائق (الأصل 10:00 و15:00 و20:00؛ يغيّرها صاحب الهاتف داخل مجال كل موعد) */
   times?: number[];
   /** المهام الخفيّة (مفعّلة افتراضيًّا)، ووقت إشعارها: null = وقت مختلف كل يوم */
-  taskOn?: boolean; taskAt?: number | null; }
+  taskOn?: boolean; taskAt?: number | null; lockDay?: boolean; }
