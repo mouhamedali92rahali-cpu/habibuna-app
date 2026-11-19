@@ -452,6 +452,8 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 @media (prefers-reduced-motion: reduce){.pglyph path{animation:none}}
 .pgear{border:none;background:none;color:var(--gold);font-size:1rem;padding:2px 4px;cursor:pointer;line-height:1}
 .pnote{margin:2px 0 0;text-align:center;font-size:.78rem;color:var(--muted)}
+.sunna.kun{cursor:default;color:var(--ink);line-height:1.7;padding:0 12px}
+.sunna.kun b{color:var(--gold);font-weight:700;margin-inline-end:4px}
 .sunna{display:block;margin:6px auto 0;border:none;background:none;font:400 .88rem 'Tajawal',sans-serif;color:var(--emerald);text-align:center;cursor:pointer;animation:sfade .6s ease-out}
 @keyframes sfade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media (prefers-color-scheme: dark){ :where(:root:not([data-theme=light])) .pline b, :where(:root:not([data-theme=light])) .pline u, :where(:root:not([data-theme=light])) .sunna{color:var(--gold)} }

@@ -18,6 +18,7 @@ import { App as NativeApp } from '@capacitor/app';
 import { useArt, useMaps, openZoom, startArt, type ZoomReq } from './lib/art';
 import { GROUPS, PNAME, PRAYERS, dayTimes, hhmm, loadAdj, loadSel, nextPrayer, saveAdj, saveSel, untilText, type Adj, type Prayer, type PrayerSel } from './lib/prayer';
 import { isRamadan, sunanFor, type Sunna } from './lib/sunan';
+import { kunFor } from './lib/kunLines';
 import { stripPlan, stripNow } from './lib/strip';
 import { Zoom } from './components/Zoom';
 
@@ -1000,7 +1001,10 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
   const cur = stripNow(plan, now.getTime());
   const timed: Sunna | null = cur && ['morning', 'duha', 'evening', 'witr'].includes(cur.kind)
     ? { id: 't-' + cur.at, line: cur.t.replace(/^﴿|﴾$/g, ''), matn: cur.full ?? '', narr: '', source: (cur.t.startsWith('﴿') ? 'سورة ' : '') + cur.s, grade: cur.g ?? '' } : null;
-  const sunan = timed ? [...days, timed] : days;
+  // «كن مثله ﷺ»: سنّة اليوم بعد السنن وتذكير الوقت، بلا لمس (قرار المستخدم 2026-11-19)
+  const kun = kunFor(now);
+  const kunS: Sunna | null = kun ? { id: 'kun', line: kun, matn: '', narr: '', source: '', grade: '' } : null;
+  const sunan = [...days, ...(timed ? [timed] : []), ...(kunS ? [kunS] : [])];
   // المهمة (إن لم تُنجز) أولًا، ثم السنن وتذكير الوقت، تتبادل كل سبع ثوانٍ
   const slots = sunan.length + (task ? 1 : 0);
   useEffect(() => { if (slots < 2) return; const t = setInterval(() => setRot((r) => r + 1), 7000); return () => clearInterval(t); }, [slots]);
@@ -1019,7 +1023,9 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
       </div>
       {n?.p === 'fajr' && isRamadan(now, fix) && <p className="pnote">هذا وقت الصلاة، لا وقت الإمساك</p>}
       {showTask && task}
-      {su && <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>}
+      {su && (su.id === 'kun'
+        ? <p key="kun" className="sunna kun"><b>كن مثله ﷺ</b> {su.line}</p>
+        : <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>)}
       {show && (
         <div className="modal" onClick={() => setShow(null)}>
           <div className="psheet" onClick={(e) => e.stopPropagation()}>

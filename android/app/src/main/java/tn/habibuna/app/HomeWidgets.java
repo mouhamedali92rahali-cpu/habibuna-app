@@ -239,6 +239,15 @@ public class HomeWidgets {
             JSONArray su = cur.optJSONArray("sunan");
             if (su != null) for (int i = 0; i < su.length(); i++) { String x = su.optString(i); if (!x.isEmpty()) { addLine(c, v, "✦ " + x); n++; } }
         }
+        // «كن مثله ﷺ»: سنّة اليوم، عنوانها ذهبي عريض (قرار المستخدم 2026-11-19)
+        String kun = cur == null ? "" : cur.optString("kun");
+        if (!kun.isEmpty()) {
+            String head = "كن مثله ﷺ  ";
+            android.text.SpannableString sp = new android.text.SpannableString(head + kun);
+            sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, head.length(), 0);
+            sp.setSpan(new android.text.style.ForegroundColorSpan(0xFFB8892E), 0, head.length(), 0);
+            addLine(c, v, sp); n++;
+        }
         JSONArray rot = arr(c, "homeRot");
         JSONObject r = null;
         for (int i = 0; i < rot.length(); i++) { JSONObject o = rot.optJSONObject(i); if (o == null) continue; if (o.optLong("at") <= now) r = o; else { next[0] = Math.min(next[0], o.optLong("at") + 1000); break; } }
@@ -249,7 +258,7 @@ public class HomeWidgets {
         // يبدأ من الموضع الذي يقابل الوقت، فإن لم تُشغّل واجهة الهاتف التبادل تغيّر السطر مع تجدّد الأداة كل دقيقة
         v.setDisplayedChild(R.id.hrot, (int) ((now / 7000L) % n));
     }
-    static void addLine(Context c, RemoteViews v, String text) {
+    static void addLine(Context c, RemoteViews v, CharSequence text) {
         RemoteViews r = new RemoteViews(c.getPackageName(), R.layout.widget_day_line);
         r.setTextViewText(R.id.rline, text);
         v.addView(R.id.hrot, r);
