@@ -1002,9 +1002,11 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
   const timed: Sunna | null = cur && ['morning', 'duha', 'evening', 'witr'].includes(cur.kind)
     ? { id: 't-' + cur.at, line: cur.t.replace(/^﴿|﴾$/g, ''), matn: cur.full ?? '', narr: '', source: (cur.t.startsWith('﴿') ? 'سورة ' : '') + cur.s, grade: cur.g ?? '' } : null;
   // «كن مثله ﷺ»: سنّة اليوم بعد السنن وتذكير الوقت، بلا لمس (قرار المستخدم 2026-11-19)
-  const kun = kunFor(now);
-  const kunS: Sunna | null = kun ? { id: 'kun', line: kun, matn: '', narr: '', source: '', grade: '' } : null;
-  const sunan = [...days, ...(timed ? [timed] : []), ...(kunS ? [kunS] : [])];
+  // وحين يقلّ ما في السطر عن ثلاث جمل تُضاف سنّة أو سنّتان أخريان، فيبقى السطر يتبادل دائمًا (طلب المستخدم 2026-11-19)
+  const kuns = kunFor(now);
+  const base = [...days, ...(timed ? [timed] : [])];
+  const want = Math.max(1, 3 - base.length - (task ? 1 : 0));
+  const sunan = [...base, ...kuns.slice(0, want).map((line, i): Sunna => ({ id: 'kun' + i, line, matn: '', narr: '', source: '', grade: '' }))];
   // المهمة (إن لم تُنجز) أولًا، ثم السنن وتذكير الوقت، تتبادل كل سبع ثوانٍ
   const slots = sunan.length + (task ? 1 : 0);
   useEffect(() => { if (slots < 2) return; const t = setInterval(() => setRot((r) => r + 1), 7000); return () => clearInterval(t); }, [slots]);
@@ -1023,8 +1025,8 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
       </div>
       {n?.p === 'fajr' && isRamadan(now, fix) && <p className="pnote">هذا وقت الصلاة، لا وقت الإمساك</p>}
       {showTask && task}
-      {su && (su.id === 'kun'
-        ? <p key="kun" className="sunna kun"><b>كن مثله ﷺ</b> {su.line}</p>
+      {su && (su.id.startsWith('kun')
+        ? <p key={su.id} className="sunna kun"><b>كن مثله ﷺ</b> {su.line}</p>
         : <button key={su.id} className="sunna" onClick={() => setShow(su)}>✦ {su.line}</button>)}
       {show && (
         <div className="modal" onClick={() => setShow(null)}>

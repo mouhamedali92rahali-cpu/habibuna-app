@@ -54,4 +54,9 @@ export const KUN: string[] = [
  "كان ﷺ إذا جاءه خبر يسرّه خرّ ساجدًا شكرًا لله",
  "كان ﷺ إذا مرض قرأ المعوّذات ونفث على نفسه"
 ];
-export const kunFor = (d: Date): string => KUN.length ? KUN[((dayNumber(d) % KUN.length) + KUN.length) % KUN.length] : '';
+// سنّة اليوم أولًا، ثم سنّتان احتياطًا تُضافان حين يقلّ ما في السطر عن ثلاث جمل (طلب المستخدم 2026-11-19: «السطر دائمًا فيه جمل تتداول»)
+export function kunFor(d: Date, k = 3): string[] {
+  const n = KUN.length; if (!n) return [];
+  const base = ((dayNumber(d) % n) + n) % n, step = Math.max(1, Math.floor(n / 3));
+  return Array.from({ length: Math.min(k, n) }, (_, i) => KUN[(base + i * step) % n]);
+}

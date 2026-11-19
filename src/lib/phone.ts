@@ -117,7 +117,7 @@ export function hijriNow(): Record<string, Record<string, string>> {
 export async function sendHomeInfo(s: Settings, tasks: Task[]): Promise<void> {
   if (!isNative) return;
   const fix = hijriNow(), sel = loadSel(), adj = loadAdj(), done = taskDoneMap();
-  const days: { start: number; greg: string; hijri: string; sunan: string[]; kun: string }[] = [];
+  const days: { start: number; greg: string; hijri: string; sunan: string[]; kun: string[] }[] = [];
   const prayers: { at: number; name: string; hm: string }[] = [];
   const tk: { start: number; at: number; day: number; text: string; hm: string; done: boolean }[] = [];
   for (let i = -1; i <= 30; i++) {
