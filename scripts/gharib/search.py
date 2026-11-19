@@ -1,6 +1,6 @@
 """بحث فوري بلا تشكيل في كتب الشروح والغريب (نصوص OpenITI عن طبعات الشاملة نفسها)، مع الجزء والصفحة.
 python3 scripts/gharib/search.py BOOK "عبارة" ["عبارة"...] [--n 3] [--len 450]
-BOOK: nihaya (النهاية لابن الأثير، الشاملة 23691) | fath (فتح الباري، الشاملة 1673) | nawawi (شرح النووي على مسلم، الشاملة 1711)
+BOOK: nihaya (النهاية لابن الأثير، الشاملة 23691) | fath (فتح الباري، الشاملة 1673) | nawawi (شرح النووي على مسلم، الشاملة 1711) | isaba (الإصابة، الشاملة 9767) | siyar (سير أعلام النبلاء، الشاملة 10906)
 العبارة تعبير نمطي (مدخل الجذر في النهاية: "\\(رجل\\)"). الكتب تُنزَّل مرة واحدة إلى scripts/gharib/.cache (خارج git).
 OpenITI تضع علامة الصفحة PageVxxPyyy في آخر الصفحة، فالصفحة = أول علامة بعد الموضع."""
 import os, re, sys, urllib.request
@@ -9,6 +9,8 @@ BOOKS = {
     'nihaya': ('النهاية في غريب الحديث', R + '0625AH/master/data/0606IbnAthirMajdDin/0606IbnAthirMajdDin.NihayaFiGharib/0606IbnAthirMajdDin.NihayaFiGharib.Shamela0023691-ara1'),
     'fath': ('فتح الباري', R + '0875AH/master/data/0852IbnHajarCasqalani/0852IbnHajarCasqalani.FathBari/0852IbnHajarCasqalani.FathBari.Shamela0001673-ara1'),
     'nawawi': ('شرح النووي على مسلم', R + '0700AH/master/data/0676Nawawi/0676Nawawi.MinhajFiSharhMuslim/0676Nawawi.MinhajFiSharhMuslim.Shamela0001711-ara1'),
+    'isaba': ('الإصابة في تمييز الصحابة', R + '0875AH/master/data/0852IbnHajarCasqalani/0852IbnHajarCasqalani.IsabaFiTamyiz/0852IbnHajarCasqalani.IsabaFiTamyiz.Shamela0009767-ara4'),
+    'siyar': ('سير أعلام النبلاء', R + '0750AH/master/data/0748Dhahabi/0748Dhahabi.SiyarAclamNubala/0748Dhahabi.SiyarAclamNubala.Shamela0010906-ara1.mARkdown'),
 }
 args = sys.argv[1:]; n_hits = 3; ln = 450
 if '--n' in args: i = args.index('--n'); n_hits = int(args[i + 1]); del args[i:i + 2]
