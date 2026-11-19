@@ -7,7 +7,7 @@ import { widgetLines, hijriFix } from './cards';
 import { stripPlan, type Lines } from './strip';
 import { loadSel, loadAdj, dayTimes, PRAYERS, PNAME, hhmm } from './prayer';
 import { hijriToday } from './hijri';
-import { taskFor, taskTime, taskDoneMap, type Task } from './tasks';
+import { dayTask, canPostpone, taskTime, taskDoneMap, type Task } from './tasks';
 import { sunanFor } from './sunan';
 import { kunFor } from './kunLines';
 import { ahlFor } from './ahlLines';
@@ -41,6 +41,7 @@ interface PhoneSettingsPlugin {
   pinWidget(o?: { kind?: 'coin' | 'strip' }): Promise<{ asked: boolean }>;
   setHomeInfo(o: { days: string; prayers: string; tasks: string; rot: string }): Promise<void>;
   takeTaskDone(): Promise<{ days: string }>;
+  takeTaskPost(): Promise<{ ops: string }>;
 }
 export const PhoneSettings = registerPlugin<PhoneSettingsPlugin>('PhoneSettings');
 
@@ -120,7 +121,7 @@ export async function sendHomeInfo(s: Settings, tasks: Task[]): Promise<void> {
   const fix = hijriNow(), sel = loadSel(), adj = loadAdj(), done = taskDoneMap();
   const days: { start: number; greg: string; hijri: string; sunan: string[]; kun: string[]; ext: { h: string; t: string }[] }[] = [];
   const prayers: { at: number; name: string; hm: string }[] = [];
-  const tk: { start: number; at: number; day: number; text: string; hm: string; done: boolean }[] = [];
+  const tk: { start: number; at: number; day: number; text: string; hm: string; done: boolean; post: boolean }[] = [];
   for (let i = -1; i <= 30; i++) {
     const start = new Date(); start.setDate(start.getDate() + i); start.setHours(0, 0, 0, 0);
     const noon = new Date(start); noon.setHours(12);
@@ -131,7 +132,8 @@ export async function sendHomeInfo(s: Settings, tasks: Task[]): Promise<void> {
     if (t) for (const p of PRAYERS) prayers.push({ at: t[p].getTime(), name: PNAME[p], hm: hhmm(t[p]) });
     if (s.taskOn !== false && tasks.length && i >= 0) {
       const day = dayNumber(noon), m = taskTime(s, day), at = new Date(start); at.setHours(Math.floor(m / 60), m % 60);
-      tk.push({ start: start.getTime(), at: at.getTime(), day, text: taskFor(tasks, day).text, hm: hhmm(at), done: !!done[day] });
+      const t = dayTask(tasks, day);
+      if (t) tk.push({ start: start.getTime(), at: at.getTime(), day, text: t.text, hm: hhmm(at), done: !!done[day], post: canPostpone(t) });
     }
   }
   // تذكير الوقت (أذكار الصباح، الضحى، أذكار المساء، الوتر) كما في التطبيق: يبقى حتى الموضع التالي في الخطة

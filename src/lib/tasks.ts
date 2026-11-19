@@ -77,6 +77,37 @@ export function taskFor(tasks: Task[], day: number): Task {
   return rot(order.length ? order : tasks, day);
 }
 
+/**
+ * تأجيل المهمة (قرار المستخدم 2026-11-19): دائرة «لاحقًا» بجانب «فعلتُها». لا مهمة بديلة في يوم التأجيل؛
+ * تعود المهمة بعد ثلاثة أيام (أو أول يوم بعدها ليس فيه مهمة مناسبة ولا مهمة مؤجَّلة)، وفي وقت مختلف عن وقت التأجيل
+ * لمن وقته اعتباطي. مهام المناسبات (الجمعة، العيد، رمضان، المواسم) لا تُؤجَّل. كل شيء في الهاتف وحده.
+ */
+interface Post { skip: Record<string, string>; moved: Record<string, { id: string; avoid: number }> }
+const postMap = (): Post => { const p = load<Post>('taskPost', { skip: {}, moved: {} }); return { skip: p.skip ?? {}, moved: p.moved ?? {} }; };
+/** مهمة يومٍ بعد التأجيل: لا شيء يوم التأجيل، والمؤجَّلة في يوم عودتها، وإلا مهمة اليوم المعتادة */
+export function dayTask(tasks: Task[], day: number): Task | null {
+  if (!tasks.length) return null;
+  const p = postMap();
+  if (p.skip[day]) return null;
+  const mv = p.moved[day];
+  if (mv) { const t = tasks.find((x) => x.id === mv.id); if (t) return t; }
+  return taskFor(tasks, day);
+}
+export const canPostpone = (t: Task | null | undefined) => !!t && !t.when;
+export function postponeTask(tasks: Task[], day: number, nowMin: number): boolean {
+  const t = dayTask(tasks, day);
+  if (!t || !canPostpone(t)) return false;
+  const p = postMap();
+  let to = day + 3;
+  while (p.moved[to] || p.skip[to] || taskFor(tasks, to).when) to++;
+  p.skip[day] = t.id;
+  p.moved[to] = { id: t.id, avoid: nowMin };
+  for (const k of Object.keys(p.skip)) if (+k < day - 60) delete p.skip[k];
+  for (const k of Object.keys(p.moved)) if (+k < day - 60) delete p.moved[k];
+  save('taskPost', p);
+  return true;
+}
+
 /** المجال المسموح لإشعار المهمة: من 8:00 إلى 18:00، لا متأخرًا في الليل حتى يتّسع اليوم لفعلها (طلب المستخدم 2026-11-16) */
 export const TASK_RANGE: [number, number] = [8 * 60, 18 * 60];
 /** وقت ثابت يختاره صاحب الهاتف: من 6:00 إلى 19:00 */
@@ -91,7 +122,11 @@ export function taskTime(s: Settings, day: number): number {
   const ok: number[] = [];
   for (let m = TASK_RANGE[0]; m <= TASK_RANGE[1]; m += 5) if (cards.every((c) => Math.abs(c - m) >= GAP)) ok.push(m);
   if (!ok.length) return TASK_RANGE[0];
-  return ok[hash(day, seed()) % ok.length];
+  // المهمة المؤجَّلة تعود بعيدًا ثلاث ساعات على الأقل عن الوقت الذي أُجّلت فيه
+  const mv = postMap().moved[day];
+  const far = mv ? ok.filter((m) => Math.abs(m - mv.avoid) >= 180) : ok;
+  const list = far.length ? far : ok;
+  return list[hash(day, seed()) % list.length];
 }
 
 /** ما فُعل: {رقم اليوم: معرّف المهمة}، آخر 60 يومًا، في الهاتف وحده */

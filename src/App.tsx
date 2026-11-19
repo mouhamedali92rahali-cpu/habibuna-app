@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps } from './lib/notify';
-import { loadTasks, markTaskDone, taskDoneMap, taskFor, taskTime, TASK_FIXED, type Task } from './lib/tasks';
+import { loadTasks, markTaskDone, taskDoneMap, dayTask, canPostpone, postponeTask, taskTime, TASK_FIXED, type Task } from './lib/tasks';
 import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendHomeInfo, sendWidget, stripLines, type Maker } from './lib/phone';
@@ -309,16 +309,29 @@ export default function App() {
   }, [prays, dayNo]);
   const pray = () => { addPrays({ [dayNo]: 1 }); say('صلّى الله عليه وسلّم ✦'); };
   // مهمة اليوم تظهر من وقت إشعارها (كالبطاقات: لا شيء قبل موعده)
-  const todayTask = settings.taskOn !== false && tasks.length ? taskFor(tasks, dayNo) : null;
+  // تأجيل المهمة يغيّر مهامّ الأيام (taskPost في الهاتف)؛ postRev يعيد الرسم والجدولة بعده
+  const [postRev, setPostRev] = useState(0);
+  const todayTask = settings.taskOn !== false && tasks.length ? dayTask(tasks, dayNo) : null; // eslint-disable-line react-hooks/exhaustive-deps
+  void postRev;
   const taskAtToday = taskTime(settings, dayNo);
   // لمس إشعار المهمة يُظهرها في التطبيق ولو قبل وقتها المحسوب
   const [taskForce, setTaskForce] = useState(false);
   const taskVisible = !!todayTask && (taskForce || nowMin >= taskAtToday);
   const doTask = useCallback((day: number) => {
     if (!tasks.length) return;
-    setTaskDone(markTaskDone(day, taskFor(tasks, day).id));
+    const t = dayTask(tasks, day);
+    if (!t) return;
+    setTaskDone(markTaskDone(day, t.id));
     void clearTaskNote().catch(() => {});
     say('عَلِمها الله، وكفى ✦', 3500);
+  }, [tasks, say]);
+  // «لاحقًا»: تعود المهمة بعد ثلاثة أيام، ولا مهمة اليوم (قرار المستخدم 2026-11-19)
+  const laterTask = useCallback((day: number) => {
+    const n = new Date();
+    if (!postponeTask(tasks, day, n.getHours() * 60 + n.getMinutes())) return;
+    setPostRev((r) => r + 1);
+    void clearTaskNote().catch(() => {});
+    say('تعود إليك بعد ثلاثة أيام إن شاء الله ✦', 3500);
   }, [tasks, say]);
   useEffect(() => {
     if (!tasks.length) return;
@@ -408,8 +421,14 @@ export default function App() {
       // أدوات الشاشة الرئيسية الثلاث (تجربة): «فعلتُها» من الشاشة يُسجَّل هنا، ثم تُرسل الأيام والمواقيت والمهام
       PhoneSettings.takeTaskDone().then(({ days }) => {
         const ds = (JSON.parse(days || '[]') as string[]).map(Number).filter((d) => !taskDone[d]);
-        if (ds.length && tasks.length) { let m = taskDone; for (const d of ds) m = markTaskDone(d, taskFor(tasks, d).id); setTaskDone(m); void clearTaskNote().catch(() => {}); }
-      }).catch(() => {}).finally(() => { void sendHomeInfo(settings, tasks).catch(() => {}); });
+        if (ds.length && tasks.length) { let m = taskDone; for (const d of ds) { const t = dayTask(tasks, d); if (t) m = markTaskDone(d, t.id); } setTaskDone(m); void clearTaskNote().catch(() => {}); }
+      }).catch(() => {})
+        // «لاحقًا» من الشاشة الرئيسية: «اليوم:الدقيقة»
+        .then(() => PhoneSettings.takeTaskPost()).then(({ ops }) => {
+          let ch = false;
+          for (const o of JSON.parse(ops || '[]') as string[]) { const [d, mm] = o.split(':').map(Number); if (postponeTask(tasks, d, mm)) ch = true; }
+          if (ch) setPostRev((r) => r + 1);
+        }).catch(() => {}).finally(() => { void sendHomeInfo(settings, tasks).catch(() => {}); });
       // اليوم والساعة يُحسبان الآن لا من وقت رسم الصفحة: من عاد إلى التطبيق في يوم جديد كان لون الشريط يأخذ بطاقة الأمس
       const n = new Date(), dNow = dayNumber(n), mNow = n.getHours() * 60 + n.getMinutes();
       const todaySlots = times.map((m, k) => ({ m, k })).filter((x) => x.m <= mNow && slotOk(dNow, x.m))
@@ -428,7 +447,7 @@ export default function App() {
     const onVis = () => { if (document.visibilityState === 'visible') run(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [pool, settings, byId, addPrays, tasks, taskDone]);
+  }, [pool, settings, byId, addPrays, tasks, taskDone, postRev]);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -530,7 +549,10 @@ export default function App() {
                   <div className="tbody">
                     <span>✉ {todayTask.text}</span>
                   </div>
-                  <button className="tdone" onClick={() => doTask(dayNo)}>فعلتُها</button>
+                  <div className="tbtns">
+                    <button className="tcirc ok" onClick={() => doTask(dayNo)} aria-label="فعلتُها"><i>✓</i><small>فعلتُها</small></button>
+                    {canPostpone(todayTask) && <button className="tcirc later" onClick={() => laterTask(dayNo)} aria-label="لاحقًا"><i>↻</i><small>لاحقًا</small></button>}
+                  </div>
                 </div>
             ) : null} />
             {isNative && !settings.notifyOn && welcome === 0 && (

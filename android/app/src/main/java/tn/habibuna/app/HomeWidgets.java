@@ -32,6 +32,7 @@ import java.util.Set;
 public class HomeWidgets {
     static final String TICK = "tn.habibuna.app.HOME_TICK";
     static final String DONE = "tn.habibuna.app.TASK_DONE";
+    static final String LATER = "tn.habibuna.app.TASK_LATER";
     static final long NOW_WINDOW = 20 * 60_000L;
     static final int TASK_ID = 7000, TASK_LAST = 7031;
 
@@ -45,6 +46,7 @@ public class HomeWidgets {
         @Override public void onUpdate(Context c, AppWidgetManager m, int[] ids) { updateAll(c); }
         @Override public void onReceive(Context c, Intent i) {
             if (DONE.equals(i.getAction())) { taskDone(c, i.getIntExtra("day", -1)); return; }
+            if (LATER.equals(i.getAction())) { taskLater(c, i.getIntExtra("day", -1)); return; }
             super.onReceive(c, i);
         }
     }
@@ -152,6 +154,7 @@ public class HomeWidgets {
             if (o != null && o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L) cur = o;
         }
         v.setViewVisibility(R.id.tdone, View.GONE);
+        if (cur != null && prefs(c).getStringSet("homeTaskSkip", new HashSet<>()).contains(String.valueOf(cur.optInt("day")))) cur = null;
         if (cur == null) {
             v.setTextViewText(R.id.ttext, a.length() == 0 ? "افتح «حبيبنا» مرة لتظهر مهمّتك" : "لا مهمة اليوم");
             return;
@@ -222,6 +225,8 @@ public class HomeWidgets {
         JSONObject t = null;
         for (int i = 0; i < tk.length(); i++) { JSONObject o = tk.optJSONObject(i); if (o != null && o.optLong("start") <= now && now < o.optLong("start") + 86_400_000L) t = o; }
         String fallback = null;
+        Set<String> skip = prefs(c).getStringSet("homeTaskSkip", new HashSet<>());
+        if (t != null && skip.contains(String.valueOf(t.optInt("day")))) t = null;
         if (t != null) {
             int day = t.optInt("day");
             long at = t.optLong("at");
@@ -232,6 +237,11 @@ public class HomeWidgets {
                 r.setTextViewText(R.id.ttext, "✉ " + t.optString("text"));
                 Intent i = new Intent(c, TaskW.class).setAction(DONE).putExtra("day", day);
                 r.setOnClickPendingIntent(R.id.tdone, PendingIntent.getBroadcast(c, 7200, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                // «لاحقًا» لغير مهام المناسبات (post يرسله التطبيق)
+                if (t.optBoolean("post")) {
+                    Intent l = new Intent(c, TaskW.class).setAction(LATER).putExtra("day", day);
+                    r.setOnClickPendingIntent(R.id.tlater, PendingIntent.getBroadcast(c, 7202, l, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                } else r.setViewVisibility(R.id.tlater, View.GONE);
                 v.addView(R.id.hrot, r); n++;
             }
         }
@@ -277,6 +287,38 @@ public class HomeWidgets {
             if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setExact(AlarmManager.RTC, at, pi);
             else am.setWindow(AlarmManager.RTC, at, 10_000L, pi);
         } catch (Exception e) { am.set(AlarmManager.RTC, at, pi); }
+    }
+
+    /** «لاحقًا» من الشاشة: تختفي مهمة اليوم، وتُنقل إلى أول يوم بعد ثلاثة أيام يقبلها (post) حتى يفتح التطبيق فيحسبها بقاعدته؛
+     *  ويأخذ التطبيق «اليوم:الدقيقة» (takeTaskPost) ليعيد الجدولة بوقت مختلف (قرار المستخدم 2026-11-19) */
+    static void taskLater(Context c, int day) {
+        if (day < 0) return;
+        SharedPreferences p = prefs(c);
+        Set<String> skip = new HashSet<>(p.getStringSet("homeTaskSkip", new HashSet<>()));
+        if (skip.contains(String.valueOf(day))) return;
+        skip.add(String.valueOf(day));
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        Set<String> ops = new HashSet<>(p.getStringSet("taskPostOps", new HashSet<>()));
+        ops.add(day + ":" + (cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)));
+        SharedPreferences.Editor e = p.edit().putStringSet("homeTaskSkip", skip).putStringSet("taskPostOps", ops);
+        try {
+            JSONArray a = arr(c, "homeTasks");
+            String text = null;
+            for (int i = 0; i < a.length(); i++) { JSONObject o = a.optJSONObject(i); if (o != null && o.optInt("day") == day) text = o.optString("text"); }
+            if (text != null) for (int i = 0; i < a.length(); i++) {
+                JSONObject o = a.optJSONObject(i);
+                if (o != null && o.optInt("day") >= day + 3 && o.optBoolean("post") && !o.optBoolean("moved") && !skip.contains(String.valueOf(o.optInt("day")))) {
+                    o.put("text", text); o.put("moved", true); break;
+                }
+            }
+            e.putString("homeTasks", a.toString());
+        } catch (Exception ignored) {}
+        e.apply();
+        try {
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && Build.VERSION.SDK_INT >= 23) for (StatusBarNotification n : nm.getActiveNotifications()) if (n.getId() >= TASK_ID && n.getId() <= TASK_LAST) nm.cancel(n.getTag(), n.getId());
+        } catch (Exception ignored) {}
+        updateAll(c);
     }
 
     static void taskDone(Context c, int day) {

@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications, type LocalNotificationSchema } from '@capacitor/local-notifications';
 import type { CardData, Settings } from './types';
-import { taskFor, taskTime, taskDoneMap, type Task } from './tasks';
+import { dayTask, taskTime, taskDoneMap, type Task } from './tasks';
 
 /** نسخة الهاتف (Capacitor): إشعارات محلية يجدولها النظام وتصل والتطبيق مغلق */
 export const isNative = Capacitor.isNativePlatform();
@@ -274,7 +274,8 @@ export async function scheduleWeek(s: Settings, pool: CardData[], tasks: Task[] 
       const m = taskTime(s, day);
       const at = new Date(); at.setDate(at.getDate() + d); at.setHours(Math.floor(m / 60), m % 60, 0, 0);
       if (at.getTime() < Date.now() + 60_000 || done[day]) continue;
-      const t = taskFor(tasks, day);
+      const t = dayTask(tasks, day);
+      if (!t) continue;
       list.push({ id: TASK_ID + d, title: '✉ مهمّتك الخفيّة اليوم', body: t.text, largeBody: t.text, summaryText: 'بينك وبين الله', channelId: TASK_CHANNEL, smallIcon: 'ic_stat_task', iconColor: '#B8892E', actionTypeId: 'TASK', extra: { task: t.id, day }, isExactNotification: exact, schedule: { at, allowWhileIdle: true } });
     }
   }

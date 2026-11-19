@@ -170,6 +170,17 @@ public class PhoneSettingsPlugin extends Plugin {
 
     /** أيام المهام التي ضُغط فيها «فعلتُها» من الشاشة الرئيسية، يأخذها التطبيق مرة واحدة */
     @PluginMethod
+    public void takeTaskPost(PluginCall call) {
+        android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
+        org.json.JSONArray a = new org.json.JSONArray();
+        for (String d : p.getStringSet("taskPostOps", new java.util.HashSet<>())) a.put(d);
+        p.edit().remove("taskPostOps").apply();
+        JSObject r = new JSObject();
+        r.put("ops", a.toString());
+        call.resolve(r);
+    }
+
+@PluginMethod
     public void takeTaskDone(PluginCall call) {
         android.content.SharedPreferences p = getContext().getSharedPreferences(PopupScheduler.PREFS, android.content.Context.MODE_PRIVATE);
         org.json.JSONArray a = new org.json.JSONArray();
