@@ -1010,6 +1010,13 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
   const slots = sunan.length + (task ? 1 : 0);
   useEffect(() => { if (slots < 2) return; const t = setInterval(() => setRot((r) => r + 1), 7000); return () => clearInterval(t); }, [slots]);
   const n = sel ? nextPrayer(sel, now, adj) : null;
+  // اهتزاز خفيف لحظة دخول الوقت والتطبيق مفتوح (طلب المستخدم 2026-11-19)؛ لا عند فتحه والوقت قد دخل
+  const wasNow = useRef<string | null>(null);
+  useEffect(() => {
+    const k = n?.now ? n.p + n.at.getTime() : '';
+    if (wasNow.current !== null && k && k !== wasNow.current) { if (isNative) void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}); else try { navigator.vibrate?.(40); } catch { /* */ } }
+    wasNow.current = k;
+  }, [n?.now, n?.p, n?.at.getTime()]); // eslint-disable-line react-hooks/exhaustive-deps
   const idx = slots ? rot % slots : 0;
   const showTask = !!task && idx === 0;
   const su = !showTask && sunan.length ? sunan[(idx - (task ? 1 : 0) + sunan.length) % sunan.length] : null;
@@ -1017,7 +1024,7 @@ function PrayerLine({ fix, onSettings, task }: { fix: Record<string, Record<stri
     <>
       <div className={'pline' + (n?.now ? ' now' : '')} role="button" onClick={() => setPick(true)}>
         <Pulse />
-        {n ? <span><b>{PNAME[n.p]}</b> {n.now ? 'حان الآن' : untilText(n.at.getTime() - now.getTime())}</span> : <span>مواقيت الصلاة</span>}
+        {n ? (n.now ? <span><b>حان الآن موعد صلاة {PNAME[n.p]}</b></span> : <span><b>{PNAME[n.p]}</b> {untilText(n.at.getTime() - now.getTime())}</span>) : <span>مواقيت الصلاة</span>}
         {!sel?.city && <u>حدّد مدينتك</u>}
         <Pulse />
         <button className="pgear" aria-label="إعدادات المواقيت" onClick={(e) => { e.stopPropagation(); onSettings(); }}>⚙</button>

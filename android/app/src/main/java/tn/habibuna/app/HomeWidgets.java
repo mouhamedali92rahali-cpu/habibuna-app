@@ -206,8 +206,8 @@ public class HomeWidgets {
             long at = p.optLong("at");
             String name = p.optString("name");
             boolean on = at <= now;
-            String rest = on ? " حان الآن" : " " + untilText(at - now);
-            android.text.SpannableString sp = new android.text.SpannableString(name + rest);
+            // «حان الآن موعد صلاة المغرب» (صيغة المستخدم 2026-11-19)
+            android.text.SpannableString sp = new android.text.SpannableString(on ? "حان الآن موعد صلاة " + name : name + " " + untilText(at - now));
             sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, on ? sp.length() : name.length(), 0);
             sp.setSpan(new android.text.style.ForegroundColorSpan(0xFF0F5C4D), 0, on ? sp.length() : name.length(), 0);
             v.setTextViewText(R.id.pline, sp);
