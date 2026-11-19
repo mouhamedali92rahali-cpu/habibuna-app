@@ -149,28 +149,16 @@ public class HomeWidgets {
             JSONArray ext = cur == null ? null : cur.optJSONArray("ext");
             if (ext != null) for (int i = 0; i < ext.length(); i++) {
                 JSONObject e = ext.optJSONObject(i); if (e == null || e.optString("t").isEmpty()) continue;
-                String head = e.optString("h") + "  ";
-                android.text.SpannableString sp = new android.text.SpannableString(head + e.optString("t"));
-                sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, head.length(), 0);
-                sp.setSpan(new android.text.style.ForegroundColorSpan(0xFFB8892E), 0, head.length(), 0);
-                lines.add(sp);
+                lines.add(e.optString("h") + ": " + e.optString("t"));
             }
             CharSequence third = task != null ? "✉ " + task.optString("text") : lines.isEmpty() ? "" : lines.get((int) ((now / 60_000L) % lines.size()));
 
-            RemoteViews bigView = new RemoteViews(c.getPackageName(), R.layout.notif_lock);
-            bigView.setTextViewText(R.id.lhijri, title);
-            bigView.setTextViewText(R.id.lgreg, greg);
-            android.text.SpannableString psp = new android.text.SpannableString(pl);
-            int nameEnd = pl.startsWith("حان") ? pl.length() : Math.max(0, pl.indexOf(' '));
-            psp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, nameEnd, 0);
-            psp.setSpan(new android.text.style.ForegroundColorSpan(0xFF0F5C4D), 0, nameEnd, 0);
-            bigView.setTextViewText(R.id.lpray, psp);
-            bigView.setTextViewText(R.id.lline, third);
+            // النص العادي للإشعار (BigTextStyle): هو الذي ظهر على شاشة القفل في شاومي؛ التخطيط المخصّص (RemoteViews) لم يظهر أصلًا
+            String big = pl + (third.length() == 0 ? "" : "\n" + third);
             androidx.core.app.NotificationCompat.Builder b = new androidx.core.app.NotificationCompat.Builder(c, LOCK_CH)
                 .setSmallIcon(R.drawable.ic_stat_habibuna).setColor(0xFF0F5C4D)
                 .setContentTitle(title).setContentText(pl).setSubText(greg)
-                .setStyle(new androidx.core.app.NotificationCompat.DecoratedCustomViewStyle())
-                .setCustomBigContentView(bigView)
+                .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle().bigText(big))
                 .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setShowWhen(false)
                 .setVisibility(androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(androidx.core.app.NotificationCompat.CATEGORY_STATUS)
