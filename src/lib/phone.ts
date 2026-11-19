@@ -10,6 +10,7 @@ import { hijriToday } from './hijri';
 import { taskFor, taskTime, taskDoneMap, type Task } from './tasks';
 import { sunanFor } from './sunan';
 import { kunFor } from './kunLines';
+import { ahlFor } from './ahlLines';
 import type { Settings } from './types';
 import { load } from './store';
 
@@ -117,14 +118,15 @@ export function hijriNow(): Record<string, Record<string, string>> {
 export async function sendHomeInfo(s: Settings, tasks: Task[]): Promise<void> {
   if (!isNative) return;
   const fix = hijriNow(), sel = loadSel(), adj = loadAdj(), done = taskDoneMap();
-  const days: { start: number; greg: string; hijri: string; sunan: string[]; kun: string[] }[] = [];
+  const days: { start: number; greg: string; hijri: string; sunan: string[]; kun: string[]; ext: { h: string; t: string }[] }[] = [];
   const prayers: { at: number; name: string; hm: string }[] = [];
   const tk: { start: number; at: number; day: number; text: string; hm: string; done: boolean }[] = [];
   for (let i = -1; i <= 30; i++) {
     const start = new Date(); start.setDate(start.getDate() + i); start.setHours(0, 0, 0, 0);
     const noon = new Date(start); noon.setHours(12);
     const h = hijriToday(noon, fix);
-    days.push({ start: start.getTime(), greg: h.greg, hijri: h.hijri, sunan: sunanFor(noon, fix).map((x) => x.line), kun: kunFor(noon) });
+    days.push({ start: start.getTime(), greg: h.greg, hijri: h.hijri, sunan: sunanFor(noon, fix).map((x) => x.line), kun: kunFor(noon),
+      ext: [{ h: 'كن مثله ﷺ', t: kunFor(noon)[0] }, ...ahlFor(noon)].filter((x) => x.t) });
     const t = sel ? dayTimes(sel, noon, adj) : null;
     if (t) for (const p of PRAYERS) prayers.push({ at: t[p].getTime(), name: PNAME[p], hm: hhmm(t[p]) });
     if (s.taskOn !== false && tasks.length && i >= 0) {

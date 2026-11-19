@@ -4,7 +4,7 @@ import { hijriToday, type Overrides } from './hijri';
  * «سنن الأيام» تحت خط الصلاة (قرار المستخدم 2026-11-12): سطر قصير بلا مصدر ظاهر، ولمسه يُظهر الحديث بمصدره ودرجته.
  * الصيام يُنبَّه عليه في اليوم السابق («غدًا …»). مسودة للتجربة؛ النصوص من نسخ fawazahmed0 (الترمذي 745 و761، مسلم 854 و1134 و1162 و1164، البخاري 969).
  */
-export interface Sunna { id: string; line: string; matn: string; narr: string; source: string; grade: string }
+export interface Sunna { id: string; line: string; matn: string; narr: string; source: string; grade: string; head?: string }
 
 const S = {
   mon: { matn: 'كان النبي ﷺ يتحرّى صوم الاثنين والخميس.', narr: 'عائشة', source: 'الترمذي (745)', grade: 'حسن — الترمذي: حسن غريب' },

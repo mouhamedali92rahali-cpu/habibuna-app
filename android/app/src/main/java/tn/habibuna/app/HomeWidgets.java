@@ -239,19 +239,18 @@ public class HomeWidgets {
             JSONArray su = cur.optJSONArray("sunan");
             if (su != null) for (int i = 0; i < su.length(); i++) { String x = su.optString(i); if (!x.isEmpty()) { addLine(c, v, "✦ " + x); n++; } }
         }
-        // «كن مثله ﷺ»: سنّة اليوم، وتُضاف أخرى حتى يكون في السطر ثلاث جمل على الأقل (طلب المستخدم 2026-11-19)
+        // «كن مثله ﷺ» ثم اسم من أهل بيته ﷺ واسم من أصحابه (ext: [{h,t}])، كلٌّ بعنوانه الذهبي (قرارات المستخدم 2026-11-19)
+        java.util.List<CharSequence> extLines = new java.util.ArrayList<>();
+        JSONArray ext = cur == null ? null : cur.optJSONArray("ext");
         JSONArray kuns = cur == null ? null : cur.optJSONArray("kun");
-        String one = cur == null ? "" : cur.optString("kun");
-        java.util.List<String> kl = new java.util.ArrayList<>();
-        if (kuns != null) for (int i = 0; i < kuns.length(); i++) { String x = kuns.optString(i); if (!x.isEmpty()) kl.add(x); }
-        else if (!one.isEmpty() && !one.startsWith("[")) kl.add(one);
-        java.util.List<CharSequence> kunLines = new java.util.ArrayList<>();
-        String head = "كن مثله ﷺ  ";
-        for (String x : kl) {
-            android.text.SpannableString sp = new android.text.SpannableString(head + x);
+        if (ext == null && kuns != null && kuns.length() > 0) { ext = new JSONArray(); try { ext.put(new JSONObject().put("h", "كن مثله ﷺ").put("t", kuns.optString(0))); } catch (Exception ignored) {} }
+        if (ext != null) for (int i = 0; i < ext.length(); i++) {
+            JSONObject o = ext.optJSONObject(i); if (o == null || o.optString("t").isEmpty()) continue;
+            String head = o.optString("h") + "  ";
+            android.text.SpannableString sp = new android.text.SpannableString(head + o.optString("t"));
             sp.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, head.length(), 0);
             sp.setSpan(new android.text.style.ForegroundColorSpan(0xFFB8892E), 0, head.length(), 0);
-            kunLines.add(sp);
+            extLines.add(sp);
         }
         JSONArray rot = arr(c, "homeRot");
         JSONObject r = null;
@@ -259,7 +258,7 @@ public class HomeWidgets {
         // تذكير الوقت هو جملة شريط الصلاة نفسها؛ فلا يظهر هنا إن كان الشريط ظاهرًا على الشاشة (قرار المستخدم 2026-11-18)
         boolean strip = ids(c, CardWidget.class).length > 0 && !prefs(c).getBoolean("widgetHidden", false);
         if (!strip && r != null && !r.optString("line").isEmpty()) { addLine(c, v, "✦ " + r.optString("line")); n++; }
-        for (int i = 0; i < kunLines.size() && (i == 0 || n < 3); i++) { addLine(c, v, kunLines.get(i)); n++; }
+        for (CharSequence x : extLines) { addLine(c, v, x); n++; }
         if (n == 0) { addLine(c, v, fallback != null ? fallback : "✦ صلِّ على النبي ﷺ"); n = 1; }
         // يبدأ من الموضع الذي يقابل الوقت، فإن لم تُشغّل واجهة الهاتف التبادل تغيّر السطر مع تجدّد الأداة كل دقيقة
         v.setDisplayedChild(R.id.hrot, (int) ((now / 7000L) % n));
