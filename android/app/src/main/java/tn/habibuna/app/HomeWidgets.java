@@ -139,11 +139,16 @@ public class HomeWidgets {
                 JSONObject e = ext == null ? null : ext.optJSONObject(0);
                 if (e != null) third = e.optString("h") + ": " + e.optString("t");
             }
-            String big = pl + (third.isEmpty() ? "" : "\n" + third);
+            // مطويًّا: التاريخ والصلاة؛ ومفتوحًا: شكل «يومك» كاملًا (التاريخ، والصلاة بين رسمي النبض، والسطر المتبادل بزرّي المهمة)
+            RemoteViews bigView = new RemoteViews(c.getPackageName(), R.layout.notif_lock);
+            long[] n2 = new long[]{next[0]};
+            fillDay(c, bigView, now, n2);
+            next[0] = Math.min(next[0], n2[0]);
             androidx.core.app.NotificationCompat.Builder b = new androidx.core.app.NotificationCompat.Builder(c, LOCK_CH)
                 .setSmallIcon(R.drawable.ic_stat_habibuna).setColor(0xFF0F5C4D)
                 .setContentTitle(title).setContentText(pl).setSubText(greg)
-                .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle().bigText(big))
+                .setStyle(new androidx.core.app.NotificationCompat.DecoratedCustomViewStyle())
+                .setCustomBigContentView(bigView)
                 .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setShowWhen(false)
                 .setVisibility(androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(androidx.core.app.NotificationCompat.CATEGORY_STATUS)
