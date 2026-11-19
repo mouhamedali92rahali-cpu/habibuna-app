@@ -311,8 +311,8 @@ export default function App() {
   // مهمة اليوم تظهر من وقت إشعارها (كالبطاقات: لا شيء قبل موعده)
   // تأجيل المهمة يغيّر مهامّ الأيام (taskPost في الهاتف)؛ postRev يعيد الرسم والجدولة بعده
   const [postRev, setPostRev] = useState(0);
-  // «يومك على شاشة القفل» (تجربة 2026-11-19): يُحفظ أصليًّا ويتجدّد من HomeWidgets
-  useEffect(() => { if (isNative) void PhoneSettings.setLockDay({ on: !!settings.lockDay }).catch(() => {}); }, [settings.lockDay]);
+  // «يومك على شاشة القفل» أُلغيت (قرار المستخدم 2026-11-19): يُطفأ الإشعار عند من فعّله في التجربة
+  useEffect(() => { if (isNative) void PhoneSettings.setLockDay({ on: false }).catch(() => {}); }, []);
   const todayTask = settings.taskOn !== false && tasks.length ? dayTask(tasks, dayNo) : null; // eslint-disable-line react-hooks/exhaustive-deps
   void postRev;
   const taskAtToday = taskTime(settings, dayNo);
@@ -771,14 +771,6 @@ export default function App() {
                 </div>
               )}
             </Frame>
-            {isNative && (
-              <Frame title="يومك على شاشة القفل" fold="lock" sum={settings.lockDay ? 'مفعّل' : 'مطفأ'}>
-                <label className="row">
-                  <span><b>التاريخ والصلاة القادمة ومهمتك على شاشة القفل</b><small>في إشعار ثابت بلا صوت يتجدّد وحده، تراه دون أن تفتح هاتفك. يبقى في شريط الإشعارات ما دام مفعّلًا، وتطفئه من هنا متى شئت.</small></span>
-                  <input type="checkbox" checked={!!settings.lockDay} onChange={(e) => setSettings({ ...settings, lockDay: e.target.checked })} />
-                </label>
-              </Frame>
-            )}
             {isNative && widget && firstRun && (
               <Frame title="زرّ الصلاة على شاشتك الرئيسية" fold="widget" sum={widget.placed && !widget.hidden ? 'موضوع على شاشتك ✓' : 'غير موضوع'}>
                 <p className="muted small">اضغطه كلما صلّيت على النبي ﷺ، ومعه آية أو حديث يتبدّل ثلاث مرات في اليوم.</p>
