@@ -161,7 +161,7 @@ public class HomeWidgets {
         if (cur.optBoolean("done") || done.contains(String.valueOf(day))) {
             v.setTextViewText(R.id.ttext, "عَلِمها الله، وكفى ✦");
         } else if (now < at) {
-            v.setTextViewText(R.id.ttext, "✉ تصلك مهمّتك الخفيّة اليوم عند " + cur.optString("hm"));
+            v.setTextViewText(R.id.ttext, "✉ مهمّتك الخفيّة في الطريق إليك اليوم ✦");
             next[0] = Math.min(next[0], at + 1000);
         } else {
             v.setTextViewText(R.id.ttext, "✉ " + cur.optString("text"));
@@ -226,7 +226,7 @@ public class HomeWidgets {
             int day = t.optInt("day");
             long at = t.optLong("at");
             if (t.optBoolean("done") || done.contains(String.valueOf(day))) fallback = "عَلِمها الله، وكفى ✦";
-            else if (now < at) { fallback = "✉ تصلك مهمّتك الخفيّة اليوم عند " + t.optString("hm"); next[0] = Math.min(next[0], at + 1000); }
+            else if (now < at) { fallback = "✉ مهمّتك الخفيّة في الطريق إليك اليوم ✦"; next[0] = Math.min(next[0], at + 1000); }
             else {
                 RemoteViews r = new RemoteViews(c.getPackageName(), R.layout.widget_day_task);
                 r.setTextViewText(R.id.ttext, "✉ " + t.optString("text"));
