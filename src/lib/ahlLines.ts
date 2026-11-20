@@ -3,7 +3,7 @@
 // يتبادلان مع المهمة والسنن و«كن مثله ﷺ» في التطبيق وفي أداة «يومك»، بلا مصدر ولا لمس
 import { dayNumber } from './notify';
 export interface Line { h: string; t: string }
-export const AHL: Line[] = [
+export let AHL: Line[] = [
  {
   "h": "من أهل بيته ﷺ",
   "t": "زوجته خديجة بنت خويلد، بشّرها ﷺ ببيت في الجنة."
@@ -109,7 +109,7 @@ export const AHL: Line[] = [
   "t": "ابن عمّه جعفر بن أبي طالب، يُلقَّب «ذا الجناحين»، وكان ابن عمر إذا سلّم على ابنه قال: «السلام عليك يا ابن ذي الجناحين»."
  }
 ];
-export const SAHB: Line[] = [
+export let SAHB: Line[] = [
  {
   "h": "من أصحابه ﷺ",
   "t": "أبو بكر الصديق، اسمه عبد الله بن عثمان، وأبو قحافة كنية أبيه؛ قال ﷺ: «لو كنتُ متخذًا خليلًا لاتخذتُ أبا بكر خليلًا»."
@@ -179,5 +179,7 @@ export const SAHB: Line[] = [
   "t": "الزبير بن العوام، ابن عمّته صفية، جمع له ﷺ أبويه فقال: «فداك أبي وأمي»."
  }
 ];
+// تأتي الأحدث من public/lines.json المنشورة (src/lib/lines.ts) فتصل الإضافات بلا تحديث
+export function setAhl(a: Line[], s: Line[]) { if (a.length) AHL = a; if (s.length) SAHB = s; }
 const at = (a: Line[], d: number) => a[((d % a.length) + a.length) % a.length];
 export function ahlFor(d: Date): Line[] { const n = dayNumber(d); return [at(AHL, n), at(SAHB, n)]; }

@@ -1,7 +1,7 @@
 // مولَّد من data/sunnah/batch1.json بـ data/sunnah/export.py — لا تعدّله يدويًّا
 // «كن مثله ﷺ»: سنّة واحدة في اليوم، تتبادل مع المهمة والسنن في التطبيق وفي أداة «يومك»، بلا مصدر ولا لمس
 import { dayNumber } from './notify';
-export const KUN: string[] = [
+export let KUN: string[] = [
  "كان ﷺ إذا دخل بيته بدأ بالسواك",
  "كان ﷺ إذا قام من الليل استاك بالسواك",
  "كان ﷺ يحبّ أن يبدأ باليمين في لبس نعله، وتسريح شعره، ووضوئه",
@@ -54,6 +54,8 @@ export const KUN: string[] = [
  "كان ﷺ إذا جاءه خبر يسرّه خرّ ساجدًا شكرًا لله",
  "كان ﷺ إذا مرض قرأ المعوّذات ونفث على نفسه"
 ];
+// تأتي الأحدث من public/lines.json المنشورة (src/lib/lines.ts) فتصل الإضافات بلا تحديث
+export function setKun(a: string[]) { if (a.length) KUN = a; }
 // سنّة اليوم (k = 1)؛ وk أكبر يعيد سنّتين أخريين بفارق ثلث القائمة (كانتا تملآن السطر قبل مسار أهل البيت والأصحاب)
 export function kunFor(d: Date, k = 1): string[] {
   const n = KUN.length; if (!n) return [];

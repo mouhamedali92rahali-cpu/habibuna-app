@@ -9,8 +9,11 @@ open('src/lib/ahlLines.ts','w').write('// مولَّد من data/ahl/batch1.json
  '// يتبادلان مع المهمة والسنن و«كن مثله ﷺ» في التطبيق وفي أداة «يومك»، بلا مصدر ولا لمس\n'
  "import { dayNumber } from './notify';\n"
  'export interface Line { h: string; t: string }\n'
- 'export const AHL: Line[] = '+j(A)+';\n'
- 'export const SAHB: Line[] = '+j(S)+';\n'
+ 'export let AHL: Line[] = '+j(A)+';\n'
+ 'export let SAHB: Line[] = '+j(S)+';\n'
+ '// تأتي الأحدث من public/lines.json المنشورة (src/lib/lines.ts) فتصل الإضافات بلا تحديث\n'
+ 'export function setAhl(a: Line[], s: Line[]) { if (a.length) AHL = a; if (s.length) SAHB = s; }\n'
  'const at = (a: Line[], d: number) => a[((d % a.length) + a.length) % a.length];\n'
  'export function ahlFor(d: Date): Line[] { const n = dayNumber(d); return [at(AHL, n), at(SAHB, n)]; }\n')
 print(len(A),len(S))
+import subprocess; subprocess.run(['python3','scripts/build-lines.py'],check=True)

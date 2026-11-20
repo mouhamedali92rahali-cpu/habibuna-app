@@ -20,6 +20,7 @@ import { GROUPS, PNAME, PRAYERS, dayTimes, hhmm, loadAdj, loadSel, nextPrayer, s
 import { isRamadan, sunanFor, type Sunna } from './lib/sunan';
 import { kunFor } from './lib/kunLines';
 import { ahlFor } from './lib/ahlLines';
+import { loadLines } from './lib/lines';
 import { stripPlan, stripNow } from './lib/strip';
 import { Zoom } from './components/Zoom';
 
@@ -203,6 +204,8 @@ export default function App() {
   const [taskDone, setTaskDone] = useState<Record<string, string>>(() => taskDoneMap());
   useEffect(() => {
     void loadTasks(isNative).then(setTasks);
+    // أسطر «كن مثله» وأهل البيت والأصحاب من الملف المنشور؛ ثم تُرسل إلى أداة «يومك» (hb-prayer يعيد إرسالها)
+    void loadLines(isNative).then((ok) => { if (ok) window.dispatchEvent(new Event('hb-prayer')); });
     loadCards().then(setCards).catch(() => setErr(true));
     loadQuiz().then(setBank).catch(() => {});
   }, []);
