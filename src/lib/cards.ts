@@ -2,7 +2,7 @@ import type { CardData } from './types';
 import { isNative } from './notify';
 import { load, save } from './store';
 
-interface CardsFile { version: number; app?: string; cards: CardData[]; widget?: unknown; hijri?: Record<string, Record<string, string>>; }
+interface CardsFile { version: number; app?: string; appNews?: string[]; cards: CardData[]; widget?: unknown; hijri?: Record<string, Record<string, string>>; }
 /** جمل زرّ الصلاة على الشاشة الرئيسية من cards.json المنشورة (تصل الدفعات الجديدة بلا تحديث التطبيق) */
 export let widgetLines: unknown = null;
 // تصحيح بدايات الأشهر الهجرية بعد الإعلان الرسمي لكل بلد ({TN: {"1448-6": "2026-11-12"}})
@@ -10,6 +10,8 @@ export let hijriFix: Record<string, Record<string, string>> = {};
 
 /** أحدث نسخة منشورة من التطبيق (الحقل app في cards.json المنشورة)؛ لا اتصال جديد، فهي في الملف نفسه */
 export let latestApp: string | null = null;
+/** ما الجديد في تلك النسخة (الحقل appNews في cards.json المنشورة): أسطر قصيرة تظهر في إعلان التحديث */
+export let latestNews: string[] = [];
 /** هل النسخة a أحدث من b؟ (3.10 > 3.9) */
 export const newer = (a: string, b: string) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) > (y[i] ?? 0); } return false; };
 
@@ -57,6 +59,7 @@ async function loadMain(): Promise<CardData[]> {
   const remote = await get(REMOTE, 6000).catch(() => null);
   if (remote) save('cardsCache', remote);
   latestApp = (remote ?? cached)?.app ?? null;
+  latestNews = (remote ?? cached)?.appNews ?? [];
   const best = [remote, cached, bundled].filter((d): d is CardsFile => !!d).sort((a, b) => (b.version ?? 0) - (a.version ?? 0))[0];
   if (!best) throw new Error('no cards');
   widgetLines = best.widget ?? null;

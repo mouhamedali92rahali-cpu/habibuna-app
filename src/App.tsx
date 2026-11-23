@@ -4,7 +4,7 @@ import type { CardData, Settings } from './lib/types';
 import { advance, defaultSettings, load, save, syncDeck, today, type Deck } from './lib/store';
 import { askExact, askPermission, hasPermission, cardFor, FEATURED, weekSlots, WEEK, dayNumber, PER_DAY, REMINDER, diagnose, exactAllowed, fmt, isNative, listenTaps, notifySupported, schedule, scheduleWeek, showCard, slots, TIMES, RANGES, clearTaskNote, listenTaskTaps } from './lib/notify';
 import { loadTasks, markTaskDone, taskDoneMap, dayTask, canPostpone, postponeTask, taskTime, TASK_FIXED, type Task } from './lib/tasks';
-import { hijriFix, latestApp, loadCards, loadHijri, newer } from './lib/cards';
+import { hijriFix, latestApp, latestNews, loadCards, loadHijri, newer } from './lib/cards';
 import { hijriAsk, hijriToday } from './lib/hijri';
 import { PhoneSettings, phoneMaker, popupJson, schedulePopups, sendFormulas, sendHomeInfo, sendWidget, stripLines, type Maker } from './lib/phone';
 import { shareCard } from './lib/shareImage';
@@ -570,6 +570,9 @@ export default function App() {
             {isNative && latestApp && newer(latestApp, __APP_VERSION__) && updLater !== dayNo && (
               <div className="offer update">
                 <b>نسخة جديدة من «حبيبنا»</b>
+                {latestNews.length > 0 && (
+                  <div className="updnews"><b>الجديد فيها:</b><ul>{latestNews.map((l, i) => <li key={i}>{l}</li>)}</ul></div>
+                )}
                 <p>تنفتح صفحة التحميل: اضغط فيها «تحميل التطبيق»، ثم افتح الملف واضغط <Sys k="update" />. تبقى مفضلتك وإعداداتك كما هي.</p>
                 <div className="btns">
                   <a className="primary" href="https://mouhamedali92rahali-cpu.github.io/habibuna-app/download.html" target="_blank" rel="noopener">تحميل التحديث</a>

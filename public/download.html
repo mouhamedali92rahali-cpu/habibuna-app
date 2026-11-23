@@ -29,6 +29,10 @@ li b{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(217,178,
 .after{display:none;width:100%;text-align:right;background:rgba(217,178,94,.12);border:1px solid rgba(217,178,94,.45);border-radius:14px;padding:12px 14px;line-height:1.9}
 .after.on{display:block}
 .after b{color:var(--gold)}
+.news{margin:14px 0 4px;padding:10px 14px;border:1px solid #c9a24a;border-radius:12px;background:rgba(201,162,74,.08);text-align:right;line-height:1.8}
+.news ul{margin:4px 0 0;padding-inline-start:1.3em}
+.news li{display:list-item;background:none;border:0;border-radius:0;padding:2px 0}
+.news[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -37,12 +41,23 @@ li b{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(217,178,
   <p class="lead">مواقف صغيرة .. تكشف لك عظمة شخصيته<br>ثلاث بطاقات موثّقة كل يوم</p>
   <a class="btn" id="dl" href="https://github.com/mouhamedali92rahali-cpu/habibuna-app/releases/latest/download/habibuna.apk">تحميل التطبيق لأندرويد</a>
   <div class="after" id="after"><b>بدأ التحميل.</b> إن طلب الهاتف التأكيد فاختر <bdi dir="ltr">«Télécharger quand même»</bdi>. وإن لم تظهر لك <bdi dir="ltr">«Ouvrir»</bdi> بعد ثوانٍ، فافتح قائمة المتصفح <b>⋮</b> ثم <bdi dir="ltr">«Téléchargements»</bdi>، واضغط على الملف <bdi dir="ltr">habibuna.apk</bdi>.</div>
+  <div class="news" id="news" hidden><b id="newsT">الجديد في آخر نسخة</b><ul id="newsL"></ul></div>
   <ol>
     <li><b>1</b><span>بعد التحميل افتح الملف. إن طلب الهاتف السماح بالتثبيت من هذا المصدر فاسمح له، فالتطبيق ليس في متجر Google Play بعد.</span></li>
     <li><b>2</b><span>ثبّت التطبيق وافتحه، وفعّل الإشعارات لتصلك البطاقات في 10:00 و15:00 و20:00.</span></li>
   </ol>
   <p class="note">مجاني، بلا حساب ولا إعلانات.<br>على الآيفون: النسخة لم تصدر بعد، ويمكنك تجربة <a href="./">نسخة الويب</a>.</p>
 </main>
+<script>
+// «ما الجديد» من الحقل appNews في cards.json (يكتبه Claude مع كل نسخة جديدة)
+fetch('cards.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+  if(!d.appNews||!d.appNews.length)return;
+  if(d.app)document.getElementById('newsT').textContent='الجديد في النسخة '+d.app;
+  var ul=document.getElementById('newsL');
+  d.appNews.forEach(function(t){var li=document.createElement('li');li.textContent=t;ul.appendChild(li);});
+  document.getElementById('news').hidden=false;
+}).catch(function(){});
+</script>
 <script>document.getElementById('dl').addEventListener('click',function(){document.getElementById('after').classList.add('on');});</script>
 </body>
 </html>

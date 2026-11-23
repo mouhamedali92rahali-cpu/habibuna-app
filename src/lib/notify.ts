@@ -132,6 +132,9 @@ export const REMINDER = 'الصلاة عليه';
 const DUA_DAYS = [4, 0];
 /** يوم «قالوا عنه»: الأربعاء في موعد 15:00 (قرار المستخدم 2026-11-10) */
 const QALU_DAY = 6;
+/** يوم «أهل بيته وأصحابه»: السبت في موعد 15:00، يومًا من أهل بيته ويومًا من أصحابه (قرار المستخدم 2026-11-23) */
+const AHL_DAY = 2;
+export const AHL = 'أهل بيته وأصحابه';
 /** ثلاث بطاقات ثابتة في اليوم (قرار المستخدم) */
 export const PER_DAY = 3;
 
@@ -141,20 +144,23 @@ export const PER_DAY = 3;
  * بطاقات الصلاة عليه ﷺ (قرار المستخدم 2026-11-11): لم تعد خاصة بالمساء؛ الجمعة 15:00
  * حديث الجمعة، وفي غيرها بطاقة صلاة كل ثلاثة أيام في موعد يتبدّل (10 ثم 15 ثم 20).
  */
-type Slot = 'fri' | 'rem' | 'dua' | 'qalu' | 'pic' | 'feat' | 'rest';
-type Has = { fri: boolean; rem: boolean; dua: boolean; qalu: boolean; pic: boolean; split: boolean };
+type Slot = 'fri' | 'rem' | 'dua' | 'qalu' | 'ahl' | 'pic' | 'feat' | 'rest';
+type Has = { fri: boolean; rem: boolean; dua: boolean; qalu: boolean; ahl: boolean; pic: boolean; split: boolean };
 /** نوع الموعد k من يوم ما. الأنواع تتكرّر كل 126 يومًا (2 × 9 × 7) */
 function slotType(day: number, k: number, has: Has): Slot {
   const friday = day % 7 === 1;
   const duaDay = DUA_DAYS.includes(day % 7) && has.dua;
   const qaluDay = day % 7 === QALU_DAY && has.qalu;
+  const ahlDay = day % 7 === AHL_DAY && has.ahl;
   // الجمعة ظهرًا: «فأكثروا عليّ من الصلاة فيه»
   if (friday && has.fri && k === 1) return 'fri';
   // بطاقات الأدعية متباعدة (قرار المستخدم): يومي الاثنين والخميس في موعد الظهر
   if (k === 1 && duaDay) return 'dua';
   // قول من «قالوا عنه» مرة في الأسبوع: الأربعاء ظهرًا
   if (k === 1 && qaluDay) return 'qalu';
-  const noon = duaDay || qaluDay || (friday && has.fri);
+  // اسم من أهل بيته أو أصحابه مرة في الأسبوع: السبت ظهرًا
+  if (k === 1 && ahlDay) return 'ahl';
+  const noon = duaDay || qaluDay || ahlDay || (friday && has.fri);
   // بطاقة صلاة كل ثلاثة أيام (غير الجمعة)، موعدها يتبدّل؛ إن كان الظهر مأخوذًا فالمساء
   if (has.rem && !friday && day % 3 === 1) {
     let rk = Math.floor(day / 3) % 3;
@@ -174,10 +180,10 @@ const posCache = new Map<string, { per: Record<Slot, number>; before: Record<Slo
  * فلا تُتخطّى بطاقةٌ حين يأخذ الدعاءُ أو الصورةُ موعدها (كانت بعض البطاقات تنتظر أكثر من سنة).
  */
 function slotIndex(day: number, k: number, has: Has): number {
-  const key = `${+has.fri}${+has.rem}${+has.dua}${+has.qalu}${+has.pic}${+has.split}`;
+  const key = `${+has.fri}${+has.rem}${+has.dua}${+has.qalu}${+has.ahl}${+has.pic}${+has.split}`;
   let t = posCache.get(key);
   if (!t) {
-    const zero = (): Record<Slot, number> => ({ fri: 0, rem: 0, dua: 0, qalu: 0, pic: 0, feat: 0, rest: 0 });
+    const zero = (): Record<Slot, number> => ({ fri: 0, rem: 0, dua: 0, qalu: 0, ahl: 0, pic: 0, feat: 0, rest: 0 });
     const run = zero(); const before: Record<Slot, number>[] = [];
     for (let i = 0; i < PERIOD * PER_DAY; i++) { before.push({ ...run }); run[slotType(Math.floor(i / PER_DAY), i % PER_DAY, has)]++; }
     t = { per: run, before }; posCache.set(key, t);
@@ -191,15 +197,20 @@ export function cardFor(pool: CardData[], day: number, k: number): CardData {
   const fri = pool.filter((c) => c.chapter === REMINDER && c.friday);
   const rem = pool.filter((c) => c.chapter === REMINDER && !c.friday);
   const qalu = pool.filter((c) => c.qalu);
-  const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER && !c.qalu);
-  const pics = pool.filter((c) => c.pic && c.chapter !== REMINDER && !c.dua && !c.qalu);
-  const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua && !c.pic && !c.qalu);
+  // أهل بيته وأصحابه بالتناوب: اسم من أهل بيته ثم اسم من أصحابه
+  const ahlFam = pool.filter((c) => c.chapter === AHL && c.kick === 'من أهل بيته ﷺ');
+  const ahlComp = pool.filter((c) => c.chapter === AHL && c.kick !== 'من أهل بيته ﷺ');
+  const ahl: CardData[] = [];
+  for (let j = 0; j < Math.max(ahlFam.length, ahlComp.length); j++) { if (ahlFam[j]) ahl.push(ahlFam[j]); if (ahlComp[j]) ahl.push(ahlComp[j]); }
+  const duas = pool.filter((c) => c.dua && c.chapter !== REMINDER && !c.qalu && c.chapter !== AHL);
+  const pics = pool.filter((c) => c.pic && c.chapter !== REMINDER && !c.dua && !c.qalu && c.chapter !== AHL);
+  const body = pool.filter((c) => c.chapter !== REMINDER && !c.dua && !c.pic && !c.qalu && c.chapter !== AHL);
   const feat = body.filter((c) => FEATURED.has(c.chapter));
   const rest = body.filter((c) => !FEATURED.has(c.chapter));
-  const has: Has = { fri: fri.length > 0, rem: rem.length > 0, dua: duas.length > 0, qalu: qalu.length > 0, pic: pics.length > 0, split: feat.length > 0 && rest.length > 0 };
+  const has: Has = { fri: fri.length > 0, rem: rem.length > 0, dua: duas.length > 0, qalu: qalu.length > 0, ahl: ahl.length > 0, pic: pics.length > 0, split: feat.length > 0 && rest.length > 0 };
   const type = slotType(day, k, has);
   const i = slotIndex(day, k, has);
-  const list = type === 'fri' ? fri : type === 'rem' ? rem : type === 'qalu' ? qalu : type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
+  const list = type === 'fri' ? fri : type === 'rem' ? rem : type === 'qalu' ? qalu : type === 'ahl' ? ahl : type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
   if (list.length === 0) return (body.length ? body : pool)[(day * PER_DAY + k) % (body.length || pool.length)];
   return list[i % list.length];
 }
