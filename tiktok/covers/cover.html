@@ -26,7 +26,7 @@ const add = x => document.body.appendChild(h(x));
 add(`<div class="badge tag abs"><div class="pill"><i></i>${d.tag.replace('ﷺ', '<span class="saw">ﷺ</span>')}</div></div>`);
 add(`<div class="big abs">${words(d.title)}</div>`);
 // الرسم من public/art، أو (بلا رسم) «ﷺ» كبيرة في وسط دائرة ذهبية
-let inner = `<div style="font:400 300px/1 Amiri,serif;color:#b8923f;margin-top:-30px">ﷺ</div>`;
+let inner = `<div style="font:${d.disc ? '700 320px/1 Naskh,serif' : '400 300px/1 Amiri,serif'};color:#b8923f;margin-top:-30px">${d.disc || 'ﷺ'}</div>`; // disc: نص بدل ﷺ (مثل رقم)
 if (d.art) { const x = new XMLHttpRequest(); x.open('GET', '../../public/art/' + d.art + '.svg', false); x.send(); inner = x.responseText; }
 add(`<div class="disc abs">${inner}</div>`);
 add(`<div class="sub abs">${d.sub}</div>`);
