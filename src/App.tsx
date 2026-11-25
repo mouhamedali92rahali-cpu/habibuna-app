@@ -990,16 +990,16 @@ function WidgetToggle({ widget, onChange, say }: { widget: { placed: boolean; ca
   );
 }
 
-/** تبديل التصميم بين الأصلي و«الأزرق الهادئ» (تجربة للمستخدم 2026-11-25؛ يُحفظ في الهاتف) */
+/** تبديل التصميم بين الأصلي و«القوس» (تجربة للمستخدم 2026-11-25؛ يُحفظ في الهاتف) */
 function SkinToggle() {
-  const [calm, setCalm] = useState(() => { try { return localStorage.getItem('skin') === 'calm'; } catch { return false; } });
-  useEffect(() => { if (calm) document.documentElement.dataset.skin = 'calm'; else delete document.documentElement.dataset.skin; }, [calm]);
-  const flip = () => { const v = !calm; setCalm(v); try { localStorage.setItem('skin', v ? 'calm' : 'classic'); } catch { /* */ } };
+  const [on, setOn] = useState(() => { try { return localStorage.getItem('skin') === 'arch'; } catch { return false; } });
+  useEffect(() => { if (on) document.documentElement.dataset.skin = 'arch'; else delete document.documentElement.dataset.skin; }, [on]);
+  const flip = () => { const v = !on; setOn(v); try { localStorage.setItem('skin', v ? 'arch' : 'classic'); } catch { /* */ } };
   return (
-    <button className="skinbtn" onClick={flip} aria-label={calm ? 'التصميم الأصلي' : 'تصميم الأزرق الهادئ'}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{calm
+    <button className="skinbtn" onClick={flip} aria-label={on ? 'التصميم الأصلي' : 'تصميم القوس'}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">{on
         ? <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="6" y="6" width="12" height="12" rx="1" transform="rotate(45 12 12)" /></>
-        : <>{[0, 30, 60, 90, 120, 150].map((a) => <ellipse key={a} cx="12" cy="12" rx="3" ry="9" transform={`rotate(${a} 12 12)`} />)}</>}</svg>
+        : <><path d="M5 21V11a7 7 0 0 1 14 0v10" /><path d="M8.5 21v-9.5a3.5 3.5 0 0 1 7 0V21" /></>}</svg>
     </button>
   );
 }
