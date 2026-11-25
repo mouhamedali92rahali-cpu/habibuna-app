@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160"><style>
+.g{fill:none;stroke:#b8923f;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.gt{fill:none;stroke:#b8923f;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.e{fill:none;stroke:#0f5c4d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.et{fill:none;stroke:#0f5c4d;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.f{fill:#ecdcae}.f2{fill:#d9bf7f}.fe{fill:#cfe0d6}.w{fill:#fffaf0}.ink{fill:#7a5a22}
+</style><circle cx="100" cy="80" r="72" fill="#efe4c6"/><path class="f2" d="M66 86 V120 C66 130 134 130 134 120 V86 Z"/><path class="g" d="M66 86 V120 C66 130 134 130 134 120 V86 Z"/><ellipse class="fe" cx="100" cy="86" rx="34" ry="8"/><ellipse class="g" cx="100" cy="86" rx="34" ry="8"/><ellipse fill="#3d5f55" opacity=".55" cx="100" cy="87" rx="26" ry="4.5"/><path class="gt" d="M66 98 C83.0 104 117.0 104 134 98"/><path class="gt" d="M81 101 v10"/><path class="gt" d="M96 101 v10"/><path class="gt" d="M111 101 v10"/><path class="gt" d="M126 101 v10"/><path class="gt" d="M66 110 C83.0 116 117.0 116 134 110"/><path class="gt" d="M74 113 v10"/><path class="gt" d="M89 113 v10"/><path class="gt" d="M104 113 v10"/><path class="gt" d="M119 113 v10"/><path class="g" d="M56 86 V40 M144 86 V40"/><path class="g" d="M52 40 H148"/><path class="et" d="M100 40 V60"/><path class="f" d="M90 62 h20 l-3 16 h-14 Z"/><path class="g" d="M90 62 h20 l-3 16 h-14 Z"/><path class="gt" d="M90 62 q10 -8 20 0"/><path class="e" d="M36 130 h128"/></svg>
