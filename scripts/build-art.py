@@ -768,18 +768,21 @@ ART['kalb'] = svg(dog(-14, 14, .9) + well(152, 98, 22)
   + f'<g transform="rotate(-20 128 124)">{path2("M120 106 h9 v12 c5 1 10 3 10 7 h-19 Z", "f")}</g>'
   + '<path class="e" d="M26 132 h148"/>')
 # 54. شجرتان في وادٍ: شجر سَمُر بجذع وأغصان وتاج مسطّح (DN09، طلب المستخدم)
-def acacia(x, y, s=1.0):
-    t = (f'<path class="g" d="M{x} {y} C{x} {y-14*s} {x-2*s} {y-22*s} {x-12*s} {y-32*s} M{x} {y-14*s} C{x+4*s} {y-22*s} {x+10*s} {y-28*s} {x+16*s} {y-32*s} '
-         f'M{x-1*s} {y-20*s} C{x} {y-26*s} {x+1*s} {y-30*s} {x} {y-34*s}"/>')
-    crown = (f'M{x-30*s} {y-32*s} C{x-28*s} {y-42*s} {x-14*s} {y-46*s} {x-4*s} {y-44*s} C{x+4*s} {y-50*s} {x+20*s} {y-48*s} {x+26*s} {y-40*s} '
-             f'C{x+34*s} {y-38*s} {x+34*s} {y-30*s} {x+24*s} {y-30*s} C{x+10*s} {y-28*s} {x-10*s} {y-28*s} {x-24*s} {y-30*s} C{x-32*s} {y-30*s} {x-34*s} {y-30*s} {x-30*s} {y-32*s} Z')
-    leaves = ''.join(f'<path class="et" d="M{x+dx*s} {y-36*s} q3 -3 6 0"/>' for dx in (-22, -12, -2, 8, 18))
-    return t + path2(crown, 'fe', 'e') + leaves
+def tree(x, y, s=1.0, lean=0):
+    # شجرة: جذع بنّي متين يتفرّع، وتاج من عناقيد أوراق خضراء، وتميل بقدر lean (الحديث: انقادت الشجرتان والتأمتا)
+    tr = (f'<path d="M{x-5*s} {y} C{x-4*s} {y-14*s} {x-2*s+lean*.4} {y-24*s} {x+lean*.6} {y-34*s} '
+          f'L{x+5*s+lean*.6} {y-34*s} C{x+4*s+lean*.4} {y-24*s} {x+5*s} {y-14*s} {x+6*s} {y} Z" fill="#b08a52" stroke="#7a5a22" stroke-width="1.4"/>'
+          f'<path d="M{x+lean*.5} {y-26*s} l{-10*s} {-8*s} M{x+2*s+lean*.5} {y-28*s} l{10*s} {-9*s}" stroke="#7a5a22" stroke-width="{2.6*s}" stroke-linecap="round"/>')
+    cx, cy = x + lean, y - 50*s
+    blobs = ((-16, 4, 13), (16, 4, 13), (0, -8, 16), (-8, 12, 11), (9, 12, 11))
+    crown = ''.join(f'<circle cx="{cx+dx*s}" cy="{cy+dy*s}" r="{r*s}" fill="#8fbf9f" stroke="#0f5c4d" stroke-width="1.6"/>' for dx, dy, r in blobs)
+    crown += ''.join(f'<circle cx="{cx+dx*s}" cy="{cy+dy*s}" r="{r*s*.82}" fill="#a9cfb3"/>' for dx, dy, r in blobs)
+    leaves = ''.join(f'<path d="M{cx+dx*s} {cy+dy*s} q{3*s} {-4*s} {6*s} 0 q{-3*s} {4*s} {-6*s} 0 Z" fill="#0f5c4d" opacity=".55"/>'
+                     for dx, dy in ((-18, 0), (-6, -12), (6, -6), (16, 2), (-10, 10), (4, 12), (12, -14), (-2, 2)))
+    return tr + crown + leaves
 ART['shajar'] = svg(
-  mountains([(40, 92), (54, 86), (150, 90), (164, 94)], .7)
-  + '<path class="f" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122 Z"/><path class="g" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122"/>'
-  + acacia(66, 118, 1.25) + acacia(136, 118, 1.25))
-
+  '<path class="f" d="M28 124 C60 112 80 110 100 114 C120 110 140 112 172 124 Z"/><path class="g" d="M28 124 C60 112 80 110 100 114 C120 110 140 112 172 124"/>'
+  + tree(66, 120, 1.05, 8) + tree(134, 120, 1.05, -8))
 # 55. غار حراء وغار ثور حول مكة (KN21 KN23 KN32 I01). الإحداثيات (ويكيبيديا): الكعبة 21.4225,39.8262 · جبل النور 21.4580,39.8611 · غار ثور 21.3772,39.8497
 def ghar(hi):
     K = 11
