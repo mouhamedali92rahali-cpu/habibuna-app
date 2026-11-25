@@ -1,0 +1,106 @@
+<title>الشروح: الدفعة 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600&display=swap">
+<style>
+/* صفحة مراجعة بشكل بطاقات التطبيق: وجه عاجي وإطار بنّي (لون الباب) وزخرفة ذهبية */
+:root{--bg:#eee6d3;--ink:#2b2a24;--muted:#6b6553;--ivory:#f8f2e2;--frame:#6b4a2e;--gold:#b58a3a;--line:#d8ccb0;--notebg:#fff8e6;--ok:#1d6b4f;
+--serif:"Amiri","Noto Naskh Arabic",serif;--body:"Noto Naskh Arabic","Amiri",serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1912;--muted:#d6cbb0;--line:#3d3226;--notebg:#2c241a;--ok:#7fd1a8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1f1912;--muted:#d6cbb0;--line:#3d3226;--notebg:#2c241a;--ok:#7fd1a8;color-scheme:dark}
+body{background:var(--bg);color:var(--muted);font-family:var(--body);direction:rtl;line-height:1.8;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1{font-family:var(--serif);font-size:2rem;margin:0;color:var(--gold);text-wrap:balance}
+.how,.note,.qz{background:var(--notebg);border-radius:10px;padding:10px 14px}
+.note{border-right:3px solid var(--gold);font-size:.92rem}
+.q{position:relative;display:flex;flex-direction:column;gap:8px}
+.num{position:absolute;top:-10px;right:-6px;z-index:1;background:var(--gold);color:#fff;font:600 .8rem var(--body);border-radius:99px;padding:2px 8px}
+.q{--frame:#6b4a2e}
+.face{background:var(--ivory);border:7px solid var(--frame);outline:1px solid var(--gold);outline-offset:-12px;border-radius:14px;padding:24px 22px 16px;text-align:center;color:#2b2a24}
+.kick{font-family:var(--serif);color:#6b6553;font-size:.95rem}
+.txt{font-family:var(--serif);font-size:1.22rem;line-height:1.95;margin:.5em 0}
+.src{color:#4a4637;font-size:.85rem} .grade{color:#6b6553;font-size:.8rem} .grade.weak{font-style:italic;font-weight:300}
+.tag{display:inline-block;margin-top:8px;font-size:.75rem;color:var(--frame);border:1px solid var(--frame);border-radius:99px;padding:0 10px}
+details{font-size:.92rem} summary{cursor:pointer} .matn{font-family:var(--serif);font-size:1.05rem}
+.qz ul{margin:.3em 0;padding-inline-start:1.2em} .qz li.ok{color:var(--ok);font-weight:600} .qn{font-size:.85rem}
+.muted{opacity:.7}
+.dec{display:flex;flex-direction:column;gap:6px}.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns button{flex:1;min-width:84px;font:600 .95rem var(--body);padding:8px 10px;border-radius:10px;border:1.5px solid var(--frame);background:transparent;color:inherit;cursor:pointer}
+.btns button.on[data-v="ok"]{background:var(--ok);border-color:var(--ok);color:#fff}.btns button.on[data-v="change"],.btns button.on[data-v="note"]{background:var(--gold);border-color:var(--gold);color:#fff}
+.btns button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+textarea{font:1rem var(--body);min-height:70px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--notebg);color:inherit;direction:rtl}
+.st{font-size:.8rem;min-height:1em}
+
+</style>
+<div class="wrap">
+<header><h1>الشروح: الدفعة 1</h1><div>11 بطاقة تحتاج شرح كلمة أو معنى</div></header>
+<div class="how"><b>كيف تراجع:</b> تحت كل بطاقة: «موافق»، أو «أغيّر» واكتب التعديل، أو «ملاحظة». يُحفظ اختيارك فورًا وأقرؤه أنا، وما لم تختر فيه شيئًا يُعدّ مقبولًا. النص الأصلي تحت كل بطاقة، والجواب الصحيح في السؤال عليه ✓.</div>
+<div class="note">مراجعة الشروح لكل البطاقات، الدفعة 1. قرأتُ البطاقات الـ277 التي ليس لها شرح، فوجدتُ أكثرها واضحًا، ونحو 25 بطاقة فيها كلمة أو معنى يحتاج شرحًا. هذه أول 11 منها، وكل شرح نقلتُه من كتاب قرأته بنفسي (النهاية لابن الأثير، وفتح الباري لابن حجر)، والكتاب والجزء والصفحة تحته. الشرح مفتوح تحت كل بطاقة. <b>الدفعة القادمة:</b> تمرّغ عمّار في التراب (التيمّم)، و«هلكتُ» في قصة الرجل في رمضان، و«صلاةً» في دعائه لمن آذاه، و«العفاف والغنى»، و«حملتُ اللحم» في المسابقة، و«حِجر الكعبة»، و«أثبته»، و«اللَّبِن والجريد»، و«نزحوا البئر»، و«التئما عليّ»، و«ساذجين»، وسبع بطاقات من القائمة القديمة.</div>
+<article class="q" style="--frame:#3F4647"><div class="num">G03</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">كان رسول الله ﷺ يقوم الليل حتى تتفطّر قدماه، ويقول: «أفلا أكون عبدًا شكورًا؟»</p>
+<div class="src">المصدر: البخاري (4837)، مسلم (2820)</div><div class="grade">صحيح — البخاري ومسلم</div><div class="tag">◌ بكاؤه</div></div>
+<details><summary>النص الأصلي — المغيرة بن شعبة</summary><p class="matn">أَنَّ نَبِيَّ اللَّهِ ﷺ كَانَ يَقُومُ مِنَ اللَّيْلِ حَتَّى تَتَفَطَّرَ قَدَمَاهُ فَقَالَتْ عَائِشَةُ لِمَ تَصْنَعُ هَذَا يَا رَسُولَ اللَّهِ وَقَدْ غَفَرَ اللَّهُ لَكَ مَا تَقَدَّمَ مِنْ ذَنْبِكَ وَمَا تَأَخَّرَ قَالَ «أَفَلاَ أُحِبُّ أَنْ أَكُونَ عَبْدًا شَكُورًا». فَلَمَّا كَثُرَ لَحْمُهُ صَلَّى جَالِسًا فَإِذَا أَرَادَ أَنْ يَرْكَعَ قَامَ، فَقَرَأَ ثُمَّ رَكَعَ.</p></details><details open><summary>الشرح</summary><p>«تتفطّر قدماه»: تتشقّق. وفي رواية: «حتى تورّمت»، قال ابن حجر: «ولا اختلاف بين هذه الروايات، فإنه إذا حصل الانتفاخ أو الورم حصل الزلع والتشقّق».</p><p class="muted">فتح الباري لابن حجر 3/15</p></details>
+<div class="dec" data-id="G03"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-G03" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">KN12</div>
+<div class="face"><div class="kick">تعرّف عليه ﷺ</div><p class="txt">قال ﷺ: «ما بعث الله نبيًّا إلا رعى الغنم»، فقال أصحابه: وأنت؟ فقال: «نعم، كنت أرعاها على قراريط لأهل مكة».</p>
+<div class="src">المصدر: البخاري (2262)</div><div class="grade">صحيح — البخاري</div><div class="tag">✪ سيرته في سطور</div></div>
+<details><summary>النص الأصلي — أبو هريرة</summary><p class="matn">«مَا بَعَثَ اللَّهُ نَبِيًّا إِلاَّ رَعَى الْغَنَمَ». فَقَالَ أَصْحَابُهُ وَأَنْتَ فَقَالَ «نَعَمْ كُنْتُ أَرْعَاهَا عَلَى قَرَارِيطَ لأَهْلِ مَكَّةَ»</p></details><details open><summary>الشرح</summary><p>«على قراريط»: قال ابن حجر: قال سويد بن سعيد أحد رواته: «يعني كل شاة بقيراط، يعني القيراط الذي هو جزء من الدينار أو الدرهم»، وقال إبراهيم الحربي: «قراريط اسم موضع بمكة»، ورجّح ابن حجر الأول «لأن أهل مكة لا يعرفون بها مكانًا يقال له قراريط». فكان ﷺ يرعى الغنم بأجر يسير.</p><p class="muted">فتح الباري لابن حجر 4/441</p></details>
+<div class="dec" data-id="KN12"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-KN12" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">KN23</div>
+<div class="face"><div class="kick">تعرّف عليه ﷺ</div><p class="txt">جاءه الملك في غار حراء فقال: اقرأ، قال: «ما أنا بقارئ»، فغطّه ثلاثًا، ثم قال: ﴿اقرأ باسم ربك الذي خلق﴾؛ فكانت أول ما نزل عليه.</p>
+<div class="src">المصدر: البخاري (4953)</div><div class="grade">صحيح — البخاري</div><div class="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div><div class="tag">✪ سيرته في سطور</div></div>
+<details><summary>النص الأصلي — عائشة</summary><p class="matn">فَجَاءَهُ الْمَلَكُ فَقَالَ اقْرَأْ. فَقَالَ رَسُولُ اللَّهِ ﷺ «مَا أَنَا بِقَارِئٍ». قَالَ «فَأَخَذَنِي فَغَطَّنِي حَتَّى بَلَغَ مِنِّي الْجُهْدُ ثُمَّ أَرْسَلَنِي. فَقَالَ اقْرَأْ. قُلْتُ مَا أَنَا بِقَارِئٍ. فَأَخَذَنِي فَغَطَّنِي الثَّانِيِةَ حَتَّى بَلَغَ مِنِّي الْجُهْدُ، ثُمَّ أَرْسَلَنِي. فَقَالَ اقْرَأْ. قُلْتُ مَا أَنَا بِقَارِئٍ. فَأَخَذَنِي فَغَطَّنِي الثَّالِثَةَ حَتَّى بَلَغَ مِنِّي الْجُهْدُ ثُمَّ أَرْسَلَنِي. فَقَالَ {اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ * خَلَقَ الإِنْسَانَ مِنْ عَلَقٍ * اقْرَأْ وَرَبُّكَ الأَكْرَمُ * الَّذِي عَلَّمَ بِالْقَلَمِ}»</p></details><details open><summary>الشرح</summary><p>«فغطّه»: قال ابن الأثير: «الغطّ: العصر الشديد والكبس»؛ أي ضمّه الملك إليه ضمًّا شديدًا. «قيل: إنما غطّه ليختبره هل يقول من تلقاء نفسه شيئًا».</p><p class="muted">النهاية في غريب الحديث لابن الأثير 3/373</p></details>
+<div class="dec" data-id="KN23"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-KN23" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">KN24</div>
+<div class="face"><div class="kick">تعرّف عليه ﷺ</div><p class="txt">بعد فترة الوحي رأى ﷺ الملكَ الذي جاءه بحراء جالسًا على كرسي بين السماء والأرض، فرجع فقال: «زمّلوني زمّلوني»، فدثّروه، فأنزل الله: ﴿يا أيها المدثر﴾.</p>
+<div class="src">المصدر: البخاري (4925)</div><div class="grade">صحيح — البخاري</div><div class="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div><div class="tag">✪ سيرته في سطور</div></div>
+<details><summary>النص الأصلي — جابر بن عبد الله</summary><p class="matn">فَبَيْنَا أَنَا أَمْشِي إِذْ سَمِعْتُ صَوْتًا مِنَ السَّمَاءِ فَرَفَعْتُ رَأْسِي فَإِذَا الْمَلَكُ الَّذِي جَاءَنِي بِحِرَاءٍ جَالِسٌ عَلَى كُرْسِيٍّ بَيْنَ السَّمَاءِ وَالأَرْضِ، فَجَئِثْتُ مِنْهُ رُعْبًا فَرَجَعْتُ فَقُلْتُ زَمِّلُونِي زَمِّلُونِي. فَدَثَّرُونِي فَأَنْزَلَ اللَّهُ تَعَالَى {يَا أَيُّهَا الْمُدَّثِّرُ} إِلَى {وَالرِّجْزَ فَاهْجُرْ</p></details><details open><summary>الشرح</summary><p>«زمّلوني»: لفّوني بالثياب. قال ابن حجر: «والتزميل التلفيف، وقال ذلك لشدّة ما لحقه من هول الأمر، وجرت العادة بسكون الرِّعدة بالتلفيف».</p><p class="muted">فتح الباري لابن حجر 8/719</p></details>
+<div class="dec" data-id="KN24"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-KN24" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">KN49</div>
+<div class="face"><div class="kick">تعرّف عليه ﷺ</div><p class="txt">سأل أبو بكر عائشة: في أي يوم تُوفّي رسول الله ﷺ؟ قالت: يوم الاثنين؛ وكُفّن في ثلاثة أثواب بيض سَحوليّة، ليس فيها قميص ولا عمامة.</p>
+<div class="src">المصدر: البخاري (1387)</div><div class="grade">صحيح — البخاري</div><div class="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div><div class="tag">✪ سيرته في سطور</div></div>
+<details><summary>النص الأصلي — عائشة</summary><p class="matn">فِي كَمْ كَفَّنْتُمُ النَّبِيَّ ﷺ قَالَتْ فِي ثَلاَثَةِ أَثْوَابٍ بِيضٍ سَحُولِيَّةٍ، لَيْسَ فِيهَا قَمِيصٌ وَلاَ عِمَامَةٌ. وَقَالَ لَهَا فِي أَىِّ يَوْمٍ تُوُفِّيَ رَسُولُ اللَّهِ ﷺ قَالَتْ يَوْمَ الاِثْنَيْنِ</p></details><details open><summary>الشرح</summary><p>«سَحوليّة»: قال ابن حجر: «يُروى بضمّ أوّله، ويُروى بفتحه، نسبةً إلى سَحول قرية باليمن»، وفي رواية: «من كُرسف»، والكرسف: القطن. فهي أثواب بيض من قطن اليمن.</p><p class="muted">فتح الباري لابن حجر 3/140</p></details>
+<div class="dec" data-id="KN49"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-KN49" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#B39A5C"><div class="num">SH04</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">قالت عائشة: «ما كان رسول الله ﷺ يسرد سردكم هذا، ولكنه كان يتكلّم بكلامٍ بينه فَصْلٌ، يحفظه من جلس إليه».</p>
+<div class="src">المصدر: الترمذي (3639)، وأصله في البخاري (3568) ومسلم (2493)</div><div class="grade">صحيح — قال الترمذي: حسن صحيح</div><div class="tag">◎ حياته اليومية</div></div>
+<details><summary>النص الأصلي — عائشة</summary><p class="matn">مَا كَانَ رَسُولُ اللَّهِ ﷺ يَسْرُدُ سَرْدَكُمْ هَذَا وَلَكِنَّهُ كَانَ يَتَكَلَّمُ بِكَلاَمٍ بَيْنَهُ فَصْلٌ يَحْفَظُهُ مَنْ جَلَسَ إِلَيْه.</p></details><details open><summary>الشرح</summary><p>«يسرد سردكم»: قال ابن الأثير: «أي يتابعه ويستعجل فيه». فكان ﷺ يتكلّم على مهل، ويفصل بين كلامه حتى يُحفظ.</p><p class="muted">النهاية في غريب الحديث لابن الأثير 2/358</p></details>
+<div class="dec" data-id="SH04"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-SH04" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">AD14</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">قال رسول الله ﷺ: «دَعْ ما يَريبك إلى ما لا يَريبك، فإن الصدق طمأنينة، وإن الكذب ريبة».</p>
+<div class="src">المصدر: الترمذي (2518)</div><div class="grade">صحيح — قال الترمذي: حسن صحيح، وصحّحه الوادعي</div><div class="tag">⚖︎ عدله وصدقه وأمانته</div></div>
+<details><summary>النص الأصلي — الحسن بن علي</summary><p class="matn">«دَعْ مَا يَرِيبُكَ إِلَى مَا لاَ يَرِيبُكَ فَإِنَّ الصِّدْقَ طُمَأْنِينَةٌ وَإِنَّ الْكَذِبَ رِيبَة»</p></details><details open><summary>الشرح</summary><p>«دع ما يريبك إلى ما لا يريبك»: قال ابن الأثير: «يُروى بفتح الياء وضمّها؛ أي: دع ما تشكّ فيه إلى ما لا تشكّ فيه».</p><p class="muted">النهاية في غريب الحديث لابن الأثير 2/286</p></details>
+<div class="dec" data-id="AD14"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-AD14" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">C32</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">كان رسول الله ﷺ يمازح خادمه أنسًا، فيقول له: «يا ذا الأُذُنين».</p>
+<div class="src">المصدر: أبو داود (5002)، الترمذي (1992)</div><div class="grade">حسن — حسّنه ابن القطان والأرناؤوط</div><div class="tag">❀ ملاطفاته</div></div>
+<details><summary>النص الأصلي — أنس بن مالك</summary><p class="matn">قال أنس: قَالَ لِي رَسُولُ اللَّهِ ﷺ «يَا ذَا الأُذُنَيْنِ».</p></details><details open><summary>الشرح</summary><p>«يا ذا الأذنين»: قال ابن الأثير: «قيل معناه الحضّ على حسن الاستماع والوعي… وقيل إن هذا القول من جملة مزحه ﷺ ولطيف أخلاقه».</p><p class="muted">النهاية في غريب الحديث لابن الأثير 1/34</p></details>
+<div class="dec" data-id="C32"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-C32" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#17305C"><div class="num">KN02</div>
+<div class="face"><div class="kick">تعرّف عليه ﷺ</div><p class="txt">قال ﷺ: «لي خمسة أسماء: أنا محمد، وأحمد، وأنا الماحي الذي يمحو الله بي الكفر، وأنا الحاشر الذي يُحشر الناس على قدمي، وأنا العاقب».</p>
+<div class="src">المصدر: البخاري (3532)، مسلم (2354)</div><div class="grade">صحيح — البخاري ومسلم</div><div class="tag">✪ سيرته في سطور</div></div>
+<details><summary>النص الأصلي — جبير بن مطعم</summary><p class="matn">«لِي خَمْسَةُ أَسْمَاءٍ أَنَا مُحَمَّدٌ، وَأَحْمَدُ، وَأَنَا الْمَاحِي الَّذِي يَمْحُو اللَّهُ بِي الْكُفْرَ، وَأَنَا الْحَاشِرُ الَّذِي يُحْشَرُ النَّاسُ عَلَى قَدَمِي، وَأَنَا الْعَاقِبُ»</p></details><details open><summary>الشرح</summary><p>«الحاشر الذي يُحشر الناس على قدمي»: قال ابن الأثير: «أي على أثري»، و«العاقب»: «هو آخر الأنبياء».</p><p class="muted">النهاية في غريب الحديث لابن الأثير 4/25 و3/268</p></details>
+<div class="dec" data-id="KN02"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-KN02" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#6b4a2e"><div class="num">SH05</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">نزل المغيرة بن شعبة ضيفًا على رسول الله ﷺ ذات ليلة، فأمر بجَنْبٍ فشُوي، ثم أخذ الشفرة فجعل يقطع له منه بيده.</p>
+<div class="src">المصدر: أبو داود (188)</div><div class="grade">صحيح — الألباني، وقال الأرناؤوط: إسناده صحيح</div><div class="grade weak">✂ اختصرنا الحديث، ونصّه كاملًا تحت البطاقة</div><div class="tag">❂ كرمه</div></div>
+<details><summary>النص الأصلي — المغيرة بن شعبة</summary><p class="matn">ضِفْتُ النَّبِيَّ ﷺ ذَاتَ لَيْلَةٍ فَأَمَرَ بِجَنْبٍ فَشُوِيَ وَأَخَذَ الشَّفْرَةَ فَجَعَلَ يَحُزُّ لِي بِهَا مِنْهُ - قَالَ - فَجَاءَ بِلاَلٌ فَآذَنَهُ بِالصَّلاَة.</p></details><details open><summary>الشرح</summary><p>«الشَّفرة»: قال ابن الأثير: «السكين العريضة». فكان ﷺ يقطع اللحم لضيفه بيده.</p><p class="muted">النهاية في غريب الحديث لابن الأثير 2/484</p></details>
+<div class="dec" data-id="SH05"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-SH05" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+<article class="q" style="--frame:#3F4647"><div class="num">HB38</div>
+<div class="face"><div class="kick">من مواقف النبي ﷺ</div><p class="txt">جاء بشير بابنه النعمان إلى رسول الله ﷺ ليُشهده على عطيّة أعطاه إياها دون إخوته، فقال: «ألكَ ولدٌ سواه؟» قال: نعم، قال: «لا تُشهدني على جَور».</p>
+<div class="src">المصدر: البخاري (2650)، مسلم (1623)</div><div class="grade">صحيح — البخاري ومسلم</div><div class="tag">✎ وصاياه</div></div>
+<details><summary>النص الأصلي — النعمان بن بشير</summary><p class="matn">سَأَلَتْ أُمِّي أَبِي بَعْضَ الْمَوْهِبَةِ لِي مِنْ مَالِهِ، ثُمَّ بَدَا لَهُ فَوَهَبَهَا لِي فَقَالَتْ لاَ أَرْضَى حَتَّى تُشْهِدَ النَّبِيَّ ﷺ. فَأَخَذَ بِيَدِي وَأَنَا غُلاَمٌ، فَأَتَى بِيَ النَّبِيَّ ﷺ فَقَالَ إِنَّ أُمَّهُ بِنْتَ رَوَاحَةَ سَأَلَتْنِي بَعْضَ الْمَوْهِبَةِ لِهَذَا، قَالَ «أَلَكَ وَلَدٌ سِوَاهُ». قَالَ نَعَمْ. قَالَ فَأُرَاهُ قَالَ «لاَ تُشْهِدْنِي عَلَى جَوْرٍ»</p></details><details open><summary>الشرح</summary><p>«جَور»: ظلم. قال ابن الأثير: «الجور بمعنى الظلم». فتفضيل أحد الأولاد بالعطيّة دون إخوته ظلمٌ لهم.</p><p class="muted">النهاية في غريب الحديث لابن الأثير 1/313</p></details>
+<div class="dec" data-id="HB38"><div class="btns"><button data-v="ok">موافق</button><button data-v="change">أغيّر</button><button data-v="note">ملاحظة</button></div><textarea id="n-HB38" placeholder="اكتب التعديل أو الملاحظة هنا" hidden></textarea><div class="st" aria-live="polite"></div></div></article>
+</div><script>
+(async()=>{
+ const st=(d,t)=>{d.querySelector('.st').textContent=t};
+ const decs=[...document.querySelectorAll('.dec')];
+ const paint=(d,v,note)=>{d.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));const ta=d.querySelector('textarea');ta.hidden=!(v==='change'||v==='note');if(note!==undefined)ta.value=note;};
+ let db=null; try{db=await claude.use("db")}catch(e){}
+ if(!db){decs.forEach(d=>{d.querySelectorAll('button').forEach(b=>b.disabled=true);st(d,'الحفظ غير متاح هنا؛ اكتب قرارك في المحادثة.')});return;}
+ const col=db.collection("sharh1");
+ const t=setTimeout(()=>decs.forEach(d=>st(d,'تأخّر التحميل…')),10000);
+ try{const snap=await col.get();clearTimeout(t);snap.docs.forEach(x=>{const d=document.querySelector('.dec[data-id="'+x.id+'"]');if(d){const v=x.data();paint(d,v.verdict,v.note||'');st(d,'محفوظ ✓')}})}catch(e){clearTimeout(t)}
+ const save=async(d)=>{const id=d.dataset.id,on=d.querySelector('button.on'),v=on?on.dataset.v:'',note=d.querySelector('textarea').value.trim();st(d,'يُحفظ…');try{await col.doc(id).set({verdict:v,note,at:Date.now()});st(d,'محفوظ ✓')}catch(e){st(d,'لم يُحفظ: '+(e&&e.code||'خطأ'))}};
+ decs.forEach(d=>{d.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{paint(d,b.dataset.v);save(d)}));let tm;d.querySelector('textarea').addEventListener('input',()=>{clearTimeout(tm);st(d,'…');tm=setTimeout(()=>save(d),800)})});
+})();
+</script>
