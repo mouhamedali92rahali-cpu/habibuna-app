@@ -1,5 +1,5 @@
 {
-"version": 1795616343,
+"version": 1795630907,
 "cards": {
 "W11": {
 "art": "miswak",
@@ -280,6 +280,10 @@
 "LB05": {
 "art": "jidh",
 "caption": "المنبر ذو الدرجات الثلاث"
+},
+"DN09": {
+"art": "shajar",
+"caption": "شجرتان في وادٍ"
 },
 "DN07": {
 "art": "kawm",

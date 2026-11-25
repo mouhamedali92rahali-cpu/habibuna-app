@@ -1,5 +1,5 @@
 {
- "version": 75, "app": "3.47",
+ "version": 76, "app": "3.47",
  "cards": [
   {
    "id": "D01",
@@ -10553,7 +10553,8 @@
     "narrator": "جابر بن عبد الله",
     "excerpt": true
    },
-   "abridged": true
+   "abridged": true,
+   "pic": true
   },
   {
    "id": "DN10",
