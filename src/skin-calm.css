@@ -66,3 +66,8 @@
 /* زرّ تبديل التصميم */
 .skinbtn{position:absolute;right:76px;top:calc(12px + var(--st));width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;padding:0;color:var(--gold)}
 .skinbtn svg{width:18px;height:18px}
+/* التاريخ ثابت كاملًا في اللوحة (لقطة المستخدم 2026-11-25: كان الشريط المتحرّك يُقصّ فلا يظهر إلا «1448 هـ») */
+:root[data-skin=calm] .dayhead .dateline{white-space:normal;overflow:visible;line-height:1.7}
+:root[data-skin=calm] .dayhead .dateline .dtrack{animation:none;transform:none;display:block}
+:root[data-skin=calm] .praybtn{width:min(92vw,400px);border-radius:20px}
+:root[data-skin=calm] .dayhead .dateline .dtrack i{display:block;height:0;overflow:hidden;margin:0}
