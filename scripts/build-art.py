@@ -721,6 +721,65 @@ ART['shajar'] = svg(
   + '<path class="f" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122 Z"/><path class="g" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122"/>'
   + tree(78, 114, 1.15) + tree(124, 114, 1.15))
 
+# 44. أكوام التمر: عراجين من التمر بعضها فوق بعض (DN07، طلب المستخدم: «أظهر العراجين»)
+def irjun(x, y, s=1.0, seed=0, lean=0):
+    import random
+    r = random.Random(seed)
+    o = f'<g transform="translate({x} {y}) rotate({lean}) scale({s})">'
+    o += '<path d="M0 -56 C-2 -46 2 -40 0 -32" fill="none" stroke="#a07a35" stroke-width="4" stroke-linecap="round"/>'
+    o += ''.join(f'<path d="M0 -34 Q{dx*.5} -26 {dx} {dy}" fill="none" stroke="#b08a45" stroke-width="1"/>' for dx, dy in ((-16, -6), (-8, 0), (0, 2), (8, 0), (16, -6)))
+    for row, (n, yy) in enumerate(((3, -26), (4, -16), (5, -6), (4, 4))):
+        for k in range(n):
+            xx = (k - (n-1)/2) * 8.4 + r.uniform(-1, 1)
+            o += date(round(xx, 1), round(yy + r.uniform(-1, 1), 1), r.choice((-12, 0, 12)), False, .55)
+    return o + '</g>'
+ART['kawm'] = svg(irjun(62, 112, .95, 1, -10) + irjun(138, 112, .95, 2, 10) + irjun(100, 108, 1.1, 3) + '<path class="e" d="M34 124 h132"/>')
+# 47. الفرس: شكل الفرس كاملًا، وقوائمه تسوخ في الرمل إلى الركب (KB07، طلب المستخدم)
+def horse():
+    o = ''
+    for x0, x1 in ((62, 66), (74, 76), (124, 128), (136, 138)):
+        o += f'<path d="M{x0} 96 L{x1} 120" stroke="{G}" stroke-width="9" stroke-linecap="round"/><path d="M{x0} 96 L{x1} 120" stroke="{F2}" stroke-width="5.5" stroke-linecap="round"/>'
+    o += path2('M54 86 C54 70 70 64 92 64 C112 64 126 62 134 60 C142 58 146 66 146 76 C146 92 132 100 112 100 C94 102 74 102 64 98 C58 96 54 92 54 86 Z', 'f2')
+    o += path2('M132 64 C136 52 142 40 150 32 L160 40 C154 48 150 58 146 74 Z', 'f2')
+    o += path2('M148 30 C154 24 164 24 170 30 L178 44 C180 48 176 52 172 50 L160 46 C154 44 150 38 148 30 Z', 'f2')
+    o += f'<path class="g" d="M150 28 l-2 -8 l6 5 M156 26 l2 -8 l3 8"/><circle cx="163" cy="34" r="1.8" fill="{E}"/><path class="gt" d="M174 44 l3 1"/>'
+    o += '<path class="e" d="M146 30 C140 36 136 46 132 58 M150 30 C142 40 140 50 136 60"/>'
+    o += '<path class="g" d="M56 80 C44 84 40 96 44 110 C46 100 50 92 56 88"/>'
+    return o
+ART['faras'] = svg(horse()
+  + '<path class="f" d="M30 112 C56 106 80 108 100 112 C124 106 148 106 172 112 L172 136 H30 Z"/>'
+  + '<path class="g" d="M30 112 C56 106 80 108 100 112 C124 106 148 106 172 112"/>'
+  + ''.join(f'<path class="gt" d="M{x-7} {112} q7 -5 14 0"/>' for x in (64, 75, 126, 137))
+  + '<path class="gt" d="M44 124 q10 -4 20 0 M100 126 q10 -4 20 0 M140 130 q8 -3 16 0"/>')
+# 46. كلبٌ يلهث عند بئر، وخُفّ (PF09، طلب المستخدم: الساقان الخلفيتان واضحتان)
+def dog(x0=0, y0=0, s=1.0):
+    o = ''
+    for a, b in ((52, 50), (62, 62), (98, 100), (108, 110)):
+        o += f'<path d="M{a} 92 L{b} 120" stroke="{G}" stroke-width="7" stroke-linecap="round"/><path d="M{a} 92 L{b} 120" stroke="{F2}" stroke-width="4" stroke-linecap="round"/>'
+    o += path2('M46 86 C46 74 60 70 80 70 C96 70 108 70 112 74 C118 80 116 92 108 96 C96 100 66 100 54 96 C48 94 46 90 46 86 Z', 'f2')
+    o += path2('M106 74 C110 64 114 58 120 54 L128 62 C124 66 120 72 116 82 Z', 'f2')
+    o += path2('M118 50 C124 44 134 46 136 52 L148 56 C150 60 148 64 142 64 L132 64 C126 66 120 62 118 56 Z', 'f2')
+    o += path2('M120 50 C116 52 114 60 116 66 C120 62 122 56 122 52 Z', 'f')
+    o += f'<circle cx="130" cy="53" r="1.6" fill="{E}"/><circle cx="148" cy="58" r="1.4" fill="{E}"/>'
+    o += '<path d="M140 64 q2 8 -2 11 q-4 -4 -2 -10" fill="#d98a7a" stroke="#b45f4f" stroke-width="1"/>'
+    o += '<path class="g" d="M48 80 C40 74 38 64 42 56"/>'
+    return f'<g transform="translate({x0} {y0}) scale({s})">{o}</g>'
+ART['kalb'] = svg(dog(-14, 14, .9) + well(152, 98, 22)
+  + f'<g transform="rotate(-20 128 124)">{path2("M120 106 h9 v12 c5 1 10 3 10 7 h-19 Z", "f")}</g>'
+  + '<path class="e" d="M26 132 h148"/>')
+# 54. شجرتان في وادٍ: شجر سَمُر بجذع وأغصان وتاج مسطّح (DN09، طلب المستخدم)
+def acacia(x, y, s=1.0):
+    t = (f'<path class="g" d="M{x} {y} C{x} {y-14*s} {x-2*s} {y-22*s} {x-12*s} {y-32*s} M{x} {y-14*s} C{x+4*s} {y-22*s} {x+10*s} {y-28*s} {x+16*s} {y-32*s} '
+         f'M{x-1*s} {y-20*s} C{x} {y-26*s} {x+1*s} {y-30*s} {x} {y-34*s}"/>')
+    crown = (f'M{x-30*s} {y-32*s} C{x-28*s} {y-42*s} {x-14*s} {y-46*s} {x-4*s} {y-44*s} C{x+4*s} {y-50*s} {x+20*s} {y-48*s} {x+26*s} {y-40*s} '
+             f'C{x+34*s} {y-38*s} {x+34*s} {y-30*s} {x+24*s} {y-30*s} C{x+10*s} {y-28*s} {x-10*s} {y-28*s} {x-24*s} {y-30*s} C{x-32*s} {y-30*s} {x-34*s} {y-30*s} {x-30*s} {y-32*s} Z')
+    leaves = ''.join(f'<path class="et" d="M{x+dx*s} {y-36*s} q3 -3 6 0"/>' for dx in (-22, -12, -2, 8, 18))
+    return t + path2(crown, 'fe', 'e') + leaves
+ART['shajar'] = svg(
+  mountains([(40, 92), (54, 86), (150, 90), (164, 94)], .7)
+  + '<path class="f" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122 Z"/><path class="g" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122"/>'
+  + acacia(66, 118, 1.25) + acacia(136, 118, 1.25))
+
 # 55. غار حراء وغار ثور حول مكة (KN21 KN23 KN32 I01). الإحداثيات (ويكيبيديا): الكعبة 21.4225,39.8262 · جبل النور 21.4580,39.8611 · غار ثور 21.3772,39.8497
 def ghar(hi):
     K = 11
@@ -845,7 +904,7 @@ MAP = {
 }
 # رسوم جديدة تنتظر رؤية المستخدم قبل ربطها بالبطاقات (2026-11-25)
 PENDING = {
-  'DN07': ('kawm', 'أكوام التمر'),
+  'DN07': ('kawm', 'عراجين التمر'),
   'PF09': ('kalb', 'كلبٌ يلهث عند بئر، وخُفٌّ يُملأ ماءً'),
   'KB07': ('faras', 'فرسٌ تسوخ قوائمها في الرمل'),
   'DN09': ('shajar', 'شجرتان في وادٍ'),
