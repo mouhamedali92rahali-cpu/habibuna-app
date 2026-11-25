@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Markazi+Text:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden}
+q{quotes:'«' '»'}
+body{font-family:'Noto Naskh Arabic',serif;color:#2b4652;background:#fff}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
+.top{padding:18px 20px 6px}
+.row1{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:Amiri;font-weight:700;font-size:28px;color:#3f7488}
+.tools{display:flex;gap:8px}.tools span{width:32px;height:32px;border-radius:50%;background:#eef5f7;display:flex;align-items:center;justify-content:center;color:#3f7488;font-size:14px}
+.d1{margin-top:6px;font-family:Tajawal;font-weight:700;font-size:19px;color:#3f7488}
+.d2{font-family:Tajawal;font-size:13px;color:#8fb0bc}
+.tabs{display:flex;gap:8px;margin:12px 0 4px}
+.tabs span{font-family:Tajawal;font-size:13px;padding:6px 16px;border-radius:20px;background:#eaf3f5;color:#3f7488}
+.tabs span.on{background:#4a8094;color:#fff}
+main{flex:1;overflow:hidden;padding:0 18px}
+.pr{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px solid #edf2f4;font-family:Tajawal}
+.num{width:34px;height:34px;border-radius:50%;border:1.5px solid #4a8094;color:#4a8094;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.pr div{flex:1}.pr b{display:block;font-size:15px;color:#2b4652}.pr small{font-size:12px;color:#93aeb8}
+.dot{width:22px;height:22px;border-radius:50%;background:#4a8094;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.card{background:#4a8094;color:#fff;border-radius:22px;padding:16px 16px 12px;margin:12px 0;box-shadow:0 8px 20px rgba(74,128,148,.25)}
+.card.w{background:#fff;color:#2b4652;border:1px solid #e3edf0;box-shadow:0 6px 16px rgba(74,128,148,.1)}
+.chead{display:flex;align-items:center;gap:10px}
+.star{width:38px;height:38px;flex:none;position:relative;display:flex;align-items:center;justify-content:center;font-size:14px}
+.star:before,.star:after{content:'';position:absolute;inset:4px;border:1.5px solid currentColor;border-radius:3px}
+.star:after{transform:rotate(45deg)}
+.chead>div:not(.star){flex:1}.kick{font-family:Tajawal;font-size:12px;opacity:.75}
+h2{font-family:Tajawal;font-weight:700;font-size:18px;line-height:1.35}
+.time{font-family:Tajawal;font-size:12px;opacity:.7}
+.text{font-size:16.5px;line-height:1.85;margin-top:8px}
+.card q{font-weight:600}.card.w q{color:#3f7488}
+.row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.thumb{width:56px;height:56px;border-radius:50%;background:#f4f8f9;border:1.5px solid #fff;flex:none}
+.src{font-family:Tajawal;font-size:12px;opacity:.75}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns a{font-family:Tajawal;font-size:12.5px;padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.18);color:#fff}
+.btns a.p{background:#fff;color:#3f7488}
+nav{display:flex;justify-content:space-around;align-items:center;height:66px;flex:none;background:#fff;border-top:1px solid #edf2f4}
+nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-family:Tajawal;color:#a7bec6}
+nav a.on{color:#3f7488;font-weight:700}
+nav svg{width:22px;height:22px}
+.fab{position:absolute;left:18px;bottom:88px;width:58px;height:58px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+ background:#fff;color:#3f7488;box-shadow:0 6px 16px rgba(74,128,148,.35);border:2px solid #4a8094}
+.fab b{font-size:22px;font-family:Amiri}.fab i{font-style:normal;font-size:12px;margin-top:2px;font-family:Tajawal;font-weight:700}
+</style></head><body>
+<script>
+const R05={kick:'من زهده ﷺ',title:'كراكبٍ استظلّ تحت شجرة',text:'كان رسول الله ﷺ ينام على الحصير، ويقول: <q>ما لي وما للدنيا، ما أنا في الدنيا إلا كراكبٍ استظلّ تحت شجرة ثم راح وتركها</q>.',src:'الترمذي (2377) · صحيح'};
+const P02={kick:'من مواقف النبي ﷺ',title:'من لا يَرحم لا يُرحم',text:'كان رسول الله ﷺ يقبّل الحسن بن علي، فقال الأقرع بن حابس: إن لي عشرة من الولد ما قبّلتُ منهم أحدًا، فنظر إليه ﷺ وقال: <q>من لا يَرحم لا يُرحم</q>.'};
+const ic={c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+f:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'};
+const nav=`<nav><a class="on">${ic.c}البطاقات</a><a>${ic.f}المفضلة</a><a>${ic.s}الإعدادات</a></nav>`;
+document.body.innerHTML=`<div class="screen"><div class="top">
+<div class="row1"><div class="logo">حبيبنا</div><div class="tools"><span>☾</span><span>⋯</span></div></div>
+<div class="d1">7 جمادى الآخرة 1448</div><div class="d2">الثلاثاء 17 نوفمبر 2026</div>
+<div class="tabs"><span class="on">بطاقات اليوم</span><span>الأيام الماضية</span></div></div>
+<main>
+<div class="pr"><span class="num"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><b>العصر بعد ساعة و20 دقيقة</b><small>كن مثله ﷺ: كان إذا دخل بيته بدأ بالسواك</small></div><span class="dot">›</span></div>
+<div class="card"><div class="chead"><div class="star">☘</div><div><div class="kick">${R05.kick}</div><h2>${R05.title}</h2></div><span class="time">10:00</span></div>
+<p class="text">${R05.text}</p><div class="row"><img class="thumb" src="../../public/art/hasir.svg"><div class="src">${R05.src}</div></div>
+<div class="btns"><a class="p">نص الحديث كاملًا</a><a>شرح موجز</a><a>♡</a></div></div>
+<div class="card w"><div class="chead"><div class="star" style="color:#4a8094">✦</div><div><div class="kick">${P02.kick}</div><h2>${P02.title}</h2></div><span class="time">15:00</span></div>
+<p class="text">${P02.text}</p></div></main>${nav}</div><div class="fab"><b>ﷺ</b><i>12</i></div>`;
+</script></body></html>
