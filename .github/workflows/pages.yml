@@ -36,5 +36,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+      # GitHub لا يجد الملف المرفوع أحيانًا إن طُلب فورًا («No artifacts named github-pages»، 2026-11-23 و25)
+      - run: sleep 20
       - id: deployment
         uses: actions/deploy-pages@v4
