@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160"><style>
+.g{fill:none;stroke:#b8923f;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.gt{fill:none;stroke:#b8923f;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.e{fill:none;stroke:#0f5c4d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.et{fill:none;stroke:#0f5c4d;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.f{fill:#ecdcae}.f2{fill:#d9bf7f}.fe{fill:#cfe0d6}.w{fill:#fffaf0}.ink{fill:#7a5a22}
+</style><circle cx="100" cy="80" r="72" fill="#efe4c6"/><path fill="#2e2a26" stroke="#b8923f" stroke-width="1.4" d="M44 112 l8 -16 l14 -4 l10 10 l-4 12 Z"/><path fill="#3a3430" stroke="#b8923f" stroke-width="1.4" d="M70 116 l6 -12 l12 0 l6 10 l-6 6 Z"/><path d="M54 100 l6 -2 M78 108 l5 0" stroke="#8c8277" stroke-width="1.2"/><path class="f" d="M118 70 h16 v6 c10 4 16 14 16 26 c0 14 -10 22 -24 22 c-14 0 -24 -8 -24 -22 c0 -12 6 -22 16 -26 Z"/><path class="g" d="M118 70 h16 v6 c10 4 16 14 16 26 c0 14 -10 22 -24 22 c-14 0 -24 -8 -24 -22 c0 -12 6 -22 16 -26 Z"/><path class="e" d="M114 70 h24"/><path class="gt" d="M108 98 h36"/><path class="g" d="M150 40 L128 76"/><circle cx="150" cy="40" r="3" class="f2"/><circle class="gt" cx="150" cy="40" r="3"/><path class="e" d="M34 126 h132"/></svg>

@@ -591,6 +591,163 @@ ART['hijaz'] = hijaz()
 ART['makka-hunayn'] = makka('hunayn')
 ART['makka-tanim'] = makka('tanim')
 
+# ——— الدفعة الخامسة (مراجعة الصور الشاملة 2026-11-25) ———
+def dates_heap(cx, base, w, h, seed):
+    import random
+    r = random.Random(seed); o = f'<path class="f2" d="M{cx-w} {base} Q{cx} {base-2*h} {cx+w} {base} Z"/>'
+    rows = 5
+    for i in range(rows):
+        y = base - 4 - i*(h/rows)*1.6; half = w*(1 - i/rows) - 4
+        x = cx - half
+        while x < cx + half:
+            o += date(round(x, 1), round(y, 1), r.choice((-70, -90, -110, 60, 80)), True, .45)
+            x += 7.5
+    return o
+# 44. أكوام التمر (DN07)
+ART['kawm'] = svg(dates_heap(64, 120, 30, 26, 1) + dates_heap(136, 120, 30, 26, 2) + dates_heap(100, 116, 38, 40, 3) + '<path class="e" d="M26 122 h148"/>')
+# 45. بئرٌ ودلو (DN08، LB09)
+def well(x=100, top=86, rw=34):
+    o = path2(f'M{x-rw} {top} V{top+34} C{x-rw} {top+44} {x+rw} {top+44} {x+rw} {top+34} V{top} Z', 'f2')
+    o += f'<ellipse class="fe" cx="{x}" cy="{top}" rx="{rw}" ry="8"/><ellipse class="g" cx="{x}" cy="{top}" rx="{rw}" ry="8"/>'
+    o += f'<ellipse fill="#3d5f55" opacity=".55" cx="{x}" cy="{top+1}" rx="{rw-8}" ry="4.5"/>'
+    for j, yy in enumerate((top+12, top+24)):
+        off = 0 if j % 2 == 0 else 8
+        o += f'<path class="gt" d="M{x-rw} {yy} C{x-rw/2} {yy+6} {x+rw/2} {yy+6} {x+rw} {yy}"/>'
+        for k in range(-2, 3):
+            xx = x + k*15 + off - 4
+            if abs(xx-x) < rw-3: o += f'<path class="gt" d="M{xx} {yy+3} v10"/>'
+    return o
+def bucket_rope(x=100, y=46):
+    o = f'<path class="g" d="M{x-44} {y+40} V{y-6} M{x+44} {y+40} V{y-6}"/><path class="g" d="M{x-48} {y-6} H{x+48}"/>'
+    o += f'<path class="et" d="M{x} {y-6} V{y+14}"/>'
+    o += path2(f'M{x-10} {y+16} h20 l-3 16 h-14 Z', 'f') + f'<path class="gt" d="M{x-10} {y+16} q10 -8 20 0"/>'
+    return o
+ART['bir'] = svg(well() + bucket_rope() + '<path class="e" d="M36 130 h128"/>')
+# 46. كلبٌ يلهث عند بئر، وخُفٌّ يُملأ ماءً (PF09)
+DOG = ('M40 118 l3 -22 c-8 -2 -14 -8 -14 -16 c6 4 10 6 16 6 c16 -4 34 -4 48 -2 c4 -6 8 -10 14 -12 '
+       'c2 -6 6 -9 12 -9 c8 0 12 5 13 10 l12 4 c2 4 -2 8 -8 8 l-10 0 c-3 4 -6 8 -10 10 l-2 6 v26 h-7 l-1 -20 '
+       'c-12 4 -26 4 -40 0 l-4 20 h-7 Z')
+ART['kalb'] = svg(
+  f'<g transform="translate(2 6) scale(.78)">{path2(DOG, "f2")}'
+  f'<path class="g" d="M114 66 c-4 2 -6 8 -4 14 c4 -2 6 -6 6 -10"/><circle cx="124" cy="64" r="1.7" fill="{E}"/>'
+  '<path d="M136 80 q3 8 -1 12 q-4 -5 -2 -11" fill="#d98a7a" stroke="#b45f4f" stroke-width="1"/></g>'
+  + well(150, 100, 22)
+  + f'<g transform="rotate(-28 118 122)">{path2("M110 104 h9 v12 c5 1 10 3 10 7 h-19 Z", "f")}</g>'
+  + '<path class="e" d="M26 132 h148"/>')
+# 47. فرسٌ تسوخ قوائمها في الرمل (KB07)
+HORSE = ('M44 104 c-2 -16 6 -28 20 -32 c16 -4 34 -4 48 -2 c6 -10 14 -20 22 -26 l2 -8 l5 7 c6 2 10 8 10 14 '
+         'l-6 4 l-10 -2 c-4 6 -8 14 -10 20 c2 8 2 14 0 22 l-2 12 h-7 l1 -14 c-12 4 -30 4 -44 0 l-4 14 h-7 l1 -14 c-8 -2 -14 -6 -19 -9 Z')
+ART['faras'] = svg(
+  path2(HORSE, 'f2') + f'<circle cx="138" cy="48" r="1.7" fill="{E}"/>'
+  '<path class="g" d="M126 46 c-6 4 -10 10 -12 18 M44 98 c-10 2 -16 10 -18 18"/>'
+  '<path class="f" d="M28 120 C52 108 70 110 92 116 C116 110 140 108 172 120 L172 136 H28 Z"/>'
+  '<path class="g" d="M28 120 C52 108 70 110 92 116 C116 110 140 108 172 120"/>'
+  '<path class="gt" d="M44 128 q10 -4 20 0 M100 126 q10 -4 20 0 M140 130 q8 -3 16 0"/>'
+  + ''.join(f'<circle cx="{x}" cy="{y}" r="1.4" fill="{G}"/>' for x, y in ((58, 110), (64, 106), (112, 108), (118, 104))))
+# 48. المسجد النبوي الأول: جدران من اللَّبِن، وعُمُد من جذوع النخل، وسقف من الجريد (KN36)
+def frond(x, y, L, a):
+    return (f'<g transform="rotate({a} {x} {y})"><path class="et" d="M{x} {y} h{L}"/>'
+            + ''.join(f'<path class="et" d="M{x+i} {y} l3 -4 M{x+i} {y} l3 4"/>' for i in range(4, L-2, 5)) + '</g>')
+def _masjid():
+    o = ''
+    # الجدار الخلفي من اللبن
+    for r in range(4):
+        y = 64 + r*9; off = 0 if r % 2 == 0 else 7
+        x = 40 - off
+        while x < 160:
+            a, b = max(x, 40), min(x + 14, 160)
+            o += f'<rect class="{"f2" if (r+int(x))%3==0 else "f"}" x="{a+.7}" y="{y+.7}" width="{b-a-1.4}" height="7.6" rx="1" stroke="{G}" stroke-width=".8"/>'
+            x += 14
+    o += '<path class="g" d="M40 64 V100 H160 V64"/>'
+    # السقف من الجريد فوق العُمُد
+    o += f'<path class="f" d="M30 52 H170 V60 H30 Z"/><path class="g" d="M30 52 H170 V60 H30 Z"/>'
+    o += ''.join(frond(x, 52, 22, -6 if i % 2 else 6) for i, x in enumerate(range(30, 160, 16)))
+    # العُمُد: جذوع النخل
+    for x in (50, 82, 118, 150):
+        o += path2(f'M{x-4} 60 H{x+4} V124 H{x-4} Z', 'f2')
+        o += ''.join(f'<path class="gt" d="M{x-4} {y} l8 -3"/>' for y in range(68, 122, 8))
+    o += '<path class="e" d="M26 126 h148"/>'
+    return svg(o)
+ART['masjid'] = _masjid()
+# 49. اللَّبِن: الطوب من الطين (I03)
+def _labin():
+    o = ''
+    for r, (n, x0) in enumerate(((5, 50), (4, 59), (3, 68), (2, 77))):
+        y = 112 - r*14
+        for i in range(n):
+            x = x0 + i*20
+            o += path2(f'M{x} {y} h18 v12 h-18 Z', 'f2' if (r+i) % 2 else 'f')
+            o += f'<path class="gt" d="M{x+2} {y+4} h5 M{x+10} {y+8} h5"/>'
+    o += '<path class="e" d="M34 125 h132"/>'
+    o += path2('M140 92 C150 86 162 90 164 100 C166 110 154 116 144 112 C136 108 134 98 140 92 Z', 'f2') + '<path class="gt" d="M146 98 c4 -2 10 0 12 4"/>'
+    return svg(o)
+ART['labin'] = _labin()
+# 50. الزُّبد والتمر (SH07)
+ART['zubd'] = svg(
+  path2('M30 92 C32 120 100 120 102 92 Z', 'w')
+  + '<ellipse class="w" cx="66" cy="92" rx="36" ry="8"/><ellipse class="g" cx="66" cy="92" rx="36" ry="8"/>'
+  + '<path fill="#f7e7a8" stroke="#b8923f" stroke-width="1.2" d="M46 90 C50 76 62 72 68 78 C74 70 88 76 86 90 Z"/>'
+  + '<path d="M58 82 q4 -3 8 0" stroke="#fffaf0" stroke-width="2" fill="none" stroke-linecap="round"/>'
+  + '<ellipse class="w" cx="136" cy="108" rx="34" ry="9"/><ellipse class="g" cx="136" cy="108" rx="34" ry="9"/>'
+  + date(122, 98, -70, True, .8) + date(138, 96, -100, True, .8) + date(152, 100, -60, True, .8) + date(132, 86, -85, True, .75)
+  + '<path class="e" d="M26 122 h148"/>')
+# 51. الإثمد: حجر الكحل الأسود، ومعه المِكحلة والمِرود (LB12)
+ART['ithmid'] = svg(
+  '<path fill="#2e2a26" stroke="#b8923f" stroke-width="1.4" d="M44 112 l8 -16 l14 -4 l10 10 l-4 12 Z"/>'
+  '<path fill="#3a3430" stroke="#b8923f" stroke-width="1.4" d="M70 116 l6 -12 l12 0 l6 10 l-6 6 Z"/>'
+  '<path d="M54 100 l6 -2 M78 108 l5 0" stroke="#8c8277" stroke-width="1.2"/>'
+  + path2('M118 70 h16 v6 c10 4 16 14 16 26 c0 14 -10 22 -24 22 c-14 0 -24 -8 -24 -22 c0 -12 6 -22 16 -26 Z', 'f')
+  + '<path class="e" d="M114 70 h24"/><path class="gt" d="M108 98 h36"/>'
+  + '<path class="g" d="M150 40 L128 76"/><circle cx="150" cy="40" r="3" class="f2"/><circle class="gt" cx="150" cy="40" r="3"/>'
+  + '<path class="e" d="M34 126 h132"/>')
+# 52. خُفّان من جلدٍ أسود (LB06)
+BOOT = 'M0 0 h18 v30 c0 6 4 8 12 10 c10 2 14 6 14 12 h-44 Z'
+ART['khuff'] = svg(''.join(
+  f'<g transform="translate({x} {y})"><path fill="#2f2a25" d="{BOOT}"/><path stroke="{G}" stroke-width="2" fill="none" stroke-linejoin="round" d="{BOOT}"/>'
+  f'<path d="M0 6 h18" stroke="{G}" stroke-width="1.2"/><path d="M4 52 v-4 M14 52 v-4" stroke="#8c8277" stroke-width="1"/></g>'
+  for x, y in ((52, 62), (100, 68))) + '<path class="e" d="M34 122 h132"/>')
+# 53. كسوف الشمس (KN20)
+ART['kusuf'] = svg(
+  ''.join(f'<path class="g" d="M{100+38*math.cos(math.radians(a)):.1f} {78+38*math.sin(math.radians(a)):.1f} L{100+52*math.cos(math.radians(a)):.1f} {78+52*math.sin(math.radians(a)):.1f}"/>' for a in range(0, 360, 30))
+  + '<circle cx="100" cy="78" r="30" fill="#f2d98a" stroke="#b8923f" stroke-width="2.2"/>'
+  + '<circle cx="112" cy="74" r="29" fill="#2c3a36" stroke="#0f5c4d" stroke-width="1.6"/>')
+# 54. شجرتان في وادٍ (DN09)
+def tree(x, y, s=1.0):
+    return (f'<path class="g" d="M{x} {y} q{2*s} {-18*s} 0 {-30*s}"/>'
+            + ''.join(f'<ellipse class="fe" cx="{x+dx*s}" cy="{y-30*s+dy*s}" rx="{r*s}" ry="{r*.8*s}"/><ellipse class="et" cx="{x+dx*s}" cy="{y-30*s+dy*s}" rx="{r*s}" ry="{r*.8*s}"/>'
+                      for dx, dy, r in ((-10, 2, 11), (10, 2, 11), (0, -8, 13))))
+ART['shajar'] = svg(
+  mountains([(40, 92), (54, 86), (150, 90), (164, 94)], .7)
+  + '<path class="f" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122 Z"/><path class="g" d="M30 122 C60 110 80 108 100 112 C120 108 140 110 170 122"/>'
+  + tree(78, 114, 1.15) + tree(124, 114, 1.15))
+
+# 55. غار حراء وغار ثور حول مكة (KN21 KN23 KN32 I01). الإحداثيات (ويكيبيديا): الكعبة 21.4225,39.8262 · جبل النور 21.4580,39.8611 · غار ثور 21.3772,39.8497
+def ghar(hi):
+    K = 11
+    P = proj(21.4225, 39.8262, K, 86, 112)
+    MK, HR, TH = P(21.4225, 39.8262), P(21.4580, 39.8611), P(21.3772, 39.8497)
+    o = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">{STYLE}<rect x="3" y="3" width="194" height="234" rx="14" fill="{BG}"/>'
+    o += '<defs><clipPath id="gc"><rect x="9" y="9" width="182" height="222" rx="10"/></clipPath></defs><g clip-path="url(#gc)">'
+    o += mountains([(40, 80), (60, 170), (150, 150), (40, 130), (170, 96), (120, 196)], .4)
+    def cave(pt, name, k, dist, ly):
+        on = k == hi
+        r = f'<path d="M{pt[0]-16} {pt[1]+8} L{pt[0]-4} {pt[1]-10} L{pt[0]+2} {pt[1]-4} L{pt[0]+8} {pt[1]-12} L{pt[0]+18} {pt[1]+8} Z" fill="{F2}" stroke="{G}" stroke-width="1.2"/>'
+        r += f'<path d="M{pt[0]-2} {pt[1]+8} a3.5 4 0 0 1 7 0 Z" fill="#3a332b"/>'
+        if on:
+            r += f'<path d="M{MK[0]} {MK[1]} L{pt[0]} {pt[1]}" stroke="{E}" stroke-width="1.3" stroke-dasharray="1.5 3"/>'
+            r += f'<circle cx="{pt[0]+1}" cy="{pt[1]}" r="21" fill="none" stroke="{G}" stroke-width="1.6" stroke-dasharray="2.5 2"/>'
+        r += T(pt[0]+1, pt[1]+ly, name, 11.5 if on else 9.5, E if on else '#7d6c47', on)
+        if on: r += T(pt[0]+1, pt[1]+ly+(12 if ly > 0 else -12), dist, 8.5, E, True)
+        return r
+    o += cave(HR, 'غار حراء', 'hira', 'نحو 5 كم', -26)
+    o += cave(TH, 'غار ثور', 'thawr', 'نحو 6 كم', -26)
+    o += f'<circle cx="{MK[0]}" cy="{MK[1]}" r="10" fill="#fffaf0" opacity=".6"/>' + kaaba(MK[0], MK[1], 1.0) + T(MK[0]-20, MK[1]+4, 'مكة', 11, E, True)
+    o += f'<path d="M24 204 h{K} M24 201 v6 M{24+K} 201 v6" stroke="#6b5a36" stroke-width="1.2"/>' + T(24+K/2+20, 207, 'كيلومتر واحد', 7, '#6b5a36')
+    o += '</g>' + mframe('حول مكة، خطًّا مستقيمًا تقريبًا') + '</svg>'
+    return o
+ART['ghar-hira'] = ghar('hira')
+ART['ghar-thawr'] = ghar('thawr')
+
 MAPS = {
   'C07': ('madina-quba', 'مسجد قُباء: جنوب المسجد النبوي، على نحو 3 كم'),
   'W07': ('madina-awali', 'عوالي المدينة: قرى ومزارع في جنوبها الشرقي، أدناها على ميلين أو ثلاثة؛ نحو 4 إلى 6 كم'),
@@ -601,6 +758,15 @@ MAPS = {
   'O08': ('hijaz', 'مكة والمدينة: بينهما نحو 340 كم خطًّا مستقيمًا، ونحو 450 كم بالطريق'),
   'R01': ('makka-hunayn', 'وادي حُنين: بين مكة والطائف، شمال شرق مكة على نحو 25 إلى 30 كم'),
   'O01': ('makka-tanim', 'التنعيم: شمال مكة على نحو 7 كم، والحديبية غربها على نحو 22 كم'),
+  # مراجعة الصور 2026-11-25
+  'HB50': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم'),
+  'KB12': ('madina-uhud', 'جبل أُحد: شمال المسجد النبوي على نحو 4 كم'),
+  'HB48': ('madina-quba', 'قُباء: جنوب المسجد النبوي على نحو 3 كم'),
+  'KN35': ('madina-quba', 'قُباء: جنوب المسجد النبوي على نحو 3 كم، وفيها بنو عمرو بن عوف'),
+  'KN21': ('ghar-hira', 'غار حراء: في جبل النور، شمال شرق مكة على نحو 5 كم'),
+  'KN23': ('ghar-hira', 'غار حراء: في جبل النور، شمال شرق مكة على نحو 5 كم'),
+  'KN32': ('ghar-thawr', 'غار ثور: في جبل ثور، جنوب مكة على نحو 6 كم'),
+  'I01': ('ghar-thawr', 'غار ثور: في جبل ثور، جنوب مكة على نحو 6 كم'),
 }
 
 # البطاقة ← الرسم والسطر تحته (يصف الشيء، ولا يدّعي أنه عين ما كان له ﷺ)
@@ -660,6 +826,22 @@ MAP = {
   'R06': ('naqa', 'الجمل'),
   'O03': ('naqa', 'البعير'),
   'W04': ('naqa', 'البعير'),
+  # مراجعة الصور 2026-11-25: رسوم موجودة
+  'HB20': ('tamr', 'تمرات'), 'AD05': ('tamr', 'تمرات'), 'AD09': ('tamr', 'تمرات'),
+  'UM03': ('kabsh', 'كبش أقرن'), 'KB21': ('naqa', 'الجمل'), 'KN12': ('ghanam', 'غنمٌ ترعى بين الجبال'),
+  'PF11': ('himar', 'الحمار'), 'PF05': ('dir', 'درعٌ من حلقات الحديد'), 'KB04': ('qadah', 'قدحٌ من لبن'),
+  'DN05': ('khubz', 'أقراص خبز الشعير'), 'DN06': ('mirjal', 'القِدر'), 'PF10': ('tair', 'طائر'),
+  'DN04': ('matar', 'المطر'), 'HB19': ('jidh', 'المنبر ذو الدرجات الثلاث'), 'KB23': ('jidh', 'المنبر ذو الدرجات الثلاث'),
+  'LB05': ('jidh', 'المنبر ذو الدرجات الثلاث'),
+}
+# رسوم جديدة تنتظر رؤية المستخدم قبل ربطها بالبطاقات (2026-11-25)
+PENDING = {
+  'DN07': ('kawm', 'أكوام التمر'), 'DN08': ('bir', 'بئرٌ ودلو'), 'LB09': ('bir', 'بئر: والخاتم وقع في بئر أريس بالمدينة'),
+  'PF09': ('kalb', 'كلبٌ يلهث عند بئر، وخُفٌّ يُملأ ماءً'), 'KB07': ('faras', 'فرسٌ تسوخ قوائمها في الرمل'),
+  'KN36': ('masjid', 'المسجد النبوي الأول: جدرانٌ من اللَّبِن، وعُمُدٌ من جذوع النخل، وسقفٌ من الجريد'),
+  'I03': ('labin', 'اللَّبِن: الطوب من الطين يُنقل لبناء المسجد'), 'SH07': ('zubd', 'الزُّبد والتمر'),
+  'LB12': ('ithmid', 'الإثمد: حجر الكحل الأسود، ومعه المِكحلة'), 'LB06': ('khuff', 'خُفّان من جلدٍ أسود'),
+  'KN20': ('kusuf', 'كسوف الشمس'), 'DN09': ('shajar', 'شجرتان في وادٍ'),
 }
 out_dir = os.path.join(root, 'public/art'); os.makedirs(out_dir, exist_ok=True)
 for k, v in ART.items():
