@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Markazi+Text:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden}
+q{quotes:'«' '»'}
+body{font-family:'Noto Naskh Arabic',serif;color:#1c2433;background:#f6f1e6}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:#f6f1e6}
+.top{background:linear-gradient(180deg,#13254a,#1b3263);color:#f3e7c6;padding:18px 20px 20px;border-radius:0 0 28px 28px;position:relative;overflow:hidden}
+.arch{position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:210px;height:200px;opacity:.28}
+.row1{display:flex;align-items:center;justify-content:space-between;position:relative}
+.logo{font-family:Amiri;font-weight:700;font-size:30px;color:#e9c77a}
+.tools{display:flex;gap:8px}.tools span{width:34px;height:34px;border-radius:50%;border:1px solid rgba(233,199,122,.45);display:flex;align-items:center;justify-content:center;color:#e9c77a;font-size:14px}
+.d1{position:relative;margin-top:10px;font-family:Amiri;font-size:20px;color:#fff7e2}
+.d2{position:relative;font-family:Tajawal;font-size:12.5px;opacity:.75}
+.pr{position:relative;margin-top:12px;display:flex;justify-content:space-between;align-items:center;background:#fffaf0;color:#1b3263;border-radius:16px;padding:10px 14px;font-family:Tajawal;font-size:13.5px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.pr b{color:#b88a2e}
+.pr .bar{position:absolute;left:14px;right:14px;bottom:5px;height:3px;border-radius:3px;background:#efe5cc}
+.pr .bar i{display:block;width:62%;height:100%;border-radius:3px;background:#c99a3e}
+main{flex:1;overflow:hidden;padding:0 18px}
+.kun{margin:14px 2px 4px;background:#1b3263;color:#f3e7c6;border-radius:18px;padding:12px 14px;font-family:Tajawal;font-size:13px;line-height:1.6}
+.kun b{display:block;font-family:Amiri;font-size:15px;color:#e9c77a;font-weight:700}
+.lbl{font-family:Tajawal;font-size:14px;color:#1b3263;font-weight:700;margin:14px 4px 8px;display:flex;justify-content:space-between}
+.lbl span{color:#b88a2e;font-weight:500}
+.card{background:#fffdf7;border-radius:20px;padding:14px 16px 12px;margin-bottom:14px;border:1px solid #e6dcc4;box-shadow:0 4px 14px rgba(27,50,99,.08)}
+.chead{display:flex;align-items:center;gap:10px}
+.ico{width:38px;height:38px;border-radius:12px;background:#1b3263;color:#e9c77a;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.chead>div:not(.ico){flex:1}.kick{font-family:Tajawal;font-size:12px;color:#8a7a55}
+h2{font-family:Amiri;font-size:20px;color:#1b3263;line-height:1.3}
+.time{font-family:Tajawal;font-size:12px;color:#a39a84}
+.text{font-size:17px;line-height:1.85;margin-top:8px}
+.text q{color:#1b3263;font-weight:600}
+.row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.thumb{width:58px;height:58px;border-radius:50%;background:#f3ead3;border:1.5px solid #c99a3e;flex:none}
+.src{font-family:Tajawal;font-size:12px;color:#8b8370}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns a{font-family:Tajawal;font-size:12.5px;padding:7px 14px;border-radius:12px;border:1px solid #d8ccae;color:#1b3263;background:#fff}
+.btns a.p{background:#1b3263;color:#fff;border-color:#1b3263}
+nav{display:flex;justify-content:space-around;align-items:center;height:68px;flex:none;background:#fffdf7;border-top:1px solid #e6dcc4}
+nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-family:Tajawal;color:#9a927e}
+nav a.on{color:#b88a2e;font-weight:700}
+nav svg{width:22px;height:22px}
+.fab{position:absolute;left:18px;bottom:90px;width:60px;height:60px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+ background:linear-gradient(160deg,#e3be6c,#b88a2e);color:#13254a;box-shadow:0 8px 18px rgba(184,138,46,.45);border:2px solid #fff6dc}
+.fab b{font-size:23px;font-family:Amiri}.fab i{font-style:normal;font-size:12px;margin-top:2px;font-family:Tajawal;font-weight:700}
+</style></head><body>
+<script>
+const R05={kick:'من زهده ﷺ',title:'كراكبٍ استظلّ تحت شجرة',text:'كان رسول الله ﷺ ينام على الحصير، ويقول: <q>ما لي وما للدنيا، ما أنا في الدنيا إلا كراكبٍ استظلّ تحت شجرة ثم راح وتركها</q>.',src:'الترمذي (2377) · صحيح'};
+const P02={kick:'من مواقف النبي ﷺ',title:'من لا يَرحم لا يُرحم',text:'كان رسول الله ﷺ يقبّل الحسن بن علي، فقال الأقرع بن حابس: إن لي عشرة من الولد ما قبّلتُ منهم أحدًا، فنظر إليه ﷺ وقال: <q>من لا يَرحم لا يُرحم</q>.'};
+const ic={c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+f:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'};
+const nav=`<nav><a class="on">${ic.c}البطاقات</a><a>${ic.f}المفضلة</a><a>${ic.s}الإعدادات</a></nav>`;
+document.body.innerHTML=`<div class="screen"><div class="top">
+<svg class="arch" viewBox="0 0 100 100" fill="none" stroke="#e9c77a" stroke-width="1.2"><path d="M18 100V50C18 28 34 14 50 4C66 14 82 28 82 50V100"/><path d="M28 100V54C28 38 38 27 50 19C62 27 72 38 72 54V100"/><path d="M50 2v-6"/></svg>
+<div class="row1"><div class="logo">حبيبنا</div><div class="tools"><span>☾</span><span>⋯</span></div></div>
+<div class="d1">7 جمادى الآخرة 1448</div><div class="d2">الثلاثاء 17 نوفمبر 2026</div>
+<div class="pr"><span>الصلاة القادمة: <b>العصر</b></span><span>بعد ساعة و20 دقيقة</span><div class="bar"><i></i></div></div></div>
+<main><div class="kun"><b>كن مثله ﷺ</b>كان ﷺ إذا دخل بيته بدأ بالسواك.</div>
+<div class="lbl">بطاقات اليوم <span>2 من 3</span></div>
+<div class="card"><div class="chead"><div class="ico">☘</div><div><div class="kick">${R05.kick}</div><h2>${R05.title}</h2></div><span class="time">10:00</span></div>
+<p class="text">${R05.text}</p><div class="row"><img class="thumb" src="../../public/art/hasir.svg"><div class="src">${R05.src}</div></div>
+<div class="btns"><a class="p">نص الحديث كاملًا</a><a>شرح موجز</a><a>♡</a></div></div>
+<div class="card"><div class="chead"><div class="ico">✦</div><div><div class="kick">${P02.kick}</div><h2>${P02.title}</h2></div><span class="time">15:00</span></div>
+<p class="text">${P02.text}</p></div></main>${nav}</div><div class="fab"><b>ﷺ</b><i>12</i></div>`;
+</script></body></html>
