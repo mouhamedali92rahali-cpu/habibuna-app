@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Markazi+Text:wght@400;500;600&display=swap">
+<style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden}
+q{quotes:'«' '»'}
+body{font-family:'Noto Naskh Arabic',serif;color:#23403b;background:#f3f8f7}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:#f3f8f7}
+.top{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.12' stroke-width='1.2'%3E%3Crect x='16' y='16' width='28' height='28'/%3E%3Crect x='16' y='16' width='28' height='28' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(160deg,#1fb59b,#0f8f86);color:#fff;padding:18px 20px 58px;border-radius:0 0 50% 50%/0 0 46px 46px;position:relative}
+.row1{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:Amiri;font-weight:700;font-size:30px}
+.tools{display:flex;gap:8px}.tools span{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px}
+nav{display:flex;justify-content:space-around;align-items:center;height:66px;flex:none;background:#fff;box-shadow:0 -4px 14px rgba(15,143,134,.1);border-radius:22px 22px 0 0}
+nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-family:Tajawal;color:#a3bcb8}
+nav a.on{color:#fff;background:#14a593;width:54px;height:54px;border-radius:50%;justify-content:center;margin-top:-26px;box-shadow:0 6px 14px rgba(20,165,147,.45);font-size:10px}
+nav svg{width:22px;height:22px}
+
+.top{padding-bottom:40px;text-align:center}
+.qt{font-family:Tajawal;font-weight:700;font-size:18px;margin-top:4px}
+.steps{display:flex;gap:6px;justify-content:center;margin-top:12px}.steps i{width:26px;height:5px;border-radius:3px;background:rgba(255,255,255,.35)}.steps i.d{background:#fff}
+main{flex:1;padding:0 20px;margin-top:-24px;position:relative}
+.qbox{background:#fff;border-radius:22px;padding:18px;box-shadow:0 8px 22px rgba(15,143,134,.15)}
+.qn{display:flex;justify-content:space-between;font-family:Tajawal;font-size:12.5px;color:#8aa29e}
+.qn b{width:30px;height:30px;border-radius:50%;border:2px solid #14a593;color:#14a593;display:flex;align-items:center;justify-content:center}
+.qq{font-family:Tajawal;font-weight:700;font-size:18px;line-height:1.6;margin:10px 0 14px}
+.op{display:flex;align-items:center;gap:12px;background:#f1f7f6;border-radius:30px;padding:11px 14px;margin-bottom:10px;font-family:Tajawal;font-size:16px}
+.op span{width:28px;height:28px;border-radius:50%;background:#fff;color:#14a593;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.op.ok{background:#14a593;color:#fff}.op.ok span{color:#14a593}
+.next{display:block;text-align:center;margin-top:6px;background:#2c4a46;color:#fff;border-radius:14px;padding:12px;font-family:Tajawal;font-size:15px}
+.res{text-align:center;margin-top:22px;font-family:Tajawal;color:#14a593;font-size:18px;font-weight:700}
+.res .sm{font-size:40px;display:block}
+.cf{position:absolute;width:10px;height:4px;border-radius:2px}
+</style></head><body>
+<script>
+const R05={kick:'من زهده ﷺ',title:'كراكبٍ استظلّ تحت شجرة',text:'كان رسول الله ﷺ ينام على الحصير، ويقول: <q>ما لي وما للدنيا، ما أنا في الدنيا إلا كراكبٍ استظلّ تحت شجرة ثم راح وتركها</q>.',src:'الترمذي (2377) · صحيح'};
+const P02={kick:'من مواقف النبي ﷺ',title:'من لا يَرحم لا يُرحم',text:'كان رسول الله ﷺ يقبّل الحسن بن علي، فقال الأقرع بن حابس: إن لي عشرة من الولد ما قبّلتُ منهم أحدًا، فنظر إليه ﷺ وقال: <q>من لا يَرحم لا يُرحم</q>.'};
+const ic={c:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+f:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'};
+const nav=`<nav><a class="on">${ic.c}البطاقات</a><a>${ic.f}المفضلة</a><a>${ic.s}الإعدادات</a></nav>`;
+document.body.innerHTML=`<div class="screen"><div class="top">
+<div class="row1"><div class="logo">حبيبنا</div><div class="tools"><span>✕</span></div></div>
+<div class="qt">مراجعة الأسبوع ✦</div><div class="steps"><i class="d"></i><i class="d"></i><i class="d"></i><i></i><i></i><i></i><i></i></div></div>
+<main><div class="qbox"><div class="qn"><span>السؤال 3 من 7</span><b>3</b></div>
+<div class="qq">ما لون العمامة التي رآها عمرو بن حريث عليه ﷺ على المنبر؟</div>
+<div class="op"><span>أ</span>حمراء</div><div class="op ok"><span>ب</span>سوداء</div><div class="op"><span>ج</span>صفراء</div><div class="op"><span>د</span>خضراء</div>
+<a class="next">السؤال التالي</a></div>
+<div class="res"><span class="sm">☺</span>أحسنت!</div><i class="cf" style="left:131px;top:633px;background:#3fa0e8;transform:rotate(33deg)"></i><i class="cf" style="left:199px;top:639px;background:#8a62d6;transform:rotate(160deg)"></i><i class="cf" style="left:307px;top:363px;background:#3fa0e8;transform:rotate(3deg)"></i><i class="cf" style="left:250px;top:462px;background:#3fa0e8;transform:rotate(59deg)"></i><i class="cf" style="left:108px;top:570px;background:#3fa0e8;transform:rotate(140deg)"></i><i class="cf" style="left:253px;top:533px;background:#ef5b7a;transform:rotate(59deg)"></i><i class="cf" style="left:335px;top:407px;background:#3fa0e8;transform:rotate(99deg)"></i><i class="cf" style="left:17px;top:362px;background:#ef5b7a;transform:rotate(151deg)"></i><i class="cf" style="left:31px;top:484px;background:#f6b24a;transform:rotate(68deg)"></i><i class="cf" style="left:252px;top:634px;background:#8a62d6;transform:rotate(109deg)"></i><i class="cf" style="left:212px;top:625px;background:#8a62d6;transform:rotate(34deg)"></i><i class="cf" style="left:197px;top:379px;background:#f6b24a;transform:rotate(34deg)"></i><i class="cf" style="left:263px;top:441px;background:#14a593;transform:rotate(172deg)"></i><i class="cf" style="left:233px;top:484px;background:#8a62d6;transform:rotate(129deg)"></i><i class="cf" style="left:207px;top:623px;background:#14a593;transform:rotate(136deg)"></i><i class="cf" style="left:309px;top:538px;background:#3fa0e8;transform:rotate(59deg)"></i><i class="cf" style="left:182px;top:344px;background:#14a593;transform:rotate(155deg)"></i><i class="cf" style="left:353px;top:413px;background:#14a593;transform:rotate(138deg)"></i><i class="cf" style="left:302px;top:621px;background:#f6b24a;transform:rotate(167deg)"></i><i class="cf" style="left:118px;top:623px;background:#14a593;transform:rotate(72deg)"></i><i class="cf" style="left:73px;top:362px;background:#8a62d6;transform:rotate(163deg)"></i><i class="cf" style="left:257px;top:375px;background:#14a593;transform:rotate(17deg)"></i><i class="cf" style="left:220px;top:407px;background:#f6b24a;transform:rotate(75deg)"></i><i class="cf" style="left:228px;top:542px;background:#f6b24a;transform:rotate(11deg)"></i><i class="cf" style="left:319px;top:353px;background:#8a62d6;transform:rotate(150deg)"></i><i class="cf" style="left:179px;top:612px;background:#14a593;transform:rotate(129deg)"></i></main></div>`;
+</script></body></html>
