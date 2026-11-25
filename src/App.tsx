@@ -540,6 +540,7 @@ export default function App() {
       <header className="top">
         <span className="brandmark">حبيبنا</span>
         <ThemeToggle />
+        <SkinToggle />
         {isNative && widget && tab === 'feed' && <WidgetToggle widget={widget} onChange={setWidget} say={say} />}
         {tab === 'feed' && (
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
@@ -549,6 +550,7 @@ export default function App() {
         {tab === 'feed' && (
           <section className="page feed">
             {/* المهمة وسنن الأيام وتذكير الوقت في مكان واحد يتبادلونه (قرار المستخدم 2026-11-16/17)؛ وبعد «فعلتُها» تختفي المهمة */}
+            <div className="dayhead">
             <DateTicker onSettings={() => setTab('settings')} task={taskVisible && todayTask && !taskDone[dayNo] ? (
                 <div className="task">
                   <div className="tbody">
@@ -560,6 +562,7 @@ export default function App() {
                   </div>
                 </div>
             ) : null} />
+            </div>
             {isNative && !settings.notifyOn && welcome === 0 && (
               <div className="offer notify-off">
                 <b>الإشعارات غير مفعّلة</b>
@@ -983,6 +986,20 @@ function WidgetToggle({ widget, onChange, say }: { widget: { placed: boolean; ca
     <button className={'wtoggle' + (on ? ' on' : '')} onClick={() => { void flip(); }} aria-label={on ? 'إخفاء زرّ الصلاة من الشاشة الرئيسية' : 'وضع زرّ الصلاة على الشاشة الرئيسية'}>
       <span className="knob">ﷺ</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
+    </button>
+  );
+}
+
+/** تبديل التصميم بين الأصلي و«الأزرق الهادئ» (تجربة للمستخدم 2026-11-25؛ يُحفظ في الهاتف) */
+function SkinToggle() {
+  const [calm, setCalm] = useState(() => { try { return localStorage.getItem('skin') === 'calm'; } catch { return false; } });
+  useEffect(() => { if (calm) document.documentElement.dataset.skin = 'calm'; else delete document.documentElement.dataset.skin; }, [calm]);
+  const flip = () => { const v = !calm; setCalm(v); try { localStorage.setItem('skin', v ? 'calm' : 'classic'); } catch { /* */ } };
+  return (
+    <button className="skinbtn" onClick={flip} aria-label={calm ? 'التصميم الأصلي' : 'تصميم الأزرق الهادئ'}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{calm
+        ? <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="6" y="6" width="12" height="12" rx="1" transform="rotate(45 12 12)" /></>
+        : <>{[0, 30, 60, 90, 120, 150].map((a) => <ellipse key={a} cx="12" cy="12" rx="3" ry="9" transform={`rotate(${a} 12 12)`} />)}</>}</svg>
     </button>
   );
 }

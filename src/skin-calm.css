@@ -1,0 +1,68 @@
+/* «الأزرق الهادئ»: تصميم ثانٍ للتجربة (طلب المستخدم 2026-11-25)، يُبدَّل بزرّ في أعلى الصفحة (data-skin=calm).
+   التصميم الأصلي لا يتغيّر؛ كل القواعد هنا تحت :root[data-skin=calm]. */
+:root[data-skin=calm]{--bg:#f7fafb;--ink:#22404b;--muted:#7f9ca6;--line:#e1ebee;--emerald:#3f7a8f;--paper:#ffffff;--gold:#c49a45;--pri2:#4f8ca1;--soft:#eaf3f6;--cbg:#ffffff}
+@media (prefers-color-scheme: dark){ :root[data-skin=calm]:not([data-theme=light]){--bg:#0f1d24;--ink:#e3eef1;--muted:#80a0aa;--line:#233b46;--emerald:#5fa0b6;--paper:#172a33;--gold:#d8b46a;--pri2:#2f6578;--soft:#1e3540;--cbg:#172a33} }
+:root[data-skin=calm][data-theme=dark]{--bg:#0f1d24;--ink:#e3eef1;--muted:#80a0aa;--line:#233b46;--emerald:#5fa0b6;--paper:#172a33;--gold:#d8b46a;--pri2:#2f6578;--soft:#1e3540;--cbg:#172a33}
+:root[data-skin=calm] body{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%234a8094' stroke-opacity='.05' stroke-width='1'%3E%3Crect x='16' y='16' width='24' height='24'/%3E%3Crect x='16' y='16' width='24' height='24' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E"),var(--bg)}
+:root[data-skin=calm] .app:not(.dressed){background:transparent}
+/* الرأس */
+:root[data-skin=calm] .brandmark{color:var(--emerald);font-size:1.75rem;display:inline-flex;align-items:center;gap:8px}
+:root[data-skin=calm] .brandmark::before{content:"";width:18px;height:18px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cg fill='none' stroke='%23c49a45' stroke-width='1.6'%3E%3Crect x='4' y='4' width='12' height='12' rx='1'/%3E%3Crect x='4' y='4' width='12' height='12' rx='1' transform='rotate(45 10 10)'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+:root[data-skin=calm] .themebtn,:root[data-skin=calm] .wtoggle,:root[data-skin=calm] .filterbtn,:root[data-skin=calm] .skinbtn{background:var(--paper);border-color:var(--line)}
+/* التاريخ والصلاة في لوحة واحدة */
+:root[data-skin=calm] .dayhead{display:block;width:min(92vw,400px);background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:4px 12px 10px;box-shadow:0 4px 14px rgba(63,122,143,.07)}
+:root[data-skin=calm] .dateline{margin:6px 0 0;font-weight:700;font-size:1.05rem;color:var(--ink)}
+:root[data-skin=calm] .dateline i{color:var(--gold)}
+:root[data-skin=calm] .pline{color:var(--muted)} :root[data-skin=calm] .pline b,:root[data-skin=calm] .pline u,:root[data-skin=calm] .sunna{color:var(--emerald)}
+:root[data-skin=calm] .sunna.kun{color:var(--ink)} :root[data-skin=calm] .sunna.kun b{color:var(--gold)}
+:root[data-skin=calm] .task{border-color:var(--line);background:var(--soft);border-radius:16px}
+:root[data-skin=calm] .task .tcirc.ok i{background:var(--emerald);color:#fff}
+:root[data-skin=calm] .page.feed h2.today{font-family:var(--font-ui);font-weight:700;font-size:1.05rem;color:var(--emerald);align-self:stretch;text-align:right;padding:0 8px;margin-bottom:-14px}
+:root[data-skin=calm] .dayhead .task{width:auto;margin:8px 0 2px}
+:root[data-skin=calm] .dayhead .hijriask{max-width:100%}
+/* البطاقة: بلا الإطار والزوايا، بيضاء مستديرة؛ وآخر بطاقة في الصفحة زرقاء متدرّجة بزينة الوردة */
+:root[data-skin=calm] .card.face.front{aspect-ratio:auto;width:min(92vw,400px);background:var(--cbg);color:var(--ink);border:1px solid var(--line);border-radius:24px;box-shadow:0 6px 18px rgba(63,122,143,.09)}
+:root[data-skin=calm] .card.face.front .corner,:root[data-skin=calm] .card.face.front .num,:root[data-skin=calm] .card.face.front .divider{display:none}
+:root[data-skin=calm] .card.face.front .inner{position:relative;inset:auto;background:transparent;border:0;border-radius:0;padding:16px 18px 14px;align-items:stretch;text-align:right;overflow:visible;color:var(--ink);z-index:1}
+:root[data-skin=calm] .card.face.front .chip{order:-2;align-self:flex-start;margin:0 0 4px;padding:0;background:none;color:var(--muted);font-size:.8rem;display:flex;align-items:center;gap:8px}
+:root[data-skin=calm] .card.face.front .chip b{width:34px;height:34px;display:grid;place-items:center;position:relative;color:var(--emerald);font-size:.95rem}
+:root[data-skin=calm] .card.face.front .chip b::before,:root[data-skin=calm] .card.face.front .chip b::after{content:"";position:absolute;inset:5px;border:1.4px solid var(--gold);border-radius:3px}
+:root[data-skin=calm] .card.face.front .chip b::after{transform:rotate(45deg)}
+:root[data-skin=calm] .card.face.front .kicker{order:-1;font-family:var(--font-ui);font-size:.8rem;color:var(--muted);opacity:1;margin:0 0 2px}
+:root[data-skin=calm] .card.face.front .ctext{justify-content:flex-start;text-align:right;margin:4px 0 6px}
+:root[data-skin=calm] .card.face.front .ctext>span{text-align:right}
+:root[data-skin=calm] .card.face.front .qq{color:var(--emerald);font-weight:600}
+:root[data-skin=calm] .card.face.front .thumb{margin:4px auto 8px;border-color:var(--gold)}
+:root[data-skin=calm] .card.face.front .src{align-items:flex-start;text-align:right;color:var(--muted);opacity:1}
+/* الأحدث في الصفحة: أزرق */
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front{background:linear-gradient(160deg,var(--pri2),var(--emerald));border-color:transparent;color:#fff;box-shadow:0 10px 24px rgba(63,122,143,.28)}
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front::after{content:"";position:absolute;left:-34px;bottom:-34px;width:150px;height:150px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.17' stroke-width='.8' stroke-linejoin='round'%3E%3Cpath d='M20.00%2C18.00 A9.5 9.5 0 0 1 20.00%2C2.00 A9.5 9.5 0 0 1 20.00%2C18.00'/%3E%3Cpath d='M21.00%2C18.27 A9.5 9.5 0 0 1 29.00%2C4.41 A9.5 9.5 0 0 1 21.00%2C18.27'/%3E%3Cpath d='M21.73%2C19.00 A9.5 9.5 0 0 1 35.59%2C11.00 A9.5 9.5 0 0 1 21.73%2C19.00'/%3E%3Cpath d='M22.00%2C20.00 A9.5 9.5 0 0 1 38.00%2C20.00 A9.5 9.5 0 0 1 22.00%2C20.00'/%3E%3Cpath d='M21.73%2C21.00 A9.5 9.5 0 0 1 35.59%2C29.00 A9.5 9.5 0 0 1 21.73%2C21.00'/%3E%3Cpath d='M21.00%2C21.73 A9.5 9.5 0 0 1 29.00%2C35.59 A9.5 9.5 0 0 1 21.00%2C21.73'/%3E%3Cpath d='M20.00%2C22.00 A9.5 9.5 0 0 1 20.00%2C38.00 A9.5 9.5 0 0 1 20.00%2C22.00'/%3E%3Cpath d='M19.00%2C21.73 A9.5 9.5 0 0 1 11.00%2C35.59 A9.5 9.5 0 0 1 19.00%2C21.73'/%3E%3Cpath d='M18.27%2C21.00 A9.5 9.5 0 0 1 4.41%2C29.00 A9.5 9.5 0 0 1 18.27%2C21.00'/%3E%3Cpath d='M18.00%2C20.00 A9.5 9.5 0 0 1 2.00%2C20.00 A9.5 9.5 0 0 1 18.00%2C20.00'/%3E%3Cpath d='M18.27%2C19.00 A9.5 9.5 0 0 1 4.41%2C11.00 A9.5 9.5 0 0 1 18.27%2C19.00'/%3E%3Cpath d='M19.00%2C18.27 A9.5 9.5 0 0 1 11.00%2C4.41 A9.5 9.5 0 0 1 19.00%2C18.27'/%3E%3Cline x1='26.00' y1='20.00' x2='38.00' y2='20.00'/%3E%3Cline x1='20.00' y1='26.00' x2='20.00' y2='38.00'/%3E%3Cline x1='14.00' y1='20.00' x2='2.00' y2='20.00'/%3E%3Cline x1='20.00' y1='14.00' x2='20.00' y2='2.00'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23ffffff' fill-opacity='.17'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none}
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .inner,:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .src,:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .kicker,:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .chip{color:#fff}
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .src,:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .kicker,:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .chip{opacity:.85}
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .chip b{color:#fff}
+:root[data-skin=calm] .page.feed .block:not(:has(~ .block)) .card.face.front .qq{color:#fff3d6}
+/* تحت البطاقة */
+:root[data-skin=calm] .under,:root[data-skin=calm] .athar,:root[data-skin=calm] .hadith{width:min(92vw,400px)}
+:root[data-skin=calm] .srcbtn{background:var(--paper);border:1px solid var(--line);color:var(--emerald);border-radius:20px}
+:root[data-skin=calm] .srcbtn.on{background:var(--emerald);border-color:var(--emerald);color:#fff}
+:root[data-skin=calm] .icon{color:var(--emerald)}
+:root[data-skin=calm] .hadith{border-radius:20px;border-color:var(--line)}
+:root[data-skin=calm] .hadith.sharh{border-color:var(--gold)}
+:root[data-skin=calm] .athar{border-radius:16px;background:var(--soft);border-color:var(--line)}
+:root[data-skin=calm] .athar b{color:var(--gold)}
+:root[data-skin=calm] .page.feed .past,:root[data-skin=calm] .page.feed .waiting,:root[data-skin=calm] .offer{border-radius:20px}
+/* زرّ الصلاة العائم */
+:root[data-skin=calm] .praytap{background:var(--paper);border:2px solid var(--gold);color:var(--emerald);box-shadow:0 8px 20px rgba(63,122,143,.3)}
+:root[data-skin=calm] .prayfab .fabn{color:var(--gold)}
+/* الشريط السفلي */
+:root[data-skin=calm] .app:not(.dressed) .tabs{background:var(--paper);border-top-color:var(--line)}
+:root[data-skin=calm] .app:not(.dressed) .tabs .on{color:var(--emerald);position:relative}
+:root[data-skin=calm] .app:not(.dressed) .tabs .on::before{content:"";position:absolute;top:-6px;left:50%;width:22px;height:3px;margin-left:-11px;border-radius:2px;background:var(--gold)}
+/* الوضع الليلي في هذا التصميم: يغلب «ليلي مضيء» الخاص بالتصميم الأصلي */
+:root[data-skin=calm][data-theme=dark] .card.face.front{background:var(--cbg);border-color:var(--line);box-shadow:none}
+:root[data-skin=calm][data-theme=dark] .card.face.front .qq{color:var(--emerald)}
+:root[data-skin=calm][data-theme=dark] .tabs{background:var(--paper)}
+@media (prefers-color-scheme: dark){ :root[data-skin=calm]:not([data-theme=light]) .card.face.front{background:var(--cbg);border-color:var(--line);box-shadow:none} :root[data-skin=calm]:not([data-theme=light]) .card.face.front .qq{color:var(--emerald)} :root[data-skin=calm]:not([data-theme=light]) .tabs{background:var(--paper)} }
+/* زرّ تبديل التصميم */
+.skinbtn{position:absolute;right:76px;top:calc(12px + var(--st));width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;padding:0;color:var(--gold)}
+.skinbtn svg{width:18px;height:18px}

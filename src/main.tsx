@@ -7,6 +7,7 @@ import '@fontsource/noto-naskh-arabic/600.css';
 import '@fontsource/tajawal/400.css';
 import '@fontsource/tajawal/700.css';
 import './index.css';
+import './skin-calm.css';
 import App from './App';
 import { Capacitor } from '@capacitor/core';
 

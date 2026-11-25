@@ -559,3 +559,6 @@ main.withfab{padding-bottom:calc(96px + var(--sb))}
 .task .tcirc small{font-size:.74rem;font-weight:700;color:var(--ink);opacity:.8}
 @media (prefers-color-scheme: dark){ :where(:root:not([data-theme=light])) .task .tcirc.ok i{background:var(--gold);color:#12201c} }
 :where(:root[data-theme=dark]) .task .tcirc.ok i{background:var(--gold);color:#12201c}
+
+/* لوحة التاريخ والصلاة: بلا أثر في التصميم الأصلي، ولوحة بيضاء في «الأزرق الهادئ» */
+.dayhead{display:contents}
