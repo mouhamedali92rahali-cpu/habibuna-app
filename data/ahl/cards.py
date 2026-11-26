@@ -82,7 +82,10 @@ Q={
 }
 def cid(i): return ('AH' if i[0] in 'AB' else 'AS')+i
 cards=[];quiz=[]
+# حُذفت لأنها تكرّر بطاقات أخرى (المراجعة الشاملة 2026-11-26): رقية KN17، أمامة P04، طلحة KB09؛ تبقى أسطرها في lines.json
+SKIP={'B04','B10','S16'}
 for i,x in L.items():
+    if i in SKIP: continue
     fam=i[0] in 'AB'
     cards.append({'id':cid(i),'chapter':CH,'title':TITLE[i],'text':x['text'],'source':x['source'],
       'grade':x['grade'],'theme':'plum' if fam else 'navy','long':False,'hadith':None,'kick':'من أهل بيته ﷺ' if fam else 'من أصحابه ﷺ','line':i})
