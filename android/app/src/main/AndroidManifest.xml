@@ -68,19 +68,10 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_widget_info" />
         </receiver>
 
-        <!-- ثلاث أدوات منفصلة (تجربة 2026-11-18): التاريخ، والصلاة القادمة، والمهمة الخفيّة -->
-        <receiver android:name=".HomeWidgets$DateW" android:exported="true" android:label="التاريخ — حبيبنا">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_date_info" />
-        </receiver>
-        <receiver android:name=".HomeWidgets$PrayerW" android:exported="true" android:label="الصلاة القادمة — حبيبنا">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_prayer_info" />
-        </receiver>
-        <receiver android:name=".HomeWidgets$TaskW" android:exported="true" android:label="المهمّة الخفيّة — حبيبنا">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_task_info" />
-        </receiver>
+        <!-- الأدوات الثلاث المنفصلة حُذفت من قائمة أدوات الهاتف (قرار المستخدم 2026-11-26)؛ تبقى المستقبِلات لأزرار «يومك» والإشعار -->
+        <receiver android:name=".HomeWidgets$DateW" android:exported="false" />
+        <receiver android:name=".HomeWidgets$PrayerW" android:exported="false" />
+        <receiver android:name=".HomeWidgets$TaskW" android:exported="false" />
         <receiver android:name=".HomeWidgets$DayW" android:exported="true" android:label="يومك — حبيبنا">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/habibuna_day_info" />

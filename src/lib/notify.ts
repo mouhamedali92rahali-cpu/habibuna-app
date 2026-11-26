@@ -193,7 +193,7 @@ function slotIndex(day: number, k: number, has: Has): number {
   return Math.floor(day / PERIOD) * t.per[type] + t.before[d * PER_DAY + k][type];
 }
 
-export function cardFor(pool: CardData[], day: number, k: number): CardData {
+function rawCardFor(pool: CardData[], day: number, k: number): CardData {
   const fri = pool.filter((c) => c.chapter === REMINDER && c.friday);
   const rem = pool.filter((c) => c.chapter === REMINDER && !c.friday);
   const qalu = pool.filter((c) => c.qalu);
@@ -213,6 +213,29 @@ export function cardFor(pool: CardData[], day: number, k: number): CardData {
   const list = type === 'fri' ? fri : type === 'rem' ? rem : type === 'qalu' ? qalu : type === 'ahl' ? ahl : type === 'dua' ? duas : type === 'pic' ? pics : type === 'feat' ? feat : has.split ? rest : body;
   if (list.length === 0) return (body.length ? body : pool)[(day * PER_DAY + k) % (body.length || pool.length)];
   return list[i % list.length];
+}
+
+/** البطاقات المرتبطة بوقت (when: m صباحًا، n ليلًا؛ ملاحظة المستخدم 2026-11-26: «إذا أوى إلى فراشه» جاءته صباحًا)
+ *  تُبادَل مواعيدها داخل اليوم نفسه، فلا تضيع بطاقة ولا تتكرّر؛ ولا يُنقل حديث الجمعة ولا «قالوا عنه» ولا أهل البيت والأصحاب. */
+const wantSlot = (c: CardData) => (c.when === 'm' ? 0 : c.when === 'n' ? PER_DAY - 1 : -1);
+const fixedSlot = (c: CardData) => !!(c.friday || c.qalu || c.chapter === AHL);
+export function dayCards(pool: CardData[], day: number): CardData[] {
+  const d = Array.from({ length: PER_DAY }, (_, j) => rawCardFor(pool, day, j));
+  for (let pass = 0; pass < 2; pass++) for (let j = 0; j < d.length; j++) {
+    const t = wantSlot(d[j]);
+    if (t < 0 || t === j || fixedSlot(d[j]) || fixedSlot(d[t]) || wantSlot(d[t]) === t) continue;
+    [d[j], d[t]] = [d[t], d[j]];
+  }
+  // إن اجتمعت بطاقتان لوقت واحد في يوم، تأتي الثانية ظهرًا لا في الوقت المعاكس (نحو ثلاث مرات في السنتين)
+  const mid = Math.floor(PER_DAY / 2);
+  for (let j = 0; j < d.length; j++) {
+    const t = wantSlot(d[j]);
+    if (t >= 0 && t !== j && j !== mid && !fixedSlot(d[j]) && !fixedSlot(d[mid]) && wantSlot(d[mid]) < 0) [d[j], d[mid]] = [d[mid], d[j]];
+  }
+  return d;
+}
+export function cardFor(pool: CardData[], day: number, k: number): CardData {
+  return dayCards(pool, day)[k];
 }
 
 /** جدولة الويب: تعمل والتطبيق مفتوح فقط (على الهاتف تُستعمل scheduleWeek) */
