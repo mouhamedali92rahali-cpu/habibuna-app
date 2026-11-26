@@ -540,7 +540,6 @@ export default function App() {
       <header className="top">
         <span className="brandmark">حبيبنا</span>
         <ThemeToggle />
-        <SkinToggle />
         {isNative && widget && tab === 'feed' && <WidgetToggle widget={widget} onChange={setWidget} say={say} />}
         {tab === 'feed' && (
           <button className={'filterbtn' + (hidden.length ? ' on' : '')} onClick={() => setFilterOpen(true)} aria-label="تصفية الأنواع">⋯</button>
@@ -986,20 +985,6 @@ function WidgetToggle({ widget, onChange, say }: { widget: { placed: boolean; ca
     <button className={'wtoggle' + (on ? ' on' : '')} onClick={() => { void flip(); }} aria-label={on ? 'إخفاء زرّ الصلاة من الشاشة الرئيسية' : 'وضع زرّ الصلاة على الشاشة الرئيسية'}>
       <span className="knob">ﷺ</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
-    </button>
-  );
-}
-
-/** تبديل التصميم بين الأصلي و«القوس» (تجربة للمستخدم 2026-11-25؛ يُحفظ في الهاتف) */
-function SkinToggle() {
-  const [on, setOn] = useState(() => { try { return localStorage.getItem('skin') === 'arch'; } catch { return false; } });
-  useEffect(() => { if (on) document.documentElement.dataset.skin = 'arch'; else delete document.documentElement.dataset.skin; }, [on]);
-  const flip = () => { const v = !on; setOn(v); try { localStorage.setItem('skin', v ? 'arch' : 'classic'); } catch { /* */ } };
-  return (
-    <button className="skinbtn" onClick={flip} aria-label={on ? 'التصميم الأصلي' : 'تصميم القوس'}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">{on
-        ? <><rect x="6" y="6" width="12" height="12" rx="1" /><rect x="6" y="6" width="12" height="12" rx="1" transform="rotate(45 12 12)" /></>
-        : <><path d="M5 21V11a7 7 0 0 1 14 0v10" /><path d="M8.5 21v-9.5a3.5 3.5 0 0 1 7 0V21" /></>}</svg>
     </button>
   );
 }
